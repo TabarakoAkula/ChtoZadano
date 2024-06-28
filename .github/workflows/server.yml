@@ -1,0 +1,38 @@
+name: server CI
+
+on:
+  push:
+    branches: ["server"]
+  pull_request:
+    branches: ["server"]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements/test.txt
+    - name: Django tests
+      run: |
+        cd chtozadano
+        python manage.py test
+        cd ../
+    - name: Linting | Black
+      run: |
+        black --check --color --diff  --line-length 79  --exclude migrations --verbose .
+    - name: Linting | Flake8
+      run: |
+        flake8 --verbose --max-line-length=79 --inline-quotes="double" --docstring-quotes="double" --import-order-style="google" --application-import-names="users homework" --ignore="E203" --exclude=".git,__pycache__,docs/source/conf.py,old,build,dist,migrations"
