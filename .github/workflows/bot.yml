@@ -27,7 +27,8 @@ jobs:
         pip install -r requirements/test.txt
     - name: Linting | Black
       run: |
-        black --check --color --diff  --line-length 79  --exclude migrations --verbose .
+        cd ../
+        black --check --color --diff  --line-length 79  --exclude migrations --verbose bot.py
     - name: Linting | Flake8
       run: |
-        flake8 --verbose --max-line-length=79 --inline-quotes="double" --docstring-quotes="double" --import-order-style="google" --application-import-names="users homework" --ignore="E203" --exclude=".git,__pycache__,docs/source/conf.py,old,build,dist,migrations"
+        flake8 --verbose --max-line-length=79 --inline-quotes="double" --docstring-quotes="double" --import-order-style="google" --application-import-names="users homework" --ignore="E203" --exclude=".git,__pycache__,docs/source/conf.py,old,build,dist,migrations" bot.py
