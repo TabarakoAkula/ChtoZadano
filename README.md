@@ -18,3 +18,7 @@ Environments:
 + ``DEBUG`` | True/False
 + ``SECRET_KEY`` | char(256)
 + ``ALLOWED_HOSTS`` | 127.0.0,0.0.0.0,*
+
+
+**DB Scheme:**  
+![image](https://github.com/TabarakoAkula/ChtoZadano/assets/113298631/45a8b883-161a-4ae2-9234-215158db2c81)
