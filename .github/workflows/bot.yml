@@ -27,7 +27,7 @@ jobs:
         pip install -r requirements/test.txt
     - name: Linting | Black
       run: |
-        cd ../
+        cd ..\
         black --check --color --diff  --line-length 79  --exclude migrations --verbose bot.py
     - name: Linting | Flake8
       run: |
