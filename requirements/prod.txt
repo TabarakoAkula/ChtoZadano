@@ -6,3 +6,4 @@ python-telegram-bot~=13.13
 djangorestframework~=3.15.2
 markdown~=3.6
 django-filter~=24.2
+requests~=2.32.3
