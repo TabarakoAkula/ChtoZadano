@@ -59,8 +59,12 @@ WSGI_APPLICATION = "chtozadano.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": str(os.getenv("POSTGRES_NAME")),
+        "USER": str(os.getenv("POSTGRES_USER")),
+        "PASSWORD": str(os.getenv("POSTGRES_PASSWORD")),
+        "HOST": str(os.getenv("POSTGRES_HOST")),
+        "PORT": str(os.getenv("POSTGRES_PORT")),
     },
 }
 
@@ -93,5 +97,12 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static_dev",
+]
+STATIC_ROOT = BASE_DIR / "static"
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
