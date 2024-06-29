@@ -14,6 +14,7 @@ DEBUG = str(os.getenv("DEBUG")).lower() == "true"
 
 ALLOWED_HOSTS = str(os.getenv("ALLOWED_HOSTS")).split(",")
 
+API_KEY = str(os.getenv("API_KEY"))
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -22,6 +23,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "rest_framework",
     "homework.apps.HomeworkConfig",
     "users.apps.UsersConfig",
 ]
@@ -35,6 +37,12 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+    ],
+}
 
 ROOT_URLCONF = "chtozadano.urls"
 
@@ -56,7 +64,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "chtozadano.wsgi.application"
 
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -67,7 +74,6 @@ DATABASES = {
         "PORT": str(os.getenv("POSTGRES_PORT")),
     },
 }
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {

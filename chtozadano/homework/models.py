@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -6,9 +7,11 @@ class Image(models.Model):
 
 
 class Homework(models.Model):
-    grade = models.IntegerField()
-    letter = models.CharField()
-    description = models.TextField()
+    grade = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(11)],
+    )
+    letter = models.CharField(max_length=1)
+    description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     image = models.ManyToManyField(Image, blank=True)
 
