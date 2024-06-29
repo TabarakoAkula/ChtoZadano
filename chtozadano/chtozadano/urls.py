@@ -9,6 +9,7 @@ from django.views.static import serve
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/", include("users.urls")),
     re_path(
         r"^static/(?P<path>.*)$",
         serve,
