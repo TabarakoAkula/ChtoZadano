@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% load static %}
+	<form method="POST" enctype="multipart/form-data" style="margin-left: 30em; margin-right: 30em; margin-bottom: 5em">
+		{% for error in errors %}
+			{{ error }}
+		{% endfor %}
+		{% csrf_token %}
+		<p>Enter your code: {{ form.confirmation_code }}</p>
+		<button title="Enter your code">Enter</button>
+	</form>
+{% endblock %}

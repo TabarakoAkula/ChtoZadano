@@ -12,6 +12,7 @@ class User(django.db.models.Model):
         DjangoUser,
         on_delete=django.db.models.CASCADE,
         primary_key=True,
+        related_name="server_user",
     )
     grade = django.db.models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(11)],
@@ -30,7 +31,7 @@ class User(django.db.models.Model):
 
 
 class SignIn(django.db.models.Model):
-    user = django.db.models.OneToOneField(
+    singning_user = django.db.models.OneToOneField(
         User,
         on_delete=django.db.models.DO_NOTHING,
         null=True,

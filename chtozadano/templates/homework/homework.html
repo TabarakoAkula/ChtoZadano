@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% load static %}
+	<table border="1">
+		{% for i in homework %}
+			<tr>
+				<td>{{ i }}</td>
+				<td>{{ i.created_at }}</td>
+				<td>{% for j in i.image.all %}
+					<img src="{{ j.image_path.url }}" width="100" height="100">
+					{% endfor %}</td>
+			</tr>
+		{% endfor %}
+	</table>
+{% endblock %}
