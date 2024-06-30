@@ -21,4 +21,6 @@ Environments:
 
 
 **DB Scheme:**  
-![image](https://github.com/TabarakoAkula/ChtoZadano/assets/113298631/45a8b883-161a-4ae2-9234-215158db2c81)
+![image](https://github.com/TabarakoAkula/ChtoZadano/assets/113298631/2a1b87eb-74d0-469e-866a-8de986936082)  
+**Algorithm**
+![image](https://github.com/TabarakoAkula/ChtoZadano/assets/113298631/44140fc1-f8ec-4b9f-a5c8-8c079bf561cf)
