@@ -11,7 +11,7 @@ dotenv.load_dotenv()
 
 def handle_message(update, context):
     text = update.message.text.lower()
-    if text == "код":
+    if text in ["код", "code", "kod", "rjl"]:
         user_id = update.message.chat_id
         user_name = update.message.from_user.first_name
         confirmation_code = random.randint(100000, 999999)
