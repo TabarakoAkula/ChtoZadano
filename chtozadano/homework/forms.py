@@ -1,7 +1,6 @@
-import django.forms
-from django.forms import Form
+from django import forms
 
 
-class ChooseGradLetForm(Form):
-    grade = django.forms.IntegerField(min_value=1, max_value=11)
-    letter = django.forms.CharField(max_length=1)
+class ChooseGradLetForm(forms.Form):
+    grade = forms.IntegerField(min_value=1, max_value=11)
+    letter = forms.CharField(max_length=1)

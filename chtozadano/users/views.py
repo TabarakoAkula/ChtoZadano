@@ -42,24 +42,40 @@ class SignUpPage(View):
 
     def post(self, request):
         code = request.POST["confirmation_code"]
-
         my_sign_in = SignIn.objects.filter(confirmation_code=code).first()
-        database_datetime = my_sign_in.created_at.replace(
-            tzinfo=None,
-        ) + datetime.timedelta(hours=3)
-        if confirmation_code_expired(database_datetime):
-            return HttpResponse("Срок действия кода истек")
-        if not my_sign_in:
+        try:
+            database_datetime = my_sign_in.created_at.replace(
+                tzinfo=None,
+            ) + datetime.timedelta(hours=3)
+        except AttributeError:
             return render(
                 request,
                 "users/sign_up.html",
-                context={"form": SignUpForm},
+                context={
+                    "form": SignUpForm(request.POST),
+                    "errors": ("Error: Bad code",),
+                },
+            )
+
+        if confirmation_code_expired(database_datetime):
+            return render(
+                request,
+                "users/sign_up.html",
+                context={
+                    "form": SignUpForm(request.POST),
+                    "errors": ("Error: Code expired",),
+                },
             )
         telegram_id = my_sign_in.telegram_id
         all_users = User.objects.filter(telegram_id=telegram_id).all()
         if all_users:
-            return HttpResponse(
-                "Пользователь с таким телеграмм аккаунтов уже существует",
+            return render(
+                request,
+                "users/sign_up.html",
+                context={
+                    "form": SignUpForm(request.POST),
+                    "errors": ("Error: User already exist",),
+                },
             )
         name = my_sign_in.name
         django_user = django.contrib.auth.models.User.objects.create_user(
@@ -89,25 +105,40 @@ class SignInPage(View):
         my_sign_in = SignIn.objects.filter(
             confirmation_code=request.POST["confirmation_code"],
         ).first()
-        database_datetime = my_sign_in.created_at.replace(
-            tzinfo=None,
-        ) + datetime.timedelta(hours=3)
-        if confirmation_code_expired(database_datetime):
-            return HttpResponse("Срок действия кода истек")
-
-        if not my_sign_in:
+        try:
+            database_datetime = my_sign_in.created_at.replace(
+                tzinfo=None,
+            ) + datetime.timedelta(hours=3)
+        except AttributeError:
             return render(
                 request,
                 "users/sign_in.html",
-                context={"form": SignUpForm, "errors": "not my_sign_in"},
+                context={
+                    "form": SignInForm(request.POST),
+                    "errors": ("Error: Bad code",),
+                },
+            )
+        if confirmation_code_expired(database_datetime):
+            return render(
+                request,
+                "users/sign_in.html",
+                context={
+                    "form": SignInForm(request.POST),
+                    "errors": ("Error: Code expired",),
+                },
             )
         telegram_id = my_sign_in.telegram_id
         all_users = User.objects.filter(telegram_id=telegram_id).all()
         if all_users:
             django_user = User.objects.get(telegram_id=telegram_id).user
         else:
-            return HttpResponse(
-                "Неправильный код авторизации / Такого аккаунта не существует",
+            return render(
+                request,
+                "users/sign_in.html",
+                context={
+                    "form": SignInForm(request.POST),
+                    "errors": ("Error: Account with this id does not exist",),
+                },
             )
         django.contrib.auth.login(request, django_user)
         return redirect("users:account_page")
