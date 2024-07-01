@@ -34,14 +34,10 @@ class HomeworkPage(View):
 
 class ChooseGrLePage(View):
     def get(self, request):
-        grade = request.COOKIES.get("grade")
-        letter = request.COOKIES.get("letter")
         return render(
             request,
             "homework/choose_grad_let.html",
             context={
-                "grade": grade,
-                "letter": letter,
                 "form": ChooseGradLetForm,
             },
         )
@@ -138,7 +134,15 @@ class AddHomeworkPage(View):
 class DeleteHomework(View):
     def get(self, request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
-            hw_info = Homework.objects.get(id=homework_id)
+            request_user = request.user.server_user
+            try:
+                hw_info = Homework.objects.get(
+                    id=homework_id,
+                    grade=request_user.grade,
+                    letter=request_user.letter,
+                )
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
             return render(
                 request,
                 "homework/delete_homework.html",
@@ -149,11 +153,14 @@ class DeleteHomework(View):
     def post(self, request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
-            Homework.objects.get(
-                id=homework_id,
-                grade=request_user.grade,
-                letter=request_user.letter,
-            ).delete()
+            try:
+                Homework.objects.get(
+                    id=homework_id,
+                    grade=request_user.grade,
+                    letter=request_user.letter,
+                ).delete()
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
         return redirect("homework:homework_page")
 
 
@@ -161,11 +168,14 @@ class EditHomework(View):
     def get(self, request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
-            hw_info = Homework.objects.get(
-                id=homework_id,
-                grade=request_user.grade,
-                letter=request_user.letter,
-            )
+            try:
+                hw_info = Homework.objects.get(
+                    id=homework_id,
+                    grade=request_user.grade,
+                    letter=request_user.letter,
+                )
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
             return render(
                 request,
                 "homework/edit_homework.html",
@@ -222,11 +232,14 @@ class EditHomework(View):
                         },
                     )
             server_user = request.user.server_user
-            homework_object = Homework.objects.get(
-                id=homework_id,
-                grade=server_user.grade,
-                letter=server_user.letter,
-            )
+            try:
+                homework_object = Homework.objects.get(
+                    id=homework_id,
+                    grade=server_user.grade,
+                    letter=server_user.letter,
+                )
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
 
             for file in files_list_for_model:
                 file_name = file[0]
@@ -254,11 +267,14 @@ class EditHomeworkData(View):
     def get(self, request, homework_id, r_type, file_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
-            hw_object = Homework.objects.get(
-                id=homework_id,
-                grade=request_user.grade,
-                letter=request_user.letter,
-            )
+            try:
+                hw_object = Homework.objects.get(
+                    id=homework_id,
+                    grade=request_user.grade,
+                    letter=request_user.letter,
+                )
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
             if r_type == "img":
                 Image.objects.get(id=file_id, homework=hw_object).delete()
             elif r_type == "file":

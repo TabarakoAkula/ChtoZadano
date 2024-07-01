@@ -4,7 +4,7 @@ import os
 from django.conf import settings
 import django.contrib.auth
 import django.db.utils
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from rest_framework.views import APIView
@@ -146,6 +146,8 @@ class SignInPage(View):
 
 class AccountPage(View):
     def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect("mainpage")
         return render(
             request,
             template_name="users/account.html",
@@ -156,6 +158,6 @@ class AccountPage(View):
 class Logout(View):
     def get(self, request):
         if not request.user.is_authenticated:
-            return HttpResponseNotFound()
+            return redirect("mainpage")
         django.contrib.auth.logout(request)
         return redirect("mainpage")

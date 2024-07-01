@@ -2,6 +2,10 @@
 
 {% block content %}
 	{% load static %}
+	<br><br><br>
+	<a href="{% url "homework:choose_grad_let" %}">
+		<button>Change grade or letter</button>
+	</a>
 	<table border="1">
 		{% for i in homework %}
 			<tr>
@@ -19,8 +23,8 @@
 					<button type="submit">Delete</button>
 				</a>
 					<a href="{% url "homework:edit_homework" i.id %}">
-					<button type="submit">Edit</button>
-				</a>
+						<button type="submit">Edit</button>
+					</a>
 				</td>
 			</tr>
 		{% endfor %}
