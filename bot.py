@@ -19,7 +19,7 @@ def handle_message(update, context):
             f"""Введите на сайте этот код ||{confirmation_code}||""",
         )
         requests.post(
-            "http://127.0.0.1:8000/api/v1/sign_in/",
+            "http://127.0.0.1:8000/api/v1/code_confirmation/",
             data={
                 "api_key": os.getenv("API_KEY"),
                 "telegram_id": user_id,

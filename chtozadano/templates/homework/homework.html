@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% load static %}
+	<br><br><br>
+	<a href="{% url "homework:choose_grad_let" %}">
+		<button>Change grade or letter</button>
+	</a>
+	<table border="1">
+		{% for i in homework %}
+			<tr>
+				<td>{{ i.grade }}</td>
+				<td>{{ i.letter }}</td>
+				<td>{{ i.description }}</td>
+				<td>{{ i.created_at }}</td>
+				<td>{% for j in i.images.all %}
+					<img src="{{ j.image.url }}" width="500" height="500">
+				{% endfor %}</td>
+				<td>{% for j in i.files.all %}
+					<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
+				{% endfor %}</td>
+				<td><a href="{% url "homework:delete_homework" i.id %}">
+					<button type="submit">Delete</button>
+				</a>
+					<a href="{% url "homework:edit_homework" i.id %}">
+						<button type="submit">Edit</button>
+					</a>
+				</td>
+			</tr>
+		{% endfor %}
+	</table>
+{% endblock %}

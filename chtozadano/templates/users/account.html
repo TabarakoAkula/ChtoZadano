@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% load static %}
+	<table border="1">
+		<tr>
+			<td>Id</td>
+			<td>{{ user.user.id }}</td>
+		</tr>
+		<tr>
+			<td>Grade</td>
+			<td>{{ user.grade }}</td>
+		</tr>
+		<tr>
+			<td>Letter</td>
+			<td>{{ user.letter }}</td>
+		</tr>
+		<tr>
+			<td>Tg id</td>
+			<td>{{ user.telegram_id }}</td>
+		</tr>
+		<tr>
+			<td>Notebook</td>
+			<td>{{ user.notebook }}</td>
+		</tr>
+		<tr>
+			<td>First name</td>
+			<td>{{ user.user.first_name }}</td>
+		</tr>
+	</table>
+{% endblock %}
