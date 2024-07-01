@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% load static %}
+	<form method="post">
+		{% csrf_token %}
+		<table border="1">
+			<tr>
+				<td>{{ hw_info.grade }}</td>
+				<td>{{ hw_info.letter }}</td>
+				<td>{{ hw_info.description }}</td>
+				<td>{{ hw_info.created_at }}</td>
+				<td>{% for j in hw_info.images.all %}
+					<img src="{{ j.image.url }}" width="500" height="500">
+				{% endfor %}</td>
+				<td>{% for j in hw_info.files.all %}
+					<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
+				{% endfor %}</td>
+			</tr>
+		</table>
+		Вы уверены, что хотите удалить эту запись?
+		<button type="submit">Да, уверен</button>
+		<a href="{% url "homework:homework_page" %}">
+			<button>Нет, вернуться</button>
+		</a>
+	</form>
+{% endblock %}
