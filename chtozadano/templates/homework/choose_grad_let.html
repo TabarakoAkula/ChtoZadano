@@ -2,9 +2,9 @@
 
 {% block content %}
 	{% load static %}
-<form method="POST" enctype="multipart/form-data">
-{% csrf_token %}
-{{ form }}
-<button title="Enter your code">Enter</button>
-</form>
+	<form method="POST" enctype="multipart/form-data">
+		{% csrf_token %}
+		{{ form }}
+		<button title="Enter your code">Enter</button>
+	</form>
 {% endblock %}

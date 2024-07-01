@@ -1,10 +1,30 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MaxValueValidator, MinValueValidator
 import django.db.models
 
 from homework.models import Homework
 
 DjangoUser = get_user_model()
+
+GRADE_CHOICES = (
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5),
+    (6, 6),
+    (7, 7),
+    (8, 8),
+    (9, 9),
+    (10, 10),
+    (11, 11),
+)
+
+LETTER_CHOICES = (
+    ("А", "А"),
+    ("Б", "Б"),
+    ("Г", "В"),
+    ("Г", "В"),
+)
 
 
 class User(django.db.models.Model):
@@ -14,10 +34,8 @@ class User(django.db.models.Model):
         primary_key=True,
         related_name="server_user",
     )
-    grade = django.db.models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(11)],
-    )
-    letter = django.db.models.CharField(max_length=1)
+    grade = django.db.models.IntegerField(choices=GRADE_CHOICES)
+    letter = django.db.models.CharField(choices=LETTER_CHOICES)
     telegram_id = django.db.models.IntegerField()
     notebook = django.db.models.TextField(null=True, blank=True)
     homework = django.db.models.ManyToManyField(
