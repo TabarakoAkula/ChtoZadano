@@ -7,3 +7,6 @@ djangorestframework~=3.15.2
 markdown~=3.6
 django-filter~=24.2
 requests~=2.32.3
+orjson~=3.10.5
+gunicorn~=22.0.0
+daphne~=4.1.2

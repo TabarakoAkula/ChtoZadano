@@ -14,7 +14,7 @@ from users.models import SignIn, User
 from users.utils import confirmation_code_expired, create_password
 
 
-class CodeConfirmation(APIView):
+class CodeConfirmationApi(APIView):
     def post(self, request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")

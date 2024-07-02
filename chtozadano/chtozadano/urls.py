@@ -19,7 +19,7 @@ urlpatterns = [
     path("homework/", include("homework.urls")),
     path(
         "api/v1/code_confirmation/",
-        csrf_exempt(users.views.CodeConfirmation.as_view()),
+        csrf_exempt(users.views.CodeConfirmationApi.as_view()),
     ),
     re_path(
         r"^static/(?P<path>.*)$",

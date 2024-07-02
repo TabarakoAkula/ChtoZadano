@@ -1,9 +1,6 @@
 from django.db import models
 
 GRADE_CHOICES = (
-    (1, 1),
-    (2, 2),
-    (3, 3),
     (4, 4),
     (5, 5),
     (6, 6),
@@ -26,6 +23,7 @@ class Homework(models.Model):
     grade = models.IntegerField(choices=GRADE_CHOICES)
     letter = models.CharField(choices=LETTER_CHOICES)
     description = models.TextField(null=True, blank=True)
+    subject = models.CharField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

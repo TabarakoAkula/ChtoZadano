@@ -19,6 +19,7 @@ API_KEY = str(os.getenv("API_KEY"))
 INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -65,6 +66,8 @@ TEMPLATES = [
         },
     },
 ]
+
+ASGI_APPLICATION = "chtozadano.asgi.application"
 
 WSGI_APPLICATION = "chtozadano.wsgi.application"
 
@@ -123,3 +126,7 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
