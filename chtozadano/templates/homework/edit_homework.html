@@ -9,6 +9,18 @@
 			<form method="POST" enctype="multipart/form-data">
 				{% csrf_token %}
 				<td><textarea name="description">{{ hw_info.description }}</textarea></td>
+				<td>
+					<label for="subject">Choose a subject:</label>
+					<select name="subject">
+						{% for subject in subjects %}
+							{% if subject == hw_info.subject %}
+								<option selected="selected">{{ subject }}</option>
+							{% else %}
+								<option>{{ subject }}</option>
+							{% endif %}
+						{% endfor %}
+					</select>
+				</td>
 				<td>{{ hw_info.created_at }}</td>
 				<td>
 					{% for j in hw_info.images.all %}

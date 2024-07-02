@@ -15,7 +15,7 @@ LETTER_CHOICES = (
     ("А", "А"),
     ("Б", "Б"),
     ("Г", "В"),
-    ("Г", "В"),
+    ("Г", "Г"),
 )
 
 
@@ -27,7 +27,7 @@ class Homework(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.grade}-{self.letter} | {self.description[:20]}"
+        return f"{self.grade}-{self.letter} | {self.subject}"
 
 
 class Image(models.Model):

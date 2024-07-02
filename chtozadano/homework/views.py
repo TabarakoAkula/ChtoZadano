@@ -1,11 +1,21 @@
 import json
 
+from django.conf import settings
 from django.core.files.storage import default_storage
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
+from rest_framework.views import APIView
 
 from homework.forms import ChooseGradLetForm
 from homework.models import File, Homework, Image
+from homework.serializers import HomeworkSerializer
+from homework.utils import (
+    get_abbreviation_from_name,
+    get_user_subjects,
+    get_user_subjects_abbreviation,
+)
+import users.models
 
 
 class HomeworkPage(View):
@@ -22,10 +32,54 @@ class HomeworkPage(View):
             letter = data["letter"]
             if not grade or not letter:
                 return redirect("homework:choose_grad_let")
-        data = Homework.objects.filter(grade=grade, letter=letter).all()
+        subjects = get_user_subjects_abbreviation(grade, letter)
+        data = []
+        for subject in subjects:
+            hw_object = (
+                Homework.objects.filter(
+                    grade=grade,
+                    letter=letter,
+                    subject=subject,
+                )
+                .order_by("-created_at")
+                .first()
+            )
+            if hw_object:
+                data.append(hw_object)
         return render(
             request,
             "homework/homework.html",
+            context={
+                "homework": data,
+            },
+        )
+
+
+class AllHomeworkPage(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            grade = request.user.server_user.grade
+            letter = request.user.server_user.letter
+        else:
+            try:
+                data = json.loads(request.COOKIES.get("hw_data"))
+            except TypeError:
+                return redirect("homework:choose_grad_let")
+            grade = data["grade"]
+            letter = data["letter"]
+            if not grade or not letter:
+                return redirect("homework:choose_grad_let")
+        data = (
+            Homework.objects.filter(
+                grade=grade,
+                letter=letter,
+            )
+            .order_by("-subject", "-created_at")
+            .all()
+        )
+        return render(
+            request,
+            "homework/all_homework.html",
             context={
                 "homework": data,
             },
@@ -55,9 +109,13 @@ class ChooseGrLePage(View):
 class AddHomeworkPage(View):
     def get(self, request):
         if request.user.is_staff or request.user.is_superuser:
+            user = request.user.server_user
+            grade, letter = user.grade, user.letter
+            response_list = get_user_subjects(grade, letter)
             return render(
                 request,
                 "homework/addhomework.html",
+                context={"subjects": response_list},
             )
         return redirect("homework:homework_page")
 
@@ -65,6 +123,8 @@ class AddHomeworkPage(View):
         if not request.user.is_staff or request.user.is_superuser:
             return redirect("homework:homework_page")
         description = request.POST["description"]
+        subject = request.POST["subject"]
+        subject = get_abbreviation_from_name(subject)
         request_files_list = request.FILES.getlist("files")
         files_list_for_model = []
         for r_file in request_files_list:
@@ -109,6 +169,7 @@ class AddHomeworkPage(View):
             description=description,
             grade=server_user.grade,
             letter=server_user.letter,
+            subject=subject,
         )
         homework_object.author.add(server_user)
 
@@ -168,6 +229,10 @@ class EditHomework(View):
     def get(self, request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
+            user_subjects = get_user_subjects(
+                request_user.grade,
+                request_user.letter,
+            )
             try:
                 hw_info = Homework.objects.get(
                     id=homework_id,
@@ -179,13 +244,18 @@ class EditHomework(View):
             return render(
                 request,
                 "homework/edit_homework.html",
-                context={"hw_info": hw_info},
+                context={
+                    "hw_info": hw_info,
+                    "subjects": user_subjects,
+                },
             )
         return redirect("homework:homework_page")
 
     def post(self, request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             description = request.POST["description"]
+            subject = request.POST["subject"]
+            subject = get_abbreviation_from_name(subject)
             request_files_list = request.FILES.getlist("files")
             files_list_for_model = []
             for r_file in request_files_list:
@@ -258,6 +328,7 @@ class EditHomework(View):
                     )
                     homework_object.files.add(file_object)
             homework_object.description = description
+            homework_object.subject = subject
             homework_object.save()
             return redirect("homework:edit_homework", homework_id=homework_id)
         return redirect("homework:homework_page")
@@ -281,3 +352,57 @@ class EditHomeworkData(View):
                 File.objects.get(id=file_id, homework=hw_object).delete()
             return redirect("homework:edit_homework", homework_id=homework_id)
         return redirect("homework:homework_page")
+
+
+class GetLastHomeworkAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        user = users.models.User.objects.get(
+            telegram_id=request.data["telegram_id"],
+        )
+        grade = user.grade
+        letter = user.letter
+        subjects = get_user_subjects(grade, letter)
+        data = {}
+        for subject in subjects:
+            hw_object = (
+                Homework.objects.filter(
+                    grade=grade,
+                    letter=letter,
+                    subject=subject,
+                )
+                .order_by("-created_at")
+                .first()
+            )
+            if hw_object:
+                serializer_data = HomeworkSerializer(hw_object).data
+                serializer_data["author"] = (
+                    f"{hw_object.author.first().user.first_name} "
+                    f"{hw_object.author.first().user.last_name}"
+                )
+                data[subject] = serializer_data
+        return HttpResponse(json.dumps(data))
+
+
+class GetOneSubjectAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        user = users.models.User.objects.get(
+            telegram_id=request.data["telegram_id"],
+        )
+        grade = user.grade
+        letter = user.letter
+        subject = request.data["subject"]
+        subject = get_abbreviation_from_name(subject)
+        hw_object = (
+            Homework.objects.filter(
+                grade=grade,
+                letter=letter,
+                subject=subject,
+            )
+            .order_by("-created_at")
+            .first()
+        )
+        return HttpResponse(json.dumps(HomeworkSerializer(hw_object).data))
