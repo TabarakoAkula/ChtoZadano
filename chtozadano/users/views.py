@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 
 from django.conf import settings
@@ -10,11 +11,12 @@ from django.views import View
 from rest_framework.views import APIView
 
 from users.forms import SignInForm, SignUpForm
-from users.models import SignIn, User
+from users.models import BecomeAdmin, SignIn, User
+from users.serializers import BecomeAdminSerializer
 from users.utils import confirmation_code_expired, create_password
 
 
-class CodeConfirmation(APIView):
+class CodeConfirmationApi(APIView):
     def post(self, request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
@@ -87,6 +89,7 @@ class SignUpPage(View):
             user=django_user,
             grade=request.POST["grade"],
             letter=request.POST["letter"],
+            group=request.POST["group"],
             telegram_id=telegram_id,
         )
         django.contrib.auth.login(request, django_user)
@@ -148,10 +151,20 @@ class AccountPage(View):
     def get(self, request):
         if not request.user.is_authenticated:
             return redirect("mainpage")
+        show_admin = False
+        try:
+            BecomeAdmin.objects.get(
+                telegram_id=request.user.server_user.telegram_id,
+            )
+        except BecomeAdmin.DoesNotExist:
+            show_admin = True
         return render(
             request,
             template_name="users/account.html",
-            context={"user": User.objects.get(user=request.user)},
+            context={
+                "user": User.objects.get(user=request.user),
+                "show_admin": show_admin,
+            },
         )
 
 
@@ -161,3 +174,142 @@ class Logout(View):
             return redirect("mainpage")
         django.contrib.auth.logout(request)
         return redirect("mainpage")
+
+
+class BecomeAdminPage(View):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return redirect("mainpage")
+        if request.user.is_staff:
+            return redirect("homework:homework_page")
+        try:
+            BecomeAdmin.objects.get(
+                telegram_id=request.user.server_user.telegram_id,
+            )
+        except BecomeAdmin.DoesNotExist:
+            return render(request, "users/become_admin.html")
+        return redirect("users:account_page")
+
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return redirect("mainpage")
+        if request.user.is_staff:
+            return redirect("homework:homework_page")
+        grade, letter = request.POST["grade"], request.POST["letter"]
+        first_name, last_name = (
+            request.POST["first_name"],
+            request.POST["last_name"],
+        )
+        group = request.POST["group"]
+        user_obj = request.user.server_user
+        BecomeAdmin.objects.create(
+            grade=grade,
+            letter=letter,
+            first_name=first_name,
+            last_name=last_name,
+            group=group,
+            telegram_id=user_obj.telegram_id,
+        )
+        return redirect("users:account_page")
+
+
+class ShowBecomeAdmin(View):
+    def get(self, request):
+        if request.user.is_superuser:
+            data = BecomeAdmin.objects.all()
+            return render(
+                request,
+                "users/show_become_admin.html",
+                context={"data": data},
+            )
+        return redirect("mainpage")
+
+
+class BecomeAdminAccept(View):
+    def get(self, request, telegram_id):
+        if request.user.is_superuser:
+            BecomeAdmin.objects.get(telegram_id=telegram_id).delete()
+            user_obj = User.objects.get(telegram_id=telegram_id).user
+            user_obj.is_staff = True
+            user_obj.save()
+            return redirect("users:show_become_admin")
+        return redirect("mainpage")
+
+
+class BecomeAdminDecline(View):
+    def get(self, request, telegram_id):
+        if request.user.is_superuser:
+            BecomeAdmin.objects.get(telegram_id=telegram_id).delete()
+            return redirect("users:show_become_admin")
+        return redirect("mainpage")
+
+
+class BecomeAdminAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        if User.objects.get(
+            telegram_id=request.data["telegram_id"],
+        ).user.is_superuser:
+            request_data = BecomeAdmin.objects.all()
+            serialized_data = BecomeAdminSerializer(
+                request_data,
+                many=True,
+            ).data
+            return HttpResponse(json.dumps(serialized_data))
+        return HttpResponse("Not allowed")
+
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        grade = request.data["grade"]
+        letter = request.data["letter"]
+        group = request.data["group"]
+        first_name = request.data["first_name"]
+        last_name = request.data["last_name"]
+        django_user = User.objects.get(telegram_id=telegram_id).user
+        if django_user.is_staff:
+            return HttpResponse("You are already admin")
+        if django_user.is_superuser:
+            return HttpResponse("You are superuser, damn")
+        try:
+            BecomeAdmin.objects.get(telegram_id=telegram_id)
+        except BecomeAdmin.MultipleObjectsReturned:
+            return HttpResponse("Already have request")
+        except BecomeAdmin.DoesNotExist:
+            BecomeAdmin.objects.create(
+                grade=grade,
+                letter=letter,
+                first_name=first_name,
+                last_name=last_name,
+                group=group,
+                telegram_id=telegram_id,
+            )
+            return HttpResponse("Successful")
+        return HttpResponse("Wait pls")
+
+
+class AcceptDeclineBecomeAdminAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        if User.objects.get(
+            telegram_id=request.data["telegram_id"],
+        ).user.is_superuser:
+            candidate_id = request.data["candidate_id"]
+            try:
+                BecomeAdmin.objects.get(telegram_id=candidate_id)
+            except BecomeAdmin.DoesNotExist:
+                return HttpResponse("Это кто? Я такого не знаю")
+            decision = request.data["decision"]
+            if decision == "accept":
+                candidat_user = User.objects.get(telegram_id=candidate_id).user
+                candidat_user.is_staff = True
+                candidat_user.save()
+                BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
+                return HttpResponse("Successful accepted")
+            if decision == "decline":
+                BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
+                return HttpResponse("Successful declined")
+        return HttpResponse("Now allowed")

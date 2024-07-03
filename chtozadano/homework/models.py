@@ -1,9 +1,6 @@
 from django.db import models
 
 GRADE_CHOICES = (
-    (1, 1),
-    (2, 2),
-    (3, 3),
     (4, 4),
     (5, 5),
     (6, 6),
@@ -18,7 +15,7 @@ LETTER_CHOICES = (
     ("А", "А"),
     ("Б", "Б"),
     ("Г", "В"),
-    ("Г", "В"),
+    ("Г", "Г"),
 )
 
 
@@ -26,10 +23,12 @@ class Homework(models.Model):
     grade = models.IntegerField(choices=GRADE_CHOICES)
     letter = models.CharField(choices=LETTER_CHOICES)
     description = models.TextField(null=True, blank=True)
+    subject = models.CharField(null=True)
+    group = models.IntegerField(choices=((0, 0), (1, 1), (2, 2)), default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.grade}-{self.letter} | {self.description[:20]}"
+        return f"{self.grade}-{self.letter} | {self.subject}"
 
 
 class Image(models.Model):

@@ -36,7 +36,8 @@ class User(django.db.models.Model):
     )
     grade = django.db.models.IntegerField(choices=GRADE_CHOICES)
     letter = django.db.models.CharField(choices=LETTER_CHOICES)
-    telegram_id = django.db.models.IntegerField()
+    telegram_id = django.db.models.CharField()
+    group = django.db.models.IntegerField(choices=((1, 1), (2, 2)), default=1)
     notebook = django.db.models.TextField(null=True, blank=True)
     homework = django.db.models.ManyToManyField(
         Homework,
@@ -55,7 +56,7 @@ class SignIn(django.db.models.Model):
         null=True,
         blank=True,
     )
-    telegram_id = django.db.models.IntegerField(null=True, blank=True)
+    telegram_id = django.db.models.CharField(null=True, blank=True)
     confirmation_code = django.db.models.CharField(null=True, blank=True)
     created_at = django.db.models.DateTimeField(auto_now_add=True)
     name = django.db.models.CharField(null=True, blank=True)
@@ -77,3 +78,12 @@ class Todo(django.db.models.Model):
 
     def __str__(self):
         return f"{self.is_done} | {self.user} | {self.homework}"
+
+
+class BecomeAdmin(django.db.models.Model):
+    grade = django.db.models.IntegerField(choices=GRADE_CHOICES)
+    letter = django.db.models.CharField(choices=LETTER_CHOICES)
+    group = django.db.models.CharField(choices=((1, 1), (2, 2)))
+    first_name = django.db.models.CharField()
+    last_name = django.db.models.CharField()
+    telegram_id = django.db.models.CharField()

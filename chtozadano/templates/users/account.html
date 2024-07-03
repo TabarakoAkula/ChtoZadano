@@ -16,6 +16,10 @@
 			<td>{{ user.letter }}</td>
 		</tr>
 		<tr>
+			<td>Group</td>
+			<td>{{ user.group }}</td>
+		</tr>
+		<tr>
 			<td>Tg id</td>
 			<td>{{ user.telegram_id }}</td>
 		</tr>
@@ -27,5 +31,13 @@
 			<td>First name</td>
 			<td>{{ user.user.first_name }}</td>
 		</tr>
-	</table>
+	</table><br>
+	{% if user.user.is_staff or user.user.is_superuser %}
+	{% else %}
+		{% if show_admin %}
+			<a href="{% url "users:become_admin" %}">
+				<button>Стать админом</button>
+			</a>
+		{% endif %}
+	{% endif %}
 {% endblock %}

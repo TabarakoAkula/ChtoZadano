@@ -8,6 +8,12 @@
 			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
 		{% endfor %}
 		<br>
+		<label for="subject">Choose a subject:</label>
+		<select name="subject">
+			{% for subject in subjects %}
+				<option>{{ subject }}</option>
+			{% endfor %}
+		</select><br>
 		<textarea name="description">Enter description</textarea><br>
 		<div class="container">
 			<input type="file" id="file-input" onchange="preview()" multiple name="files">
