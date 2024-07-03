@@ -9,6 +9,38 @@
 			<form method="POST" enctype="multipart/form-data">
 				{% csrf_token %}
 				<td><textarea name="description">{{ hw_info.description }}</textarea></td>
+				<td>
+					<label for="subject">Choose a subject:</label>
+					<select name="subject">
+						{% for subject in subjects %}
+							{% if subject == subject_now %}
+								<option selected="selected" value="{{ subject }}">{{ subject }}</option>
+							{% else %}
+								<option value="{{ subject }}">{{ subject }}</option>
+							{% endif %}
+						{% endfor %}
+					</select>
+				</td>
+				<td>
+					<label for="group">Choose a group:</label>
+					<select name="group">
+						{% for group in groups %}
+							{% if group == hw_info.group %}
+								{% if group == 0 %}
+									<option value="{{ group }}" selected="selected">Для всех</option>
+								{% else %}
+									<option value="{{ group }}" selected="selected">Группа {{ group }}</option>
+								{% endif %}
+							{% else %}
+								{% if group == 0 %}
+									<option value="{{ group }}">Для всех</option>
+								{% else %}
+									<option value="{{ group }}">Группа {{ group }}</option>
+								{% endif %}
+							{% endif %}
+						{% endfor %}
+					</select>
+				</td>
 				<td>{{ hw_info.created_at }}</td>
 				<td>
 					{% for j in hw_info.images.all %}

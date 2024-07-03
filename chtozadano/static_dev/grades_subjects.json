@@ -1,0 +1,586 @@
+{
+  "4": {
+    "А": {
+      "teachers": [
+        "Вахрушев Д.В.",
+        "Красноухова Л.А."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "okr",
+        "izo",
+        "tech",
+        "ork",
+        "mus",
+        "eng1",
+        "eng2"
+      ]
+    },
+    "Б": {
+      "teachers": [
+        "Вахрушев Д.В.",
+        "Красноухова Л.А."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "okr",
+        "izo",
+        "tech",
+        "ork",
+        "mus",
+        "eng1",
+        "eng2"
+      ]
+    },
+    "В": {
+      "teachers": [
+        "Вахрушев Д.В.",
+        "Красноухова Л.А."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "okr",
+        "izo",
+        "tech",
+        "ork",
+        "mus",
+        "eng1",
+        "eng2"
+      ]
+    }
+  },
+  "5": {
+    "А": {
+      "teachers": [
+        "Красноухова Л.А.",
+        "Курганова Е.П."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "odn"
+      ]
+    },
+    "Б": {
+      "teachers": [
+        "Красноухова Л.А.",
+        "Шерепа Е.А."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "odn"
+      ]
+    },
+    "В": {
+      "teachers": [
+        "Зелинская Ю.Л.",
+        "Каменкова М.М."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "odn"
+      ]
+    },
+    "Г": {
+      "teachers": [
+        "Гермогенова Н.Н.",
+        "Каменкова М.М."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "odn"
+      ]
+    }
+  },
+  "6": {
+    "А": {
+      "teachers": [
+        "Зелинская Ю.Л.",
+        "Краснобаева И.В."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc"
+      ]
+    },
+    "Б": {
+      "teachers": [
+        "Доброниченко Е.В.",
+        "Курганова Е.П."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc"
+      ]
+    },
+    "В": {
+      "teachers": [
+        "Вахрушев Д.В.",
+        "Зелинская Ю.Л."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc"
+      ]
+    },
+    "Г": {
+      "teachers": [
+        "Зелинская Ю.Л.",
+        "Краснобаева И.В."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "math",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc"
+      ]
+    }
+  },
+  "7": {
+    "А": {
+      "teachers": [
+        "Доброниченко Е.В.",
+        "Курганова Е.П.."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "alg",
+        "geom",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc",
+        "phys",
+        "ikt1",
+        "ikt2"
+      ]
+    },
+    "Б": {
+      "teachers": [
+        "Гермогенова Н.Н.",
+        "Каменкова М.М."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "alg",
+        "geom",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc",
+        "phys",
+        "ikt1",
+        "ikt2"
+      ]
+    },
+    "В": {
+      "teachers": [
+        "Вахрушев Д.В.",
+        "Чадаева С.В."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "alg",
+        "geom",
+        "izo",
+        "tech",
+        "mus",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc",
+        "phys",
+        "ikt1",
+        "ikt2"
+      ]
+    }
+  },
+  "8": {
+    "А": {
+      "teachers": [
+        "Курганова Е.П.",
+        "Шерепа Е.А."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "alg",
+        "geom",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc",
+        "phys",
+        "ikt1",
+        "ikt2",
+        "obg"
+      ]
+    },
+    "Б": {
+      "teachers": [
+        "Краснобаева И.В.",
+        "Шерепа Е.А."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "alg",
+        "geom",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "soc",
+        "phys",
+        "ikt1",
+        "ikt2",
+        "obg"
+      ]
+    },
+    "В": {
+      "teachers": [
+        "Краснобаева И.В.",
+        "Гермогенова Н.Н."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "alg",
+        "geom",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc",
+        "phys",
+        "ikt1",
+        "ikt2",
+        "obg"
+      ]
+    }
+  },
+  "9": {
+    "А": {
+      "teachers": [
+        "Шерепа Е.А.",
+        "Власюк И. А."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "alg",
+        "geom",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "ger1",
+        "ger2",
+        "soc",
+        "phys",
+        "ikt1",
+        "ikt2",
+        "obg"
+      ]
+    },
+    "Б": {
+      "teachers": [
+        "Шерепа Е.А.",
+        "Власюк И.А."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "alg",
+        "geom",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "soc",
+        "phys",
+        "ikt1",
+        "ikt2",
+        "obg"
+      ]
+    },
+    "В": {
+      "teachers": [
+        "Власюк И.А.",
+        "Гермогенова Н.Н."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "alg",
+        "geom",
+        "eng1",
+        "eng2",
+        "bio",
+        "geog",
+        "hist",
+        "soc",
+        "phys",
+        "ikt1",
+        "ikt2",
+        "obg"
+      ]
+    }
+  },
+  "10": {
+    "А": {
+      "teachers": [
+        "Доброниченко Е.В.",
+        "Чадаева С.В."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "eng1",
+        "eng2",
+        "geog",
+        "hist",
+        "soc",
+        "bio",
+        "ger1",
+        "ger2",
+        "alg",
+        "geom",
+        "phys",
+        "chem",
+        "ikt1",
+        "ikt2",
+        "law",
+        "obg"
+      ]
+    },
+    "Б": {
+      "teachers": [
+        "Вахрушев Д.В.",
+        "Доброниченко Е.В."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "eng1",
+        "eng2",
+        "geog",
+        "hist",
+        "soc",
+        "bio",
+        "alg",
+        "geom",
+        "phys",
+        "chem",
+        "ikt1",
+        "ikt2",
+        "stat"
+      ]
+    },
+    "В": {
+      "teachers": [
+        "Власюк И.А.",
+        "Доброниченко Е.В."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "eng1",
+        "eng2",
+        "geog",
+        "hist",
+        "soc",
+        "bio",
+        "alg",
+        "geom",
+        "phys",
+        "chem",
+        "ikt1",
+        "ikt2",
+        "stat",
+        "eco"
+      ]
+    }
+  },
+  "11": {
+    "А": {
+      "teachers": [
+        "Каменкова М. М.",
+        "Чадаева С.В."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "eng1",
+        "eng2",
+        "geog",
+        "hist",
+        "soc",
+        "bio",
+        "ger1",
+        "ger2",
+        "alg",
+        "geom",
+        "phys",
+        "chem",
+        "ikt1",
+        "ikt2",
+        "law",
+        "obg"
+      ]
+    },
+    "Б": {
+      "teachers": [
+        "Власюк И.А.",
+        "Чадаева С.В."
+      ],
+      "subject_codes": [
+        "rus",
+        "lit",
+        "eng1",
+        "eng2",
+        "geog",
+        "hist",
+        "soc",
+        "bio",
+        "alg",
+        "geom",
+        "phys",
+        "chem",
+        "ikt1",
+        "ikt2",
+        "stat"
+      ]
+    }
+  }
+}
