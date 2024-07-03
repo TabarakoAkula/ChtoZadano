@@ -2,6 +2,7 @@ import json
 
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
@@ -12,9 +13,11 @@ from homework.models import File, Homework, Image
 from homework.serializers import HomeworkSerializer
 from homework.utils import (
     get_abbreviation_from_name,
+    get_name_from_abbreviation,
     get_user_subjects,
     get_user_subjects_abbreviation,
 )
+import users.forms
 import users.models
 
 
@@ -23,6 +26,7 @@ class HomeworkPage(View):
         if request.user.is_authenticated:
             grade = request.user.server_user.grade
             letter = request.user.server_user.letter
+            group = request.user.server_user.group
         else:
             try:
                 data = json.loads(request.COOKIES.get("hw_data"))
@@ -30,6 +34,7 @@ class HomeworkPage(View):
                 return redirect("homework:choose_grad_let")
             grade = data["grade"]
             letter = data["letter"]
+            group = data["group"]
             if not grade or not letter:
                 return redirect("homework:choose_grad_let")
         subjects = get_user_subjects_abbreviation(grade, letter)
@@ -41,6 +46,7 @@ class HomeworkPage(View):
                     letter=letter,
                     subject=subject,
                 )
+                .filter(Q(group=0) | Q(group=group))
                 .order_by("-created_at")
                 .first()
             )
@@ -74,6 +80,7 @@ class AllHomeworkPage(View):
                 grade=grade,
                 letter=letter,
             )
+            .filter(Q(group=0) | Q(group=request.user.server_user.group))
             .order_by("-subject", "-created_at")
             .all()
         )
@@ -88,6 +95,8 @@ class AllHomeworkPage(View):
 
 class ChooseGrLePage(View):
     def get(self, request):
+        if request.user.is_staff:
+            return redirect("homework:homework_page")
         return render(
             request,
             "homework/choose_grad_let.html",
@@ -97,9 +106,12 @@ class ChooseGrLePage(View):
         )
 
     def post(self, request):
+        if request.user.is_staff:
+            return redirect("homework:homework_page")
         data = {
             "grade": request.POST.get("grade"),
             "letter": request.POST.get("letter"),
+            "group": request.POST.get("group"),
         }
         response = redirect("homework:homework_page")
         response.set_cookie("hw_data", json.dumps(data))
@@ -110,12 +122,12 @@ class AddHomeworkPage(View):
     def get(self, request):
         if request.user.is_staff or request.user.is_superuser:
             user = request.user.server_user
-            grade, letter = user.grade, user.letter
-            response_list = get_user_subjects(grade, letter)
+            grade, letter, group = user.grade, user.letter, user.group
+            response_list = get_user_subjects(grade, letter, group)
             return render(
                 request,
                 "homework/addhomework.html",
-                context={"subjects": response_list},
+                context={"subjects": response_list, "groups": [0, group]},
             )
         return redirect("homework:homework_page")
 
@@ -165,11 +177,16 @@ class AddHomeworkPage(View):
                     },
                 )
         server_user = request.user.server_user
+        if subject not in ["eng1", "eng2", "ger1", "ger2", "ikt1", "ikt2"]:
+            group = 0
+        else:
+            group = server_user.group
         homework_object = Homework.objects.create(
             description=description,
             grade=server_user.grade,
             letter=server_user.letter,
             subject=subject,
+            group=group,
         )
         homework_object.author.add(server_user)
 
@@ -232,13 +249,17 @@ class EditHomework(View):
             user_subjects = get_user_subjects(
                 request_user.grade,
                 request_user.letter,
+                request_user.group,
             )
+            group = request.user.server_user.group
             try:
-                hw_info = Homework.objects.get(
-                    id=homework_id,
-                    grade=request_user.grade,
-                    letter=request_user.letter,
-                )
+                hw_info = (
+                    Homework.objects.filter(Q(group=0) | Q(group=group)).get(
+                        id=homework_id,
+                        grade=request_user.grade,
+                        letter=request_user.letter,
+                    ),
+                )[0]
             except Homework.DoesNotExist:
                 return redirect("homework:homework_page")
             return render(
@@ -247,6 +268,8 @@ class EditHomework(View):
                 context={
                     "hw_info": hw_info,
                     "subjects": user_subjects,
+                    "groups": [0, group],
+                    "subject_now": get_name_from_abbreviation(hw_info.subject),
                 },
             )
         return redirect("homework:homework_page")
@@ -255,6 +278,7 @@ class EditHomework(View):
         if request.user.is_staff or request.user.is_superuser:
             description = request.POST["description"]
             subject = request.POST["subject"]
+            group = request.POST["group"]
             subject = get_abbreviation_from_name(subject)
             request_files_list = request.FILES.getlist("files")
             files_list_for_model = []
@@ -327,8 +351,10 @@ class EditHomework(View):
                         file_name=file_name.split("/")[-1],
                     )
                     homework_object.files.add(file_object)
+
             homework_object.description = description
             homework_object.subject = subject
+            homework_object.group = group
             homework_object.save()
             return redirect("homework:edit_homework", homework_id=homework_id)
         return redirect("homework:homework_page")
@@ -363,7 +389,7 @@ class GetLastHomeworkAPI(APIView):
         )
         grade = user.grade
         letter = user.letter
-        subjects = get_user_subjects(grade, letter)
+        subjects = get_user_subjects_abbreviation(grade, letter)
         data = {}
         for subject in subjects:
             hw_object = (
@@ -394,6 +420,7 @@ class GetOneSubjectAPI(APIView):
         )
         grade = user.grade
         letter = user.letter
+        group = user.group
         subject = request.data["subject"]
         subject = get_abbreviation_from_name(subject)
         hw_object = (
@@ -402,6 +429,7 @@ class GetOneSubjectAPI(APIView):
                 letter=letter,
                 subject=subject,
             )
+            .filter(Q(group=group) | Q(group=0))
             .order_by("-created_at")
             .first()
         )

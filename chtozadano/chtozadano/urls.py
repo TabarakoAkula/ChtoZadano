@@ -26,6 +26,14 @@ urlpatterns = [
         "api/v1/get_homework_for_subject/",
         csrf_exempt(homework.views.GetOneSubjectAPI.as_view()),
     ),
+    path(
+        "api/v1/become_admin/",
+        csrf_exempt(users.views.BecomeAdminAPI.as_view()),
+    ),
+    path(
+        "api/v1/become_admin_accept_decline/",
+        csrf_exempt(users.views.AcceptDeclineBecomeAdminAPI.as_view()),
+    ),
     path("mainpage/", chtozadano.views.MainPage.as_view(), name="mainpage"),
     path("admin/", admin.site.urls),
     path("user/", include("users.urls")),

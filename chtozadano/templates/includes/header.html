@@ -33,6 +33,9 @@
 			<a href="admin/">
 				<button>Admin panel</button>
 			</a>
+			<a href="{% url "users:show_become_admin" %}">
+				<button>Requests to Admin</button>
+			</a>
 		{% endif %}
 	</div>
 </header>

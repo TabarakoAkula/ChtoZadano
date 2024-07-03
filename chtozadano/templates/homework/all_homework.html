@@ -3,11 +3,13 @@
 {% block content %}
 	{% load static %}
 	<br><br><br><h1>ДЗ НА ЗАВТРА</h1><a href="{% url "homework:homework_page" %}">
-		<button>Посмотреть последнее дз</button>
-	</a><br>
-	<a href="{% url "homework:choose_grad_let" %}">
-		<button>Change grade or letter</button>
-	</a>
+	<button>Посмотреть последнее дз</button>
+</a><br>
+	{% if not user.is_staff %}
+		<a href="{% url "homework:choose_grad_let" %}">
+			<button>Change grade or letter</button>
+		</a>
+	{% endif %}
 	<table border="1">
 		{% for i in homework %}
 			<tr>

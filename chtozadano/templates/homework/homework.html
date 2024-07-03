@@ -3,11 +3,13 @@
 {% block content %}
 	{% load static %}
 	<br><br><br><h1>ДЗ для {{ grade }}{{ letter }} класса</h1><a href="{% url "homework:all_homework_page" %}">
-		<button>Посмотреть все дз за последние 2 недели</button>
-	</a><br>
-	<a href="{% url "homework:choose_grad_let" %}">
-		<button>Change grade or letter</button>
-	</a>
+	<button>Посмотреть все дз за последние 2 недели</button>
+</a><br>
+	{% if not user.is_staff %}
+		<a href="{% url "homework:choose_grad_let" %}">
+			<button>Change grade or letter</button>
+		</a>
+	{% endif %}
 	<table border="1">
 		{% for i in homework %}
 			<tr>
@@ -16,9 +18,10 @@
 				<td>{{ i.subject }}</td>
 				<td>{{ i.description }}</td>
 				<td>{{ i.created_at }}</td>
-				<td>{% for j in i.images.all %}
-					<img src="{{ j.image.url }}" width="500" height="500">
-				{% endfor %}</td>
+				<td>
+					{% for j in i.images.all %}
+						<img src="{{ j.image.url }}" width="500" height="500">
+					{% endfor %}</td>
 				<td>{% for j in i.files.all %}
 					<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
 				{% endfor %}</td>

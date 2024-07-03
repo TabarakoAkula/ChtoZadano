@@ -13,10 +13,30 @@
 					<label for="subject">Choose a subject:</label>
 					<select name="subject">
 						{% for subject in subjects %}
-							{% if subject == hw_info.subject %}
-								<option selected="selected">{{ subject }}</option>
+							{% if subject == subject_now %}
+								<option selected="selected" value="{{ subject }}">{{ subject }}</option>
 							{% else %}
-								<option>{{ subject }}</option>
+								<option value="{{ subject }}">{{ subject }}</option>
+							{% endif %}
+						{% endfor %}
+					</select>
+				</td>
+				<td>
+					<label for="group">Choose a group:</label>
+					<select name="group">
+						{% for group in groups %}
+							{% if group == hw_info.group %}
+								{% if group == 0 %}
+									<option value="{{ group }}" selected="selected">Для всех</option>
+								{% else %}
+									<option value="{{ group }}" selected="selected">Группа {{ group }}</option>
+								{% endif %}
+							{% else %}
+								{% if group == 0 %}
+									<option value="{{ group }}">Для всех</option>
+								{% else %}
+									<option value="{{ group }}">Группа {{ group }}</option>
+								{% endif %}
 							{% endif %}
 						{% endfor %}
 					</select>
