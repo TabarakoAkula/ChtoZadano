@@ -27,6 +27,11 @@ LETTER_CHOICES = (
 )
 
 
+class DateTimeWithoutTZField(django.db.models.DateTimeField):
+    def db_type(self, connection):
+        return "timestamp"
+
+
 class User(django.db.models.Model):
     user = django.db.models.OneToOneField(
         DjangoUser,
@@ -39,6 +44,7 @@ class User(django.db.models.Model):
     telegram_id = django.db.models.CharField()
     group = django.db.models.IntegerField(choices=((1, 1), (2, 2)), default=1)
     notebook = django.db.models.TextField(null=True, blank=True)
+    chat_mode = django.db.models.BooleanField(default=False)
     homework = django.db.models.ManyToManyField(
         Homework,
         related_name="author",
@@ -58,7 +64,7 @@ class SignIn(django.db.models.Model):
     )
     telegram_id = django.db.models.CharField(null=True, blank=True)
     confirmation_code = django.db.models.CharField(null=True, blank=True)
-    created_at = django.db.models.DateTimeField(auto_now_add=True)
+    created_at = DateTimeWithoutTZField(auto_now_add=True)
     name = django.db.models.CharField(null=True, blank=True)
 
     def __str__(self):

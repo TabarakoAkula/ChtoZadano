@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 
 from django.conf import settings
@@ -389,6 +390,7 @@ class GetLastHomeworkAPI(APIView):
         )
         grade = user.grade
         letter = user.letter
+        group = user.group
         subjects = get_user_subjects_abbreviation(grade, letter)
         data = {}
         for subject in subjects:
@@ -398,15 +400,20 @@ class GetLastHomeworkAPI(APIView):
                     letter=letter,
                     subject=subject,
                 )
+                .filter(Q(group=0) | Q(group=group))
                 .order_by("-created_at")
                 .first()
             )
             if hw_object:
+                images = [i.image.url for i in hw_object.images.all()]
+                files = [i.file.url for i in hw_object.files.all()]
                 serializer_data = HomeworkSerializer(hw_object).data
                 serializer_data["author"] = (
                     f"{hw_object.author.first().user.first_name} "
                     f"{hw_object.author.first().user.last_name}"
                 )
+                serializer_data["images"] = images
+                serializer_data["files"] = files
                 data[subject] = serializer_data
         return HttpResponse(json.dumps(data))
 
@@ -433,4 +440,129 @@ class GetOneSubjectAPI(APIView):
             .order_by("-created_at")
             .first()
         )
-        return HttpResponse(json.dumps(HomeworkSerializer(hw_object).data))
+        images = [i.image.url for i in hw_object.images.all()]
+        files = [i.file.url for i in hw_object.files.all()]
+        serialized_data = HomeworkSerializer(hw_object).data
+        serialized_data["images"] = images
+        serialized_data["files"] = files
+        serialized_data["author"] = user.user.first_name
+        return HttpResponse(json.dumps(serialized_data))
+
+
+class GetAllHomeworkFromDateAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        user_obj = users.models.User.objects.get(
+            telegram_id=request.data["telegram_id"],
+        )
+        grade = user_obj.grade
+        letter = user_obj.letter
+        group = user_obj.group
+        year, month, day = list(map(int, request.data["date"].split(".")))
+        subjects = get_user_subjects_abbreviation(grade, letter)
+        data = {}
+        for subject in subjects:
+            hw_object = (
+                Homework.objects.filter(
+                    grade=grade,
+                    letter=letter,
+                    subject=subject,
+                )
+                .filter(Q(group=0) | Q(group=group))
+                .filter(created_at__date=datetime(year, month, day))
+                .order_by("-created_at")
+                .first()
+            )
+            if hw_object:
+                images = [i.image.url for i in hw_object.images.all()]
+                files = [i.file.url for i in hw_object.files.all()]
+                serializer_data = HomeworkSerializer(hw_object).data
+                serializer_data["author"] = (
+                    f"{hw_object.author.first().user.first_name} "
+                    f"{hw_object.author.first().user.last_name}"
+                )
+                serializer_data["images"] = images
+                serializer_data["files"] = files
+                data[subject] = serializer_data
+        return HttpResponse(json.dumps(data))
+
+
+class DeleteHomeworkAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        user_grade = user_obj.grade
+        user_letter = user_obj.letter
+        user_group = user_obj.group
+        homework_id = request.data["id"]
+        Homework.objects.filter(Q(group=user_group) | Q(group=0)).get(
+            grade=user_grade,
+            letter=user_letter,
+            id=homework_id,
+        ).delete()
+        return HttpResponse("Successful")
+
+
+class AddHomeWorkAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        grade = user_obj.grade
+        letter = user_obj.letter
+        subject = request.data["subject"]
+        description = request.data["description"]
+        images = request.data["images"]
+        files = request.data["files"]
+        subject_abbreviation = get_abbreviation_from_name(subject)
+        if subject not in ["eng1", "eng2", "ger1", "ger2", "ikt1", "ikt2"]:
+            group = 0
+        else:
+            group = user_obj.group
+        hw_object = Homework.objects.create(
+            grade=grade,
+            letter=letter,
+            description=description,
+            group=group,
+            subject=subject_abbreviation,
+        )
+        for image in images:
+            hw_object.images.add(Image.objects.create(image=image))
+        for file in files:
+            hw_object.images.add(Image.objects.create(file=file))
+        return HttpResponse("Successful")
+
+
+class EditHomeworkAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        homework_id = request.data["homework_id"]
+        user_grade = user_obj.grade
+        user_letter = user_obj.letter
+        user_group = user_obj.group
+        homework_obj = Homework.objects.filter(
+            Q(group=0) | Q(group=user_group),
+        ).get(grade=user_grade, letter=user_letter, id=homework_id)
+        serialized_data = HomeworkSerializer(homework_obj).data
+        images = [i.image.url for i in homework_obj.images.all()]
+        files = [i.file.url for i in homework_obj.files.all()]
+        serialized_data["images"] = images
+        serialized_data["files"] = files
+        serialized_data["author"] = django_user.first_name
+        return HttpResponse(json.dumps(serialized_data))
