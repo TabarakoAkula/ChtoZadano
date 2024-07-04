@@ -313,3 +313,38 @@ class AcceptDeclineBecomeAdminAPI(APIView):
                 BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
                 return HttpResponse("Successful declined")
         return HttpResponse("Now allowed")
+
+
+class ChangeGradeLetterAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        if request.user.is_staff:
+            return HttpResponse("Not allowed")
+        telegram_id = request.data["telegram_id"]
+        grade = request.data["grade"]
+        letter = request.data["letter"]
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        user_obj.grade = grade
+        user_obj.letter = letter
+        user_obj.save()
+        return HttpResponse("Successful")
+
+
+class ChangeChatModeAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        return HttpResponse(user_obj.chat_mode)
+
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        chat_mode = request.data["chat_mode"]
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        user_obj.chat_mode = chat_mode
+        user_obj.save()
+        return HttpResponse("Successful")

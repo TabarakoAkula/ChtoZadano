@@ -7,6 +7,8 @@ from telegram.ext import Filters, MessageHandler, Updater
 
 dotenv.load_dotenv()
 
+DOMEN_URL = "http://127.0.0.1:8000/"
+
 
 def handle_message(update, context):
     text = update.message.text.lower()
@@ -18,7 +20,7 @@ def handle_message(update, context):
             f"""Введите на сайте этот код ||{confirmation_code}||""",
         )
         requests.post(
-            "http://127.0.0.1:8000/api/v1/code_confirmation/",
+            DOMEN_URL + "api/v1/code_confirmation/",
             data={
                 "api_key": os.getenv("API_KEY"),
                 "telegram_id": user_id,
@@ -29,7 +31,7 @@ def handle_message(update, context):
     elif text == "дз":
         user_id = update.message.chat_id
         homework = requests.get(
-            "http://127.0.0.1:8000/api/v1/get_last_homework/",
+            DOMEN_URL + "api/v1/get_last_homework/",
             data={"api_key": os.getenv("API_KEY"), "telegram_id": user_id},
         )
         update.message.reply_text(
@@ -79,7 +81,7 @@ def handle_message(update, context):
         if subject.lower() in text.lower():
             user_id = update.message.chat_id
             homework = requests.get(
-                "http://127.0.0.1:8000/api/v1/get_homework_for_subject/",
+                DOMEN_URL + "api/v1/get_homework_for_subject/",
                 data={
                     "api_key": os.getenv("API_KEY"),
                     "telegram_id": user_id,
