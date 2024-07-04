@@ -566,3 +566,76 @@ class EditHomeworkAPI(APIView):
         serialized_data["files"] = files
         serialized_data["author"] = django_user.first_name
         return HttpResponse(json.dumps(serialized_data))
+
+
+class EditHomeworkDescriptionAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        homework_id = request.data["homework_id"]
+        new_description = request.data["description"]
+        grade = user_obj.grade
+        letter = user_obj.letter
+        group = user_obj.group
+        homework_obj = Homework.objects.filter(
+            Q(group=0) | Q(group=group),
+        ).get(id=homework_id, grade=grade, letter=letter)
+        homework_obj.description = new_description
+        homework_obj.save()
+        return HttpResponse("Successful")
+
+
+class EditHomeworkImagesAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        homework_id = request.data["homework_id"]
+        new_images = request.data["images"]
+        grade = user_obj.grade
+        letter = user_obj.letter
+        group = user_obj.group
+        homework_obj = Homework.objects.filter(
+            Q(group=0) | Q(group=group),
+        ).get(id=homework_id, grade=grade, letter=letter)
+        Image.objects.filter(homework_id=homework_id).delete()
+        for image in new_images:
+            image_object = Image.objects.create(image=image)
+            homework_obj.images.add(image_object)
+        return HttpResponse("Successful")
+
+
+class EditHomeworkFilesAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        homework_id = request.data["homework_id"]
+        new_files = request.data["files"]
+        grade = user_obj.grade
+        letter = user_obj.letter
+        group = user_obj.group
+        homework_obj = Homework.objects.filter(
+            Q(group=0) | Q(group=group),
+        ).get(id=homework_id, grade=grade, letter=letter)
+        File.objects.filter(homework_id=homework_id).delete()
+        for file in new_files:
+            file_object = File.objects.create(file=file)
+            file_name = file.split("/")[-1]
+            file_object.file_name = file_name
+            file_object.save()
+            homework_obj.files.add(file_object)
+        return HttpResponse("Successful")

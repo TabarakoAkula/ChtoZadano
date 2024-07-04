@@ -49,6 +49,18 @@ urlpatterns = [
         homework.views.EditHomeworkAPI.as_view(),
     ),
     path(
+        "edit_homework_description/",
+        homework.views.EditHomeworkDescriptionAPI.as_view(),
+    ),
+    path(
+        "edit_homework_images/",
+        homework.views.EditHomeworkImagesAPI.as_view(),
+    ),
+    path(
+        "edit_homework_files/",
+        homework.views.EditHomeworkFilesAPI.as_view(),
+    ),
+    path(
         "get_homework_from_id/",
         homework.views.AddHomeWorkAPI.as_view(),
     ),
