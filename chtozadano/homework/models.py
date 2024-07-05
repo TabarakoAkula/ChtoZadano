@@ -29,7 +29,10 @@ class Homework(models.Model):
     letter = models.CharField(choices=LETTER_CHOICES)
     description = models.TextField(null=True, blank=True)
     subject = models.CharField(null=True)
-    group = models.IntegerField(choices=((0, 0), (1, 1), (2, 2)), default=0)
+    group = models.IntegerField(
+        choices=((-3, -3), (-2, -2), (-1, -1), (0, 0), (1, 1), (2, 2)),
+        default=0,
+    )
     created_at = DateTimeWithoutTZField(auto_now_add=True)
 
     def __str__(self):
