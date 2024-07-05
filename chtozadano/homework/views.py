@@ -2,7 +2,6 @@ from datetime import datetime
 import json
 
 from django.conf import settings
-from django.core.files.storage import default_storage
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -17,6 +16,7 @@ from homework.utils import (
     get_name_from_abbreviation,
     get_user_subjects,
     get_user_subjects_abbreviation,
+    save_files,
 )
 import users.forms
 import users.models
@@ -39,7 +39,6 @@ class HomeworkPage(View):
             if not grade or not letter:
                 return redirect("homework:choose_grad_let")
         subjects = get_user_subjects_abbreviation(grade, letter)
-        subjects.insert(0, "info")
         data = []
         for subject in subjects:
             try:
@@ -50,14 +49,8 @@ class HomeworkPage(View):
                             letter=letter,
                             subject=subject,
                         )
-                        .filter(
-                            Q(group=0)
-                            | Q(group=group)
-                            | Q(group=-1)
-                            | Q(group=-2)
-                            | Q(group=-3),
-                        )
-                        .order_by("group", "-created_at")
+                        .filter(Q(group=0) | Q(group=group))
+                        .order_by("-created_at")
                         .first()
                     )
                 else:
@@ -67,12 +60,7 @@ class HomeworkPage(View):
                             letter=letter,
                             subject=subject,
                         )
-                        .filter(
-                            Q(group=0)
-                            | Q(group=group)
-                            | Q(group=-1)
-                            | Q(group=-3),
-                        )
+                        .filter(Q(group=0) | Q(group=group))
                         .order_by("group", "-created_at")
                         .first()
                     )
@@ -80,11 +68,44 @@ class HomeworkPage(View):
                     data.append(hw_object)
             except Homework.DoesNotExist:
                 pass
+        info = list
+        school_obj = (
+            Homework.objects.filter(
+                subject="info",
+                group=-3,
+            )
+            .order_by("-created_at")
+            .first(),
+        )
+        if school_obj:
+            info.append(school_obj)
+        if request.user.is_staff or request.user.is_superuser:
+            admin_obj = (
+                Homework.objects.filter(
+                    subject="info",
+                    group=-2,
+                )
+                .order_by("-created_at")
+                .first(),
+            )
+            if admin_obj:
+                info.append(admin_obj)
+        class_obj = (
+            Homework.objects.filter(
+                subject="info",
+                group=-1,
+            )
+            .order_by("-created_at")
+            .first(),
+        )
+        if class_obj:
+            info.append(class_obj)
         return render(
             request,
             "homework/homework.html",
             context={
                 "homework": data,
+                "info": info,
             },
         )
 
@@ -112,14 +133,8 @@ class AllHomeworkPage(View):
                         grade=grade,
                         letter=letter,
                     )
-                    .filter(
-                        Q(group=0)
-                        | Q(group=group)
-                        | Q(group=-1)
-                        | Q(group=-2)
-                        | Q(group=-3),
-                    )
-                    .order_by("group", "-subject", "-created_at")
+                    .filter(Q(group=0) | Q(group=group))
+                    .order_by("-created_at")
                     .all()
                 )
             else:
@@ -128,29 +143,51 @@ class AllHomeworkPage(View):
                         grade=grade,
                         letter=letter,
                     )
-                    .filter(
-                        Q(group=0)
-                        | Q(group=group)
-                        | Q(group=-1)
-                        | Q(group=-3),
-                    )
+                    .filter(Q(group=0) | Q(group=group))
                     .order_by("group", "-subject", "-created_at")
                     .all()
                 )
         except Homework.DoesNotExist:
             pass
+        info = list
+        info.append(
+            Homework.objects.filter(
+                subject="info",
+                group=-3,
+            )
+            .order_by("-created_at")
+            .first(),
+        )
+        if request.user.is_staff or request.user.is_superuser:
+            info.append(
+                Homework.objects.filter(
+                    subject="info",
+                    group=-2,
+                )
+                .order_by("-created_at")
+                .first(),
+            )
+        info.append(
+            Homework.objects.filter(
+                subject="info",
+                group=-1,
+            )
+            .order_by("-created_at")
+            .first(),
+        )
         return render(
             request,
             "homework/all_homework.html",
             context={
                 "homework": data,
+                "info": info,
             },
         )
 
 
 class ChooseGrLePage(View):
     def get(self, request):
-        if request.user.is_staff:
+        if request.user.is_staff and not request.user.is_superuser:
             return redirect("homework:homework_page")
         return render(
             request,
@@ -161,15 +198,24 @@ class ChooseGrLePage(View):
         )
 
     def post(self, request):
-        if request.user.is_staff:
+        if request.user.is_staff and not request.user.is_superuser:
             return redirect("homework:homework_page")
+        grade = request.POST.get("grade")
+        letter = request.POST.get("letter")
+        group = request.POST.get("group")
         data = {
-            "grade": request.POST.get("grade"),
-            "letter": request.POST.get("letter"),
-            "group": request.POST.get("group"),
+            "grade": grade,
+            "letter": letter,
+            "group": group,
         }
         response = redirect("homework:homework_page")
         response.set_cookie("hw_data", json.dumps(data))
+        if request.user.is_authenticated:
+            user_obj = users.models.User.objects.get(user=request.user)
+            user_obj.grade = grade
+            user_obj.letter = letter
+            user_obj.group = group
+            user_obj.save()
         return response
 
 
@@ -181,58 +227,29 @@ class AddHomeworkPage(View):
             response_list = get_user_subjects(grade, letter, group)
             return render(
                 request,
-                "homework/addhomework.html",
-                context={"subjects": response_list, "groups": [0, group]},
+                "homework/add_homework.html",
+                context={"subjects": response_list},
             )
         return redirect("homework:homework_page")
 
     def post(self, request):
-        if not request.user.is_staff or request.user.is_superuser:
+        if not request.user.is_staff or not request.user.is_superuser:
             return redirect("homework:homework_page")
         description = request.POST["description"]
         subject = request.POST["subject"]
         subject = get_abbreviation_from_name(subject)
         request_files_list = request.FILES.getlist("files")
-        files_list_for_model = []
-        for r_file in request_files_list:
-            file_extension = r_file.name.split(".")[-1]
-            if file_extension.lower() in ["png", "jpeg", "webp", "gif", "jpg"]:
-                file_name = default_storage.save(
-                    f"homework/img/{r_file.name}",
-                    r_file,
-                )
-                files_list_for_model.append((file_name, "img"))
-            elif file_extension.lower() in [
-                "pdf",
-                "ppt",
-                "pptx",
-                "doc",
-                "docx",
-                "zip",
-            ]:
-                file_name = default_storage.save(
-                    f"homework/files/{r_file.name}",
-                    r_file,
-                )
-                files_list_for_model.append((file_name, "file"))
-            elif file_extension.lower() in ["mp3", "ogg", "acc", "wav"]:
-                file_name = default_storage.save(
-                    f"homework/music/{r_file.name}",
-                    r_file,
-                )
-                files_list_for_model.append((file_name, "music"))
-            else:
-                return render(
-                    request,
-                    "homework/addhomework.html",
-                    context={
-                        "errors": (
-                            f"Unsupported file format: {file_extension}",
-                        ),
-                    },
-                )
+        files_list_for_model = save_files(request_files_list)
+        files_list_for_model = files_list_for_model[1]
         server_user = request.user.server_user
-        if subject not in ["eng1", "eng2", "ger1", "ger2", "ikt1", "ikt2"]:
+        if subject not in [
+            "eng1",
+            "eng2",
+            "ger1",
+            "ger2",
+            "ikt1",
+            "ikt2",
+        ]:
             group = 0
         else:
             group = server_user.group
@@ -241,6 +258,76 @@ class AddHomeworkPage(View):
             grade=server_user.grade,
             letter=server_user.letter,
             subject=subject,
+            group=group,
+        )
+        homework_object.author.add(server_user)
+        for file in files_list_for_model:
+            file_name = file[0]
+            file_type = file[1]
+            if file_type == "img":
+                image_object = Image.objects.create(
+                    image=file_name,
+                    homework=homework_object,
+                )
+                homework_object.images.add(image_object)
+            else:
+                file_object = File.objects.create(
+                    file=file_name,
+                    homework=homework_object,
+                    file_name=file_name.split("/")[-1],
+                )
+                homework_object.files.add(file_object)
+        return redirect("homework:homework_page")
+
+
+class AddMailingPage(View):
+    def get(self, request):
+        if request.user.is_superuser:
+            response_list = [
+                "Сообщение для класса",
+                "Сообщение для администраторов",
+                "Сообщение для всей школы",
+            ]
+        elif request.user.is_staff:
+            response_list = [
+                "Сообщение для класса",
+            ]
+        else:
+            return redirect("homework:homework_page")
+        return render(
+            request,
+            "homework/add_homework.html",
+            context={"subjects": response_list},
+        )
+
+    def post(self, request):
+        if not request.user.is_superuser or not request.user.is_staff:
+            return redirect("homework:homework_page")
+        description = request.POST["description"]
+        request_subject = request.POST["subject"]
+        if request_subject == "Сообщение для класса":
+            group = -1
+        elif request_subject == "Сообщение для администраторов":
+            group = -2
+        else:
+            group = -3
+        request_files_list = request.FILES.getlist("files")
+        files_list_for_model = save_files(request_files_list)
+        if files_list_for_model[0] == "Error":
+            render(
+                request,
+                "homework/add_homework.html",
+                context={
+                    "errors": "Unsupported file format",
+                },
+            )
+        files_list_for_model = files_list_for_model[1]
+        server_user = request.user.server_user
+        homework_object = Homework.objects.create(
+            description=description,
+            grade=0,
+            letter="",
+            subject="info",
             group=group,
         )
         homework_object.author.add(server_user)
@@ -297,6 +384,54 @@ class DeleteHomework(View):
         return redirect("homework:homework_page")
 
 
+class DeleteMailing(View):
+    def get(self, request, homework_id):
+        if request.user.is_superuser:
+            try:
+                hw_info = Homework.objects.get(
+                    id=homework_id,
+                )
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
+            return render(
+                request,
+                "homework/delete_homework.html",
+                context={"hw_info": hw_info},
+            )
+        if request.user.is_staff:
+            try:
+                hw_info = Homework.objects.get(
+                    id=homework_id,
+                    group=-1,
+                )
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
+            return render(
+                request,
+                "homework/delete_homework.html",
+                context={"hw_info": hw_info},
+            )
+        return redirect("homework:homework_page")
+
+    def post(self, request, homework_id):
+        if request.user.is_superuser:
+            try:
+                Homework.objects.get(
+                    id=homework_id,
+                ).delete()
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
+        elif request.user.is_staff:
+            try:
+                Homework.objects.get(
+                    id=homework_id,
+                    group=-1,
+                ).delete()
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
+        return redirect("homework:homework_page")
+
+
 class EditHomework(View):
     def get(self, request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
@@ -335,50 +470,16 @@ class EditHomework(View):
             subject = request.POST["subject"]
             subject = get_abbreviation_from_name(subject)
             request_files_list = request.FILES.getlist("files")
-            files_list_for_model = []
-            for r_file in request_files_list:
-                file_extension = r_file.name.split(".")[-1]
-                if file_extension.lower() in [
-                    "png",
-                    "jpeg",
-                    "webp",
-                    "gif",
-                    "jpg",
-                ]:
-                    file_name = default_storage.save(
-                        f"homework/img/{r_file.name}",
-                        r_file,
-                    )
-                    files_list_for_model.append((file_name, "img"))
-                elif file_extension.lower() in [
-                    "pdf",
-                    "ppt",
-                    "pptx",
-                    "doc",
-                    "docx",
-                    "zip",
-                ]:
-                    file_name = default_storage.save(
-                        f"homework/files/{r_file.name}",
-                        r_file,
-                    )
-                    files_list_for_model.append((file_name, "file"))
-                elif file_extension.lower() in ["mp3", "ogg", "acc", "wav"]:
-                    file_name = default_storage.save(
-                        f"homework/music/{r_file.name}",
-                        r_file,
-                    )
-                    files_list_for_model.append((file_name, "music"))
-                else:
-                    return render(
-                        request,
-                        "homework/addhomework.html",
-                        context={
-                            "errors": (
-                                f"Unsupported file format: {file_extension}",
-                            ),
-                        },
-                    )
+            files_list_for_model = save_files(request_files_list)
+            if files_list_for_model[0] == "Error":
+                render(
+                    request,
+                    "homework/add_homework.html",
+                    context={
+                        "errors": ("Unsupported file format"),
+                    },
+                )
+            files_list_for_model = files_list_for_model[1]
             server_user = request.user.server_user
             try:
                 homework_object = Homework.objects.get(
@@ -433,6 +534,90 @@ class EditHomeworkData(View):
         return redirect("homework:homework_page")
 
 
+class EditMailingPage(View):
+    def get(self, request, homework_id):
+        if request.user.is_staff or request.user.is_superuser:
+            user_subjects = []
+            if request.user.is_superuser:
+                user_subjects.append("Сообщение для администраторов")
+                user_subjects.append("Сообщение для всей школы")
+            if request.user.is_staff:
+                user_subjects.append("Сообщение для класса")
+            try:
+                hw_info = Homework.objects.order_by("-created_at").get(
+                    id=homework_id,
+                    subject="info",
+                )
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
+            if hw_info.group == -1:
+                subject_now = "Сообщение для класса"
+            elif hw_info.group == -2:
+                subject_now = "Сообщение для администраторов"
+            elif hw_info.group == -3:
+                subject_now = "Сообщение для всей школы"
+            return render(
+                request,
+                "homework/edit_homework.html",
+                context={
+                    "hw_info": hw_info,
+                    "subjects": user_subjects,
+                    "subject_now": subject_now,
+                },
+            )
+        return redirect("homework:homework_page")
+
+    def post(self, request, homework_id):
+        if request.user.is_staff or request.user.is_superuser:
+            description = request.POST["description"]
+            request_subject = request.POST["subject"]
+            if request_subject == "Сообщение для класса":
+                group = -1
+            elif request_subject == "Сообщение для администраторов":
+                group = -2
+            else:
+                group = -3
+            request_files_list = request.FILES.getlist("files")
+            files_list_for_model = save_files(request_files_list)
+            if files_list_for_model[0] == "Error":
+                render(
+                    request,
+                    "homework/add_homework.html",
+                    context={
+                        "errors": ("Unsupported file format"),
+                    },
+                )
+            files_list_for_model = files_list_for_model[1]
+            try:
+                homework_object = Homework.objects.get(
+                    id=homework_id,
+                )
+            except Homework.DoesNotExist:
+                return redirect("homework:homework_page")
+            for file in files_list_for_model:
+                file_name = file[0]
+                file_type = file[1]
+                if file_type == "img":
+                    image_object = Image.objects.create(
+                        image=file_name,
+                        homework=homework_object,
+                    )
+                    homework_object.images.add(image_object)
+                else:
+                    file_object = File.objects.create(
+                        file=file_name,
+                        homework=homework_object,
+                        file_name=file_name.split("/")[-1],
+                    )
+                    homework_object.files.add(file_object)
+
+            homework_object.description = description
+            homework_object.group = group
+            homework_object.save()
+            return redirect("homework:edit_homework", homework_id=homework_id)
+        return redirect("homework:homework_page")
+
+
 class GetLastHomeworkAPI(APIView):
     def get(self, request):
         if request.data["api_key"] != settings.API_KEY:
@@ -444,7 +629,6 @@ class GetLastHomeworkAPI(APIView):
         letter = user.letter
         group = user.group
         subjects = get_user_subjects_abbreviation(grade, letter)
-        subjects.insert(0, "info")
         data = {}
         for subject in subjects:
             try:
@@ -455,13 +639,7 @@ class GetLastHomeworkAPI(APIView):
                             letter=letter,
                             subject=subject,
                         )
-                        .filter(
-                            Q(group=0)
-                            | Q(group=group)
-                            | Q(group=-1)
-                            | Q(group=-2)
-                            | Q(group=-3),
-                        )
+                        .filter(Q(group=0) | Q(group=group))
                         .order_by("-created_at")
                         .first()
                     )
@@ -472,12 +650,7 @@ class GetLastHomeworkAPI(APIView):
                             letter=letter,
                             subject=subject,
                         )
-                        .filter(
-                            Q(group=0)
-                            | Q(group=group)
-                            | Q(group=-1)
-                            | Q(group=-3),
-                        )
+                        .filter(Q(group=0) | Q(group=group))
                         .order_by("-created_at")
                         .first()
                     )
@@ -543,6 +716,7 @@ class GetAllHomeworkFromDateAPI(APIView):
         group = user_obj.group
         year, month, day = list(map(int, request.data["date"].split(".")))
         subjects = get_user_subjects_abbreviation(grade, letter)
+        subjects.insert(0, "info")
         data = {}
         for subject in subjects:
             try:
@@ -855,3 +1029,155 @@ class GetMailingAPI(APIView):
             )
             data["admins"] = HomeworkSerializer(info_obj_three).data
         return HttpResponse(json.dumps(data))
+
+
+class EditMailingAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        homework_id = request.data["homework_id"]
+        if django_user.is_superuser:
+            try:
+                homework_obj = Homework.objects.filter(
+                    Q(group=-1) | Q(group=-2) | Q(group=-3),
+                ).get(id=homework_id)
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist")
+        elif django_user.is_staff:
+            try:
+                homework_obj = (
+                    Homework.objects.filter(group=-1).get(id=homework_id),
+                )
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist | Not allowed")
+        serialized_data = HomeworkSerializer(homework_obj).data
+        images = [i.image.url for i in homework_obj.images.all()]
+        files = [i.file.url for i in homework_obj.files.all()]
+        serialized_data["images"] = images
+        serialized_data["files"] = files
+        if homework_obj.group != -3:
+            serialized_data["author"] = django_user.first_name
+        return HttpResponse(json.dumps(serialized_data))
+
+
+class EditMailingDescriptionAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        homework_id = request.data["homework_id"]
+        new_description = request.data["description"]
+        homework_obj = None
+        if django_user.is_superuser:
+            try:
+                homework_obj = Homework.objects.get(id=homework_id)
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist")
+        elif django_user.is_staff:
+            try:
+                homework_obj = (
+                    Homework.objects.filter(group=-1).get(id=homework_id),
+                )
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist | Not allowed")
+        if not homework_obj:
+            return HttpResponse("Error")
+        homework_obj.description = new_description
+        homework_obj.save()
+        return HttpResponse("Successful")
+
+
+class EditMailingImagesAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        homework_id = request.data["homework_id"]
+        new_images = request.data["images"]
+        if django_user.is_superuser:
+            try:
+                homework_obj = Homework.objects.get(id=homework_id)
+                Image.objects.filter(homework_id=homework_id).delete()
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist")
+        elif django_user.is_staff:
+            try:
+                homework_obj = Homework.objects.get(id=homework_id, group=-1)
+                Image.objects.filter(homework_id=homework_id).delete()
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist | Not allowed")
+        for image in new_images:
+            image_object = Image.objects.create(image=image)
+            homework_obj.images.add(image_object)
+        return HttpResponse("Successful")
+
+
+class EditMailingFilesAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        homework_id = request.data["homework_id"]
+        new_files = request.data["files"]
+        if django_user.is_superuser:
+            try:
+                homework_obj = Homework.objects.get(id=homework_id)
+                File.objects.filter(homework_id=homework_id).delete()
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist")
+        elif django_user.is_staff:
+            try:
+                homework_obj = Homework.objects.get(id=homework_id, group=-1)
+                File.objects.filter(homework_id=homework_id).delete()
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist | Not allowed")
+        for file in new_files:
+            file_object = File.objects.create(file=file)
+            file_name = file.split("/")[-1]
+            file_object.file_name = file_name
+            file_object.save()
+            homework_obj.files.add(file_object)
+        return HttpResponse("Successful")
+
+
+class DeleteMailingAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        if not django_user.is_staff or not django_user.is_superuser:
+            return HttpResponse("Not allowed")
+        homework_id = request.data["homework_id"]
+        if django_user.is_superuser:
+            try:
+                Homework.objects.get(
+                    id=homework_id,
+                ).delete()
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist")
+        elif django_user.is_staff:
+            try:
+                Homework.objects.get(
+                    group=-1,
+                    id=homework_id,
+                ).delete()
+            except Homework.DoesNotExist:
+                return HttpResponse("Does not exist | Not allowed")
+        return HttpResponse("Successful")

@@ -76,4 +76,24 @@ urlpatterns = [
         "get_mailing/",
         homework.views.GetMailingAPI.as_view(),
     ),
+    path(
+        "edit_mailing/",
+        homework.views.EditMailingAPI.as_view(),
+    ),
+    path(
+        "edit_mailing_description/",
+        homework.views.EditMailingDescriptionAPI.as_view(),
+    ),
+    path(
+        "edit_mailing_images/",
+        homework.views.EditMailingImagesAPI.as_view(),
+    ),
+    path(
+        "edit_mailing_files/",
+        homework.views.EditMailingFilesAPI.as_view(),
+    ),
+    path(
+        "delete_mailing/",
+        homework.views.DeleteMailingAPI.as_view(),
+    ),
 ]
