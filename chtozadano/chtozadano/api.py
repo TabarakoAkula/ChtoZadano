@@ -37,6 +37,10 @@ urlpatterns = [
         homework.views.GetAllHomeworkFromDateAPI.as_view(),
     ),
     path(
+        "get_homework_from_id/",
+        homework.views.GetHomeworkFromIdAPI.as_view(),
+    ),
+    path(
         "delete_homework/",
         homework.views.DeleteHomeworkAPI.as_view(),
     ),
@@ -63,5 +67,33 @@ urlpatterns = [
     path(
         "get_homework_from_id/",
         homework.views.AddHomeWorkAPI.as_view(),
+    ),
+    path(
+        "add_mailing/",
+        homework.views.AddMailingAPI.as_view(),
+    ),
+    path(
+        "get_mailing/",
+        homework.views.GetMailingAPI.as_view(),
+    ),
+    path(
+        "edit_mailing/",
+        homework.views.EditMailingAPI.as_view(),
+    ),
+    path(
+        "edit_mailing_description/",
+        homework.views.EditMailingDescriptionAPI.as_view(),
+    ),
+    path(
+        "edit_mailing_images/",
+        homework.views.EditMailingImagesAPI.as_view(),
+    ),
+    path(
+        "edit_mailing_files/",
+        homework.views.EditMailingFilesAPI.as_view(),
+    ),
+    path(
+        "delete_mailing/",
+        homework.views.DeleteMailingAPI.as_view(),
     ),
 ]

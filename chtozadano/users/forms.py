@@ -7,7 +7,7 @@ class SignUpForm(Form):
         min_value=10000,
         max_value=999999,
     )
-    grade = django.forms.IntegerField(min_value=1, max_value=11)
+    grade = django.forms.IntegerField(min_value=4, max_value=11)
     letter = django.forms.CharField(max_length=1, min_length=1)
     group = django.forms.IntegerField(max_value=2, min_value=1)
 

@@ -2,6 +2,7 @@ import json
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.core.files.storage import default_storage
 
 BASE_DIR = settings.BASE_DIR
 
@@ -67,3 +68,37 @@ def get_name_from_abbreviation(abbreviation):
         if isinstance(response_object, list):
             return response_object[0]
         return response_object
+
+
+def save_files(request_files_list):
+    files_list_for_model = []
+    for r_file in request_files_list:
+        file_extension = r_file.name.split(".")[-1]
+        if file_extension.lower() in ["png", "jpeg", "webp", "gif", "jpg"]:
+            file_name = default_storage.save(
+                f"homework/img/{r_file.name}",
+                r_file,
+            )
+            files_list_for_model.append((file_name, "img"))
+        elif file_extension.lower() in [
+            "pdf",
+            "ppt",
+            "pptx",
+            "doc",
+            "docx",
+            "zip",
+        ]:
+            file_name = default_storage.save(
+                f"homework/files/{r_file.name}",
+                r_file,
+            )
+            files_list_for_model.append((file_name, "file"))
+        elif file_extension.lower() in ["mp3", "ogg", "acc", "wav"]:
+            file_name = default_storage.save(
+                f"homework/music/{r_file.name}",
+                r_file,
+            )
+            files_list_for_model.append((file_name, "music"))
+        else:
+            return "Error", file_extension
+    return "Ok", files_list_for_model
