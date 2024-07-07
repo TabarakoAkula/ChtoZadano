@@ -68,7 +68,7 @@ class HomeworkPage(View):
                     data.append(hw_object)
             except Homework.DoesNotExist:
                 pass
-        info = list
+        info = []
         school_obj = (
             Homework.objects.filter(
                 subject="info",
@@ -149,7 +149,7 @@ class AllHomeworkPage(View):
                 )
         except Homework.DoesNotExist:
             pass
-        info = list
+        info = []
         info.append(
             Homework.objects.filter(
                 subject="info",

@@ -4,13 +4,19 @@ import os
 
 from django.conf import settings
 import django.contrib.auth
+from django.contrib.auth.base_user import check_password
 import django.db.utils
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from rest_framework.views import APIView
 
-from users.forms import SignInForm, SignUpForm
+from users.forms import (
+    SignInForm,
+    SignInPasswordForm,
+    SignUpForm,
+    SignUpPasswordForm,
+)
 from users.models import BecomeAdmin, SignIn, User
 from users.serializers import BecomeAdminSerializer
 from users.utils import confirmation_code_expired, create_password
@@ -98,13 +104,17 @@ class SignUpPage(View):
 
 class SignInPage(View):
     def get(self, request):
-        return render(
-            request,
-            "users/sign_in.html",
-            context={"form": SignInForm},
-        )
+        if not request.user.is_authenticated:
+            return render(
+                request,
+                "users/sign_in.html",
+                context={"form": SignInForm},
+            )
+        return redirect("mainpage")
 
     def post(self, request):
+        if request.user.is_authenticated:
+            return redirect("mainpage")
         my_sign_in = SignIn.objects.filter(
             confirmation_code=request.POST["confirmation_code"],
         ).first()
@@ -145,6 +155,98 @@ class SignInPage(View):
             )
         django.contrib.auth.login(request, django_user)
         return redirect("users:account_page")
+
+
+class SignUpPasswordPage(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect("mainpage")
+        return render(
+            request,
+            "users/sign_up_password.html",
+            context={"form": SignUpPasswordForm},
+        )
+
+    def post(self, request):
+        if request.user.is_authenticated:
+            return redirect("mainpage")
+        form = SignUpPasswordForm(request.POST).data
+        if form["password"] != form["repeat_password"]:
+            return render(
+                request,
+                "users/sign_up_password.html",
+                context={
+                    "form": SignUpPasswordForm(request.POST),
+                    "errors": ("Error: Passwords don`t match",),
+                },
+            )
+        try:
+            django.contrib.auth.models.User.objects.get(
+                username=form["username"],
+            )
+        except django.contrib.auth.models.User.DoesNotExist:
+            django_user = django.contrib.auth.models.User.objects.create_user(
+                username=form["username"],
+                password=form["password"],
+                first_name=form["username"],
+            )
+            User.objects.create(
+                user=django_user,
+                grade=request.POST["grade"],
+                letter=request.POST["letter"],
+                group=request.POST["group"],
+            )
+            django.contrib.auth.login(request, django_user)
+            return redirect("users:account_page")
+        else:
+            return render(
+                request,
+                "users/sign_up_password.html",
+                context={
+                    "form": SignUpPasswordForm(request.POST),
+                    "errors": ("Error: Choose another username",),
+                },
+            )
+
+
+class SignInPasswordPage(View):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return render(
+                request,
+                "users/sign_in_password.html",
+                context={"form": SignInPasswordForm},
+            )
+        return redirect("mainpage")
+
+    def post(self, request):
+        if request.user.is_authenticated:
+            return redirect("mainpage")
+        form = SignInPasswordForm(request.POST).data
+        try:
+            django_user = django.contrib.auth.models.User.objects.get(
+                username=form["username"],
+            )
+        except django.contrib.auth.models.User.DoesNotExist:
+            return render(
+                request,
+                "users/sign_in_password.html",
+                context={
+                    "form": SignInPasswordForm(request.POST),
+                    "errors": ("Error: Uncorrect username",),
+                },
+            )
+        if check_password(form["password"], django_user.password):
+            django.contrib.auth.login(request, django_user)
+            return redirect("users:account_page")
+        return render(
+            request,
+            "users/sign_in_password.html",
+            context={
+                "form": SignInPasswordForm(request.POST),
+                "errors": ("Error: Uncorrect password",),
+            },
+        )
 
 
 class AccountPage(View):
@@ -195,19 +297,17 @@ class BecomeAdminPage(View):
             return redirect("mainpage")
         if request.user.is_staff:
             return redirect("homework:homework_page")
-        grade, letter = request.POST["grade"], request.POST["letter"]
         first_name, last_name = (
             request.POST["first_name"],
             request.POST["last_name"],
         )
-        group = request.POST["group"]
         user_obj = request.user.server_user
         BecomeAdmin.objects.create(
-            grade=grade,
-            letter=letter,
+            grade=user_obj.grade,
+            letter=user_obj.letter,
             first_name=first_name,
             last_name=last_name,
-            group=group,
+            group=user_obj.group,
             telegram_id=user_obj.telegram_id,
         )
         return redirect("users:account_page")
