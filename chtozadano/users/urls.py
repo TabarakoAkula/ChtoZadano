@@ -5,6 +5,7 @@ from users.views import (
     BecomeAdminAccept,
     BecomeAdminDecline,
     BecomeAdminPage,
+    ChangeContactsPage,
     Logout,
     ShowBecomeAdmin,
     SignInPage,
@@ -46,5 +47,10 @@ urlpatterns = [
         "show_become_decline/<int:telegram_id>",
         BecomeAdminDecline.as_view(),
         name="decline_become_admin",
+    ),
+    path(
+        "change_contacts/",
+        ChangeContactsPage.as_view(),
+        name="change_contacts",
     ),
 ]

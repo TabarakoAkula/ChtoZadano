@@ -31,3 +31,8 @@ class SignUpPasswordForm(Form):
 class SignInPasswordForm(Form):
     username = django.forms.CharField(max_length=255)
     password = django.forms.CharField(widget=django.forms.PasswordInput)
+
+
+class ChangeContactsForm(Form):
+    first_name = django.forms.CharField()
+    last_name = django.forms.CharField(required=False)

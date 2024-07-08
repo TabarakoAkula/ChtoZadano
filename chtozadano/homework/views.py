@@ -100,6 +100,7 @@ class HomeworkPage(View):
         )
         if class_obj:
             info.append(class_obj)
+        info = [i[0] for i in info]
         return render(
             request,
             "homework/homework.html",

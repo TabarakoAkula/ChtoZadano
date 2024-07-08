@@ -105,7 +105,7 @@ DEBUG_TOOLBAR_CONFIG = {
     "IS_RUNNING_TESTS": False,
 }
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "ru-RU"
 
 TIME_ZONE = "Europe/Moscow"
 

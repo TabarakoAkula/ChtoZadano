@@ -12,6 +12,7 @@ from django.views import View
 from rest_framework.views import APIView
 
 from users.forms import (
+    ChangeContactsForm,
     SignInForm,
     SignInPasswordForm,
     SignUpForm,
@@ -99,6 +100,7 @@ class SignUpPage(View):
             telegram_id=telegram_id,
         )
         django.contrib.auth.login(request, django_user)
+        my_sign_in.delete()
         return redirect("users:account_page")
 
 
@@ -154,6 +156,7 @@ class SignInPage(View):
                 },
             )
         django.contrib.auth.login(request, django_user)
+        my_sign_in.delete()
         return redirect("users:account_page")
 
 
@@ -342,6 +345,23 @@ class BecomeAdminDecline(View):
             BecomeAdmin.objects.get(telegram_id=telegram_id).delete()
             return redirect("users:show_become_admin")
         return redirect("mainpage")
+
+
+class ChangeContactsPage(View):
+    def get(self, request):
+        return render(
+            request,
+            "users/change_contacts.html",
+            context={"form": ChangeContactsForm},
+        )
+
+    def post(self, request):
+        form = ChangeContactsForm(request.POST).data
+        django_user = request.user
+        django_user.first_name = form["first_name"]
+        django_user.last_name = form["last_name"]
+        django_user.save()
+        return redirect("users:account_page")
 
 
 class BecomeAdminAPI(APIView):

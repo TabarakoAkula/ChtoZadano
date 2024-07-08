@@ -16,6 +16,7 @@
 				<td>{{ i.grade }}</td>
 				<td>{{ i.letter }}</td>
 				<td>{{ i.subject }}</td>
+				<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
 				<td>{{ i.description }}</td>
 				<td>{{ i.created_at }}</td>
 				<td>{% for j in i.images.all %}
