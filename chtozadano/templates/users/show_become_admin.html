@@ -22,11 +22,15 @@
 				<td>{{ i.group }}</td>
 				<td>{{ i.first_name }}</td>
 				<td>{{ i.last_name }}</td>
-				<td><a href="tg://user?id={{ i.telegram_id }}">Link</a></td>
-				<td>
-					<a href="{% url "users:decline_become_admin" i.telegram_id %}"><button>Decline</button></a>
-					<a href="{% url "users:accept_become_admin" i.telegram_id %}"><button>Accept</button></a>
-				</td>
+				{% if i.telegram_id %}
+					<td><a href="tg://user?id={{ i.telegram_id }}">Link</a></td>
+					<td>
+						<a href="{% url "users:decline_become_admin" i.telegram_id %}"><button>Decline</button></a>
+						<a href="{% url "users:accept_become_admin" i.telegram_id %}"><button>Accept</button></a>
+					</td>
+				{% else %}
+					<td>Без связи :)</td>
+				{% endif %}
 			</tr>
 		{% endfor %}
 	</table>
