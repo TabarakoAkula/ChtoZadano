@@ -7,7 +7,7 @@ from telegram.ext import Filters, MessageHandler, Updater
 
 dotenv.load_dotenv()
 
-DOMEN_URL = "http://127.0.0.1:8000/"
+DOMEN_URL = "http://web:8000/"
 
 
 def handle_message(update, context):
