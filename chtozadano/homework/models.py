@@ -1,5 +1,6 @@
 from django.db import models
 
+
 GRADE_CHOICES = (
     (4, 4),
     (5, 5),
@@ -24,6 +25,24 @@ class DateTimeWithoutTZField(models.DateTimeField):
         return "timestamp"
 
 
+class Todo(models.Model):
+    is_done = models.BooleanField(
+        default=False,
+        verbose_name="Выполнено",
+    )
+    created_at = DateTimeWithoutTZField(
+        verbose_name="Дата создания",
+        auto_now_add=True,
+    )
+
+    def __str__(self):
+        return f"{self.created_at.strftime('%d-%m-%Y')}"
+
+    class Meta:
+        verbose_name = "Список ToDo"
+        verbose_name_plural = "Списки ToDo"
+
+
 class Homework(models.Model):
     grade = models.IntegerField(
         choices=GRADE_CHOICES,
@@ -31,7 +50,7 @@ class Homework(models.Model):
     )
     letter = models.CharField(
         choices=LETTER_CHOICES,
-        verbose_name="Буква",
+        verbose_name="Литера",
     )
     description = models.TextField(
         null=True,
@@ -51,6 +70,7 @@ class Homework(models.Model):
         auto_now_add=True,
         verbose_name="Дата создания",
     )
+    todo = models.ManyToManyField(Todo, related_name="homework")
 
     def __str__(self):
         return f"{self.grade}{self.letter} - {self.subject}"

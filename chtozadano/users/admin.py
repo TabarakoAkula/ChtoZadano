@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from users.models import SignIn, Todo, User
+from users.models import SignIn, User
 
 
 @admin.register(User)
@@ -34,21 +34,3 @@ class SignInAdmin(admin.ModelAdmin):
         "telegram_id",
         "name",
     )
-
-
-@admin.register(Todo)
-class TodoAdmin(admin.ModelAdmin):
-    list_display = (
-        "get_user",
-        "get_homework",
-        "is_done",
-    )
-
-    def get_user(self, obj):
-        return obj.user
-
-    def get_homework(self, obj):
-        return obj.homework
-
-    get_user.short_description = "Пользователь"
-    get_homework.short_description = "Домашнее задание"

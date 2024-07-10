@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
 
-from homework.models import File, Homework, Image
+from homework.models import File, Homework, Image, Todo
 from homework.utils import get_name_from_abbreviation
 
 
@@ -84,7 +84,7 @@ class ImageAdmin(admin.ModelAdmin):
         return obj.homework.created_at
 
     grade.short_description = "Класс"
-    letter.short_description = "Буква"
+    letter.short_description = "Литера"
     group.short_description = "Группа"
     subject.short_description = "Предмет"
     get_small_img.short_description = "Изображение"
@@ -124,7 +124,37 @@ class FileAdmin(admin.ModelAdmin):
         return obj.homework.created_at
 
     grade.short_description = "Класс"
-    letter.short_description = "Буква"
+    letter.short_description = "Литера"
     group.short_description = "Группа"
     subject.short_description = "Предмет"
     created_at.short_description = "Дата создания"
+
+
+@admin.register(Todo)
+class TodoAdmin(admin.ModelAdmin):
+    list_display = (
+        "get_user",
+        "get_homework_id",
+        "get_homework_grade",
+        "get_homework_letter",
+        "is_done",
+        "created_at",
+    )
+    readonly_fields = ("created_at",)
+
+    def get_homework_grade(self, obj):
+        return obj.homework.first().grade
+
+    def get_homework_letter(self, obj):
+        return obj.homework.first().letter
+
+    def get_homework_id(self, obj):
+        return obj.homework.first().id
+
+    def get_user(self, obj):
+        return obj.user.first().user
+
+    get_homework_grade.short_description = "Класс"
+    get_homework_letter.short_description = "Литера"
+    get_homework_id.short_description = "Id домашки"
+    get_user.short_description = "Пользователь"

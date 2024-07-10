@@ -2,10 +2,6 @@
 
 {% block content %}
 	{% load static %}
-	<p><br></p>
-	<a href="{% url "homework:all_homework_page" %}">
-		<button>Посмотреть все дз за последние 2 недели</button>
-	</a><br>
 	{% if not user.is_staff or user.is_superuser %}
 		<a href="{% url "homework:choose_grad_let" %}">
 			<button>Change grade or letter</button>
@@ -46,32 +42,52 @@
 		{% endfor %}
 	</table>
 	<h1>ДЗ для {{ grade }}{{ letter }} класса</h1>
+	<a href="{% url "homework:all_homework_page" %}">
+		<button>Посмотреть все дз за последние 2 недели</button>
+	</a><br>
 	<table border="1">
 		{% for i in homework %}
-			<tr>
-				<td>{{ i.grade }}</td>
-				<td>{{ i.letter }}</td>
-				<td>{{ i.subject }}</td>
-				<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
-				<td>{{ i.description }}</td>
-				<td>{{ i.created_at }}</td>
-				<td>
-					{% for j in i.images.all %}
-						<img src="{{ j.image.url }}" width="500" height="500">
-					{% endfor %}</td>
-				<td>{% for j in i.files.all %}
-					<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
-				{% endfor %}</td>
-				{% if user.is_superuser or user.is_staff %}
-					<td><a href="{% url "homework:delete_homework" i.id %}">
-						<button type="submit">Delete</button>
-					</a>
-						<a href="{% url "homework:edit_homework" i.id %}">
-							<button type="submit">Edit</button>
-						</a>
-					</td>
-				{% endif %}
-			</tr>
+			{% if user.is_authenticated and i.id in done_list %}
+				<tr style="background-color: rgba(135,145,148,0.22)">
+					{% else %}
+				<tr>
+			{% endif %}
+		<td>{{ i.grade }}</td>
+		<td>{{ i.letter }}</td>
+		<td>{{ i.subject }}</td>
+		<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
+		<td>{{ i.description }}</td>
+		<td>{{ i.created_at }}</td>
+		<td>
+			{% for j in i.images.all %}
+				<img src="{{ j.image.url }}" width="500" height="500">
+			{% endfor %}</td>
+		<td>{% for j in i.files.all %}
+			<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
+		{% endfor %}</td>
+		{% if user.is_superuser or user.is_staff %}
+			<td><a href="{% url "homework:delete_homework" i.id %}">
+				<button type="submit">Delete</button>
+			</a>
+				<a href="{% url "homework:edit_homework" i.id %}">
+					<button type="submit">Edit</button>
+				</a>
+			</td>
+		{% endif %}
+		{% if user.is_authenticated and i.id in done_list %}
+			<td>
+				<a href="{% url "homework:mark_done" i.id %}">
+					<button>Mark undone</button>
+				</a>
+			</td>
+		{% elif user.is_authenticated %}
+			<td>
+				<a href="{% url "homework:mark_done" i.id %}">
+					<button>Mark done</button>
+				</a>
+			</td>
+		{% endif %}
+		</tr>
 		{% endfor %}
 	</table>
 {% endblock %}

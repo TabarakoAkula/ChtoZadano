@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 import django.db.models
 
+import homework.models
 from homework.models import Homework
 
 DjangoUser = get_user_model()
@@ -67,6 +68,10 @@ class User(django.db.models.Model):
         default=False,
         verbose_name="Режим чата",
     )
+    todo = django.db.models.ManyToManyField(
+        homework.models.Todo,
+        related_name="user",
+    )
     homework = django.db.models.ManyToManyField(
         Homework,
         related_name="author",
@@ -116,30 +121,6 @@ class SignIn(django.db.models.Model):
     class Meta:
         verbose_name = "Sign in"
         verbose_name_plural = "Sign in"
-
-
-class Todo(django.db.models.Model):
-    user = django.db.models.OneToOneField(
-        User,
-        on_delete=django.db.models.DO_NOTHING,
-        verbose_name="Пользователь",
-    )
-    homework = django.db.models.OneToOneField(
-        Homework,
-        on_delete=django.db.models.DO_NOTHING,
-        verbose_name="Домашнее задание",
-    )
-    is_done = django.db.models.BooleanField(
-        default=False,
-        verbose_name="Выполнено",
-    )
-
-    def __str__(self):
-        return f"{self.is_done} | {self.user} | {self.homework}"
-
-    class Meta:
-        verbose_name = "Список ToDo"
-        verbose_name_plural = "Списки ToDo"
 
 
 class BecomeAdmin(django.db.models.Model):

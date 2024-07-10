@@ -3,13 +3,13 @@ import json
 
 from django.conf import settings
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.views import View
 from rest_framework.views import APIView
 
 from homework.forms import ChooseGradLetForm
-from homework.models import File, Homework, Image
+from homework.models import File, Homework, Image, Todo
 from homework.serializers import HomeworkSerializer
 from homework.utils import (
     get_abbreviation_from_name,
@@ -68,6 +68,11 @@ class HomeworkPage(View):
                     data.append(hw_object)
             except Homework.DoesNotExist:
                 pass
+        done_list = Todo.objects.filter(
+            user=request.user.server_user,
+            is_done=True,
+        ).all()
+        done_list = [i.homework.first().id for i in done_list]
         info = []
         school_obj = (
             Homework.objects.filter(
@@ -107,6 +112,7 @@ class HomeworkPage(View):
             context={
                 "homework": data,
                 "info": info,
+                "done_list": done_list,
             },
         )
 
@@ -617,6 +623,34 @@ class EditMailingPage(View):
             homework_object.save()
             return redirect("homework:edit_homework", homework_id=homework_id)
         return redirect("homework:homework_page")
+
+
+class MarkDone(View):
+    def get(self, request, homework_id):
+        if not request.user.is_authenticated:
+            return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
+        try:
+            user = users.models.User.objects.get(user=request.user)
+            homework = Homework.objects.get(id=homework_id)
+            todo_obj = Todo.objects.filter(
+                user=user,
+                homework=homework,
+            ).first()
+            if todo_obj:
+                if todo_obj.is_done:
+                    todo_obj.is_done = False
+                else:
+                    todo_obj.is_done = True
+                todo_obj.save()
+            else:
+                todo_obj = Todo.objects.create()
+                todo_obj.user.add(user)
+                todo_obj.homework.add(homework)
+                todo_obj.is_done = True
+                todo_obj.save()
+        except users.models.User.DoesNotExist and Homework.DoesNotExist:
+            return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
+        return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
 
 
 class GetLastHomeworkAPI(APIView):
