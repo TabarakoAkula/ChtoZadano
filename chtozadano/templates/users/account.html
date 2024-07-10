@@ -8,28 +8,32 @@
 			<td>{{ user.user.id }}</td>
 		</tr>
 		<tr>
-			<td>Grade</td>
+			<td>Класс</td>
 			<td>{{ user.grade }}</td>
 		</tr>
 		<tr>
-			<td>Letter</td>
+			<td>Литера</td>
 			<td>{{ user.letter }}</td>
 		</tr>
 		<tr>
-			<td>Group</td>
+			<td>Группа</td>
 			<td>{{ user.group }}</td>
 		</tr>
 		<tr>
-			<td>Tg id</td>
+			<td>Телеграм id</td>
 			<td>{{ user.telegram_id }}</td>
 		</tr>
 		<tr>
-			<td>Notebook</td>
+			<td>Записки</td>
 			<td>{{ user.notebook }}</td>
 		</tr>
 		<tr>
-			<td>First name</td>
+			<td>Имя</td>
 			<td>{{ user.user.first_name }}</td>
+		</tr>
+		<tr>
+			<td>Фамилия</td>
+			<td>{{ user.user.last_name }}</td>
 		</tr>
 	</table><br>
 	{% if user.user.is_staff or user.user.is_superuser %}
@@ -40,4 +44,7 @@
 			</a>
 		{% endif %}
 	{% endif %}
+	<a href="{% url "users:change_contacts" %}">
+		<button>Сменить имя / фамилию</button>
+	</a>
 {% endblock %}

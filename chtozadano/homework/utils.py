@@ -4,6 +4,8 @@ from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.files.storage import default_storage
 
+import homework.models
+
 BASE_DIR = settings.BASE_DIR
 
 
@@ -102,3 +104,10 @@ def save_files(request_files_list):
         else:
             return "Error", file_extension
     return "Ok", files_list_for_model
+
+
+def get_user_from_grade(grade, letter):
+    return homework.models.Homework.objects.filter(
+        grade=grade,
+        letter=letter,
+    ).all()

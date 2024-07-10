@@ -5,10 +5,13 @@ from users.views import (
     BecomeAdminAccept,
     BecomeAdminDecline,
     BecomeAdminPage,
+    ChangeContactsPage,
     Logout,
     ShowBecomeAdmin,
     SignInPage,
+    SignInPasswordPage,
     SignUpPage,
+    SignUpPasswordPage,
 )
 
 
@@ -17,6 +20,16 @@ app_name = "users"
 urlpatterns = [
     path("sign_in/", SignInPage.as_view(), name="signin_page"),
     path("sign_up/", SignUpPage.as_view(), name="signup_page"),
+    path(
+        "sign_in_password/",
+        SignInPasswordPage.as_view(),
+        name="signin_password_page",
+    ),
+    path(
+        "sign_up_password/",
+        SignUpPasswordPage.as_view(),
+        name="signup_password_page",
+    ),
     path("account/", AccountPage.as_view(), name="account_page"),
     path("logout/", Logout.as_view(), name="logout"),
     path("become_admin/", BecomeAdminPage.as_view(), name="become_admin"),
@@ -34,5 +47,10 @@ urlpatterns = [
         "show_become_decline/<int:telegram_id>",
         BecomeAdminDecline.as_view(),
         name="decline_become_admin",
+    ),
+    path(
+        "change_contacts/",
+        ChangeContactsPage.as_view(),
+        name="change_contacts",
     ),
 ]

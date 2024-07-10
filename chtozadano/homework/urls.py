@@ -11,6 +11,7 @@ from homework.views import (
     EditHomeworkData,
     EditMailingPage,
     HomeworkPage,
+    MarkDone,
 )
 
 app_name = "homework"
@@ -45,5 +46,10 @@ urlpatterns = [
         "edit_mailing/<int:homework_id>/",
         EditMailingPage.as_view(),
         name="edit_mailing",
+    ),
+    path(
+        "mark_done/<int:homework_id>",
+        MarkDone.as_view(),
+        name="mark_done",
     ),
 ]

@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 import django.db.models
 
+import homework.models
 from homework.models import Homework
 
 DjangoUser = get_user_model()
@@ -38,21 +39,52 @@ class User(django.db.models.Model):
         on_delete=django.db.models.CASCADE,
         primary_key=True,
         related_name="server_user",
+        verbose_name="Пользователь",
     )
-    grade = django.db.models.IntegerField(choices=GRADE_CHOICES)
-    letter = django.db.models.CharField(choices=LETTER_CHOICES)
-    telegram_id = django.db.models.CharField()
-    group = django.db.models.IntegerField(choices=((1, 1), (2, 2)), default=1)
-    notebook = django.db.models.TextField(null=True, blank=True)
-    chat_mode = django.db.models.BooleanField(default=False)
+    grade = django.db.models.IntegerField(
+        choices=GRADE_CHOICES,
+        verbose_name="Класс",
+    )
+    letter = django.db.models.CharField(
+        choices=LETTER_CHOICES,
+        verbose_name="Буква",
+    )
+    telegram_id = django.db.models.CharField(
+        null=True,
+        blank=True,
+        verbose_name="Телеграм id",
+    )
+    group = django.db.models.IntegerField(
+        choices=((1, 1), (2, 2)),
+        default=1,
+        verbose_name="Группа",
+    )
+    notebook = django.db.models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="Заметки",
+    )
+    chat_mode = django.db.models.BooleanField(
+        default=False,
+        verbose_name="Режим чата",
+    )
+    todo = django.db.models.ManyToManyField(
+        homework.models.Todo,
+        related_name="user",
+    )
     homework = django.db.models.ManyToManyField(
         Homework,
         related_name="author",
         blank=True,
+        verbose_name="Домашнее задание",
     )
 
     def __str__(self):
         return self.user.username
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
 
 class SignIn(django.db.models.Model):
@@ -61,29 +93,34 @@ class SignIn(django.db.models.Model):
         on_delete=django.db.models.DO_NOTHING,
         null=True,
         blank=True,
+        verbose_name="Пользователб",
     )
-    telegram_id = django.db.models.CharField(null=True, blank=True)
-    confirmation_code = django.db.models.CharField(null=True, blank=True)
-    created_at = DateTimeWithoutTZField(auto_now_add=True)
-    name = django.db.models.CharField(null=True, blank=True)
+    telegram_id = django.db.models.CharField(
+        null=True,
+        blank=True,
+        verbose_name="Telegram ID",
+    )
+    confirmation_code = django.db.models.CharField(
+        null=True,
+        blank=True,
+        verbose_name="Код подтверждения",
+    )
+    created_at = DateTimeWithoutTZField(
+        auto_now_add=True,
+        verbose_name="Дата создания",
+    )
+    name = django.db.models.CharField(
+        null=True,
+        blank=True,
+        verbose_name="Имя",
+    )
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
-
-class Todo(django.db.models.Model):
-    user = django.db.models.OneToOneField(
-        User,
-        on_delete=django.db.models.DO_NOTHING,
-    )
-    homework = django.db.models.OneToOneField(
-        Homework,
-        on_delete=django.db.models.DO_NOTHING,
-    )
-    is_done = django.db.models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"{self.is_done} | {self.user} | {self.homework}"
+    class Meta:
+        verbose_name = "Sign in"
+        verbose_name_plural = "Sign in"
 
 
 class BecomeAdmin(django.db.models.Model):
@@ -92,4 +129,4 @@ class BecomeAdmin(django.db.models.Model):
     group = django.db.models.CharField(choices=((1, 1), (2, 2)))
     first_name = django.db.models.CharField()
     last_name = django.db.models.CharField()
-    telegram_id = django.db.models.CharField()
+    telegram_id = django.db.models.CharField(null=True, blank=True)

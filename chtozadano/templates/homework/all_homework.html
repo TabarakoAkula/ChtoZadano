@@ -2,7 +2,7 @@
 
 {% block content %}
 	{% load static %}
-	<br><br><br><h1>ДЗ НА ЗАВТРА</h1><a href="{% url "homework:homework_page" %}">
+	<br><br><br><h1>ВСЕ ДЗ</h1><a href="{% url "homework:homework_page" %}">
 	<button>Посмотреть последнее дз</button>
 </a><br>
 	{% if not user.is_staff or user.is_superuser %}
@@ -16,6 +16,7 @@
 				<td>{{ i.grade }}</td>
 				<td>{{ i.letter }}</td>
 				<td>{{ i.subject }}</td>
+				<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
 				<td>{{ i.description }}</td>
 				<td>{{ i.created_at }}</td>
 				<td>{% for j in i.images.all %}
