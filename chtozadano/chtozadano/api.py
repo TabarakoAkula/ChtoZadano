@@ -96,4 +96,8 @@ urlpatterns = [
         "delete_mailing/",
         homework.views.DeleteMailingAPI.as_view(),
     ),
+    path(
+        "change_contacts/",
+        homework.views.ChangeContacts.as_view(),
+    ),
 ]
