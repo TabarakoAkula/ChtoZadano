@@ -70,7 +70,7 @@ class User(django.db.models.Model):
     )
     todo = django.db.models.ManyToManyField(
         homework.models.Todo,
-        related_name="user",
+        related_name="user_todo",
     )
     homework = django.db.models.ManyToManyField(
         Homework,

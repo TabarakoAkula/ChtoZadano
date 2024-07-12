@@ -70,7 +70,7 @@ class Homework(models.Model):
         auto_now_add=True,
         verbose_name="Дата создания",
     )
-    todo = models.ManyToManyField(Todo, related_name="homework")
+    todo = models.ManyToManyField(Todo, related_name="homework_todo")
 
     def __str__(self):
         return f"{self.grade}{self.letter} - {self.subject}"

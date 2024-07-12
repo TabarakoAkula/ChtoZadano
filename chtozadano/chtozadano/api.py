@@ -98,6 +98,10 @@ urlpatterns = [
     ),
     path(
         "change_contacts/",
-        homework.views.ChangeContacts.as_view(),
+        homework.views.ChangeContactsAPI.as_view(),
+    ),
+    path(
+        "change_todo/",
+        homework.views.TodoWorkAPI.as_view(),
     ),
 ]
