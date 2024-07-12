@@ -2,6 +2,9 @@
 
 {% block content %}
 	{% load static %}
+	{% for error in errors %}
+		<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
+	{% endfor %}
 	<form method="POST" enctype="multipart/form-data">
 		{% csrf_token %}
 		{{ form }}

@@ -1,6 +1,8 @@
 import django.forms
 from django.forms import Form
 
+COLOR_CHOICES = ["#8b0000", "#ffff00", "#006400"]
+
 
 class SignUpForm(Form):
     confirmation_code = django.forms.IntegerField(
@@ -36,3 +38,7 @@ class SignInPasswordForm(Form):
 class ChangeContactsForm(Form):
     first_name = django.forms.CharField()
     last_name = django.forms.CharField(required=False)
+
+
+class EditNotebookForm(Form):
+    text = django.forms.CharField(widget=django.forms.Textarea)

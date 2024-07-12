@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "debug_toolbar",
     "rest_framework",
+    "colorfield",
     "homework.apps.HomeworkConfig",
     "users.apps.UsersConfig",
 ]

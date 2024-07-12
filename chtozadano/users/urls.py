@@ -6,6 +6,7 @@ from users.views import (
     BecomeAdminDecline,
     BecomeAdminPage,
     ChangeContactsPage,
+    EditNotebook,
     Logout,
     ShowBecomeAdmin,
     SignInPage,
@@ -53,4 +54,5 @@ urlpatterns = [
         ChangeContactsPage.as_view(),
         name="change_contacts",
     ),
+    path("edit_notebook/", EditNotebook.as_view(), name="edit_notebook"),
 ]
