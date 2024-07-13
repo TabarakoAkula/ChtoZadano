@@ -119,3 +119,18 @@ class File(models.Model):
     class Meta:
         verbose_name = "Файл"
         verbose_name_plural = "Файлы"
+
+
+class Schedule(models.Model):
+    grade = models.IntegerField(
+        choices=GRADE_CHOICES,
+        verbose_name="Класс",
+    )
+    letter = models.CharField(
+        choices=LETTER_CHOICES,
+        verbose_name="Литера",
+    )
+    group = models.IntegerField(verbose_name="Группа", default=1)
+    weekday = models.IntegerField(verbose_name="День недели")
+    lesson = models.IntegerField(verbose_name="Урок")
+    subject = models.CharField(verbose_name="Предмет")

@@ -1,8 +1,10 @@
+import datetime
 import json
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.files.storage import default_storage
+from django.db.models import Q
 
 import homework.models
 
@@ -24,6 +26,8 @@ def get_user_subjects(grade, letter, group):
         ) as subjects_data:
             json_subject_data = json.loads(subjects_data.read())
             response = []
+            user_subjects.append("class")
+            user_subjects.append("phys-c")
             for i in user_subjects:
                 if i in ["eng1", "eng2", "ger1", "ger2", "ikt1", "ikt2"]:
                     i_group = int(i[-1:])
@@ -106,8 +110,27 @@ def save_files(request_files_list):
     return "Ok", files_list_for_model
 
 
-def get_user_from_grade(grade, letter):
+def get_all_homework_from_grade(grade, letter):
     return homework.models.Homework.objects.filter(
         grade=grade,
         letter=letter,
     ).all()
+
+
+def get_tomorrow_schedule(grade, letter, group):
+    today = datetime.datetime.today()
+    weekday = today.weekday() + 2
+    if weekday > 7:
+        weekday -= 7
+    if weekday == 7:
+        weekday = 1
+    return (
+        homework.models.Schedule.objects.filter(
+            grade=grade,
+            letter=letter,
+            weekday=weekday,
+        )
+        .filter(Q(group=group) | Q(group=0))
+        .order_by("lesson")
+        .all()
+    )

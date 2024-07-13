@@ -14,6 +14,7 @@ from homework.serializers import HomeworkSerializer
 from homework.utils import (
     get_abbreviation_from_name,
     get_name_from_abbreviation,
+    get_tomorrow_schedule,
     get_user_subjects,
     get_user_subjects_abbreviation,
     save_files,
@@ -653,7 +654,7 @@ class MarkDone(View):
         return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
 
 
-class GetLastHomeworkAPI(APIView):
+class GetLastHomeworkAllSubjectsAPI(APIView):
     def get(self, request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
@@ -1271,3 +1272,51 @@ class TodoWorkAPI(APIView):
             homework_todo.is_done = not homework_todo.is_done
             homework_todo.save()
         return HttpResponse("Successful")
+
+
+class GetTomorrowHomeworkAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        schedule = get_tomorrow_schedule(
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
+        data = {}
+        for lesson in schedule:
+            try:
+                homework_obj = (
+                    Homework.objects.order_by("-created_at")
+                    .filter(Q(group=0) | Q(group=user_obj.group))
+                    .get(
+                        grade=user_obj.grade,
+                        letter=user_obj.letter,
+                        subject=lesson.subject,
+                    )
+                )
+            except Homework.DoesNotExist:
+                data[lesson.lesson] = "Nothing"
+            else:
+                serialized_obj = HomeworkSerializer(homework_obj).data
+                data[lesson.lesson] = serialized_obj
+        return HttpResponse(json.dumps(data))
+
+
+class GetTomorrowScheduleAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        schedule = get_tomorrow_schedule(
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
+        date = {}
+        for lesson in schedule:
+            date[lesson.lesson] = lesson.subject
+        return HttpResponse(json.dumps(date))
