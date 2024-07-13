@@ -14,6 +14,7 @@ from homework.serializers import HomeworkSerializer
 from homework.utils import (
     get_abbreviation_from_name,
     get_name_from_abbreviation,
+    get_tomorrow_schedule,
     get_user_subjects,
     get_user_subjects_abbreviation,
     save_files,
@@ -69,10 +70,10 @@ class HomeworkPage(View):
             except Homework.DoesNotExist:
                 pass
         done_list = Todo.objects.filter(
-            user=request.user.server_user,
+            user_todo=request.user.server_user,
             is_done=True,
         ).all()
-        done_list = [i.homework.first().id for i in done_list]
+        done_list = [i.homework_todo.first().id for i in done_list]
         info = []
         school_obj = (
             Homework.objects.filter(
@@ -633,8 +634,8 @@ class MarkDone(View):
             user = users.models.User.objects.get(user=request.user)
             homework = Homework.objects.get(id=homework_id)
             todo_obj = Todo.objects.filter(
-                user=user,
-                homework=homework,
+                user_todo=user,
+                homework_todo=homework,
             ).first()
             if todo_obj:
                 if todo_obj.is_done:
@@ -644,8 +645,8 @@ class MarkDone(View):
                 todo_obj.save()
             else:
                 todo_obj = Todo.objects.create()
-                todo_obj.user.add(user)
-                todo_obj.homework.add(homework)
+                todo_obj.user_todo.add(user)
+                todo_obj.homework_todo.add(homework)
                 todo_obj.is_done = True
                 todo_obj.save()
         except users.models.User.DoesNotExist and Homework.DoesNotExist:
@@ -653,7 +654,7 @@ class MarkDone(View):
         return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
 
 
-class GetLastHomeworkAPI(APIView):
+class GetLastHomeworkAllSubjectsAPI(APIView):
     def get(self, request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
@@ -1216,3 +1217,106 @@ class DeleteMailingAPI(APIView):
             except Homework.DoesNotExist:
                 return HttpResponse("Does not exist | Not allowed")
         return HttpResponse("Successful")
+
+
+class ChangeContactsAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        return HttpResponse(
+            json.dumps(
+                {
+                    "first_name": django_user.first_name,
+                    "last_name": django_user.last_name,
+                },
+            ),
+        )
+
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        first_name = request.data["first_name"]
+        last_name = request.data["last_name"]
+        django_user.first_name = first_name
+        django_user.last_name = last_name
+        django_user.save()
+        return HttpResponse("Successful")
+
+
+class TodoWorkAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        homework_id = request.data["homework_id"]
+        homework_obj = Homework.objects.get(id=homework_id)
+        try:
+            homework_todo = Todo.objects.get(
+                user_todo=user_obj,
+                homework_todo=homework_obj,
+            )
+        except Todo.DoesNotExist:
+            todo_obj = Todo.objects.create()
+            todo_obj.user_todo.add(user_obj)
+            todo_obj.homework_todo.add(homework_obj)
+            todo_obj.is_done = True
+            todo_obj.save()
+        else:
+            homework_todo.is_done = not homework_todo.is_done
+            homework_todo.save()
+        return HttpResponse("Successful")
+
+
+class GetTomorrowHomeworkAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        schedule = get_tomorrow_schedule(
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
+        data = {}
+        for lesson in schedule:
+            try:
+                homework_obj = (
+                    Homework.objects.order_by("-created_at")
+                    .filter(Q(group=0) | Q(group=user_obj.group))
+                    .get(
+                        grade=user_obj.grade,
+                        letter=user_obj.letter,
+                        subject=lesson.subject,
+                    )
+                )
+            except Homework.DoesNotExist:
+                data[lesson.lesson] = "Nothing"
+            else:
+                serialized_obj = HomeworkSerializer(homework_obj).data
+                data[lesson.lesson] = serialized_obj
+        return HttpResponse(json.dumps(data))
+
+
+class GetTomorrowScheduleAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        schedule = get_tomorrow_schedule(
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
+        date = {}
+        for lesson in schedule:
+            date[lesson.lesson] = lesson.subject
+        return HttpResponse(json.dumps(date))

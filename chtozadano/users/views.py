@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 
 from users.forms import (
     ChangeContactsForm,
+    EditNotebookForm,
     SignInForm,
     SignInPasswordForm,
     SignUpForm,
@@ -361,6 +362,23 @@ class ChangeContactsPage(View):
         django_user.first_name = form["first_name"]
         django_user.last_name = form["last_name"]
         django_user.save()
+        return redirect("users:account_page")
+
+
+class EditNotebook(View):
+    def get(self, request):
+        return render(
+            request,
+            "users/edit_notebook.html",
+            context={"form": EditNotebookForm},
+        )
+
+    def post(self, request):
+        form = EditNotebookForm(request.POST).data
+        user = User.objects.get(user=request.user)
+        user.notebook = form["text"]
+        user.notebook_color = form["color"]
+        user.save()
         return redirect("users:account_page")
 
 

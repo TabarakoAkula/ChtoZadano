@@ -133,28 +133,32 @@ class FileAdmin(admin.ModelAdmin):
 @admin.register(Todo)
 class TodoAdmin(admin.ModelAdmin):
     list_display = (
-        "get_user",
         "get_homework_id",
+        "get_user",
         "get_homework_grade",
         "get_homework_letter",
         "is_done",
         "created_at",
     )
     readonly_fields = ("created_at",)
+    fields = (
+        "is_done",
+        "created_at",
+    )
 
     def get_homework_grade(self, obj):
-        return obj.homework.first().grade
+        return obj.homework_todo.first().grade
 
     def get_homework_letter(self, obj):
-        return obj.homework.first().letter
+        return obj.homework_todo.first().letter
 
     def get_homework_id(self, obj):
-        return obj.homework.first().id
+        return obj.homework_todo.first().id
 
     def get_user(self, obj):
-        return obj.user.first().user
+        return obj.user_todo.first().user
 
+    get_user.short_description = "Пользователь"
     get_homework_grade.short_description = "Класс"
     get_homework_letter.short_description = "Литера"
     get_homework_id.short_description = "Id домашки"
-    get_user.short_description = "Пользователь"

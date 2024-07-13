@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16
+    container_name: db
+    environment:
+      POSTGRES_DB: ${POSTGRES_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+       - django-network
+
+  web:
+    build: .
+    command: bash -c "cd chtozadano &&
+                      python manage.py makemigrations &&
+                      python manage.py migrate &&
+                      python manage.py collectstatic --noinput &&
+                      python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    links:
+      - db:db
+    restart: always
+    networks:
+       - django-network
+
+  bot:
+    build: .
+    volumes:
+      - .:/code
+    command: python bot.py
+    depends_on:
+      - web
+    restart: always
+    networks:
+      - django-network
+
+volumes:
+  postgres_data:
+
+networks:
+  django-network:
+    driver: bridge

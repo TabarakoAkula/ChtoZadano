@@ -1,3 +1,4 @@
+import colorfield.fields
 from django.contrib.auth import get_user_model
 import django.db.models
 
@@ -64,13 +65,14 @@ class User(django.db.models.Model):
         blank=True,
         verbose_name="Заметки",
     )
+    notebook_color = colorfield.fields.ColorField(default="#FF0000")
     chat_mode = django.db.models.BooleanField(
         default=False,
         verbose_name="Режим чата",
     )
     todo = django.db.models.ManyToManyField(
         homework.models.Todo,
-        related_name="user",
+        related_name="user_todo",
     )
     homework = django.db.models.ManyToManyField(
         Homework,

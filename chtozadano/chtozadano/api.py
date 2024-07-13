@@ -9,8 +9,8 @@ urlpatterns = [
         users.views.CodeConfirmationApi.as_view(),
     ),
     path(
-        "get_last_homework/",
-        homework.views.GetLastHomeworkAPI.as_view(),
+        "get_last_homework_all_subjects/",
+        homework.views.GetLastHomeworkAllSubjectsAPI.as_view(),
     ),
     path(
         "get_homework_for_subject/",
@@ -95,5 +95,21 @@ urlpatterns = [
     path(
         "delete_mailing/",
         homework.views.DeleteMailingAPI.as_view(),
+    ),
+    path(
+        "change_contacts/",
+        homework.views.ChangeContactsAPI.as_view(),
+    ),
+    path(
+        "change_todo/",
+        homework.views.TodoWorkAPI.as_view(),
+    ),
+    path(
+        "get_tomorrow_homework/",
+        homework.views.GetTomorrowHomeworkAPI.as_view(),
+    ),
+    path(
+        "get_tomorrow_shedule/",
+        homework.views.GetTomorrowScheduleAPI.as_view(),
     ),
 ]
