@@ -24,7 +24,7 @@ from users.serializers import BecomeAdminSerializer
 from users.utils import confirmation_code_expired, create_password
 
 
-class CodeConfirmationApi(APIView):
+class CodeConfirmationAPI(APIView):
     def post(self, request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")

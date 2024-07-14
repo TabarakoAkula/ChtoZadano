@@ -14,13 +14,59 @@
   python manage.py runserver
   ```
   
-Environments:
-+ ``DEBUG`` | True/False
-+ ``SECRET_KEY`` | char(256)
-+ ``ALLOWED_HOSTS`` | 127.0.0,0.0.0.0,*
-
-
-**DB Scheme:**  
-![image](https://github.com/TabarakoAkula/ChtoZadano/assets/113298631/2a1b87eb-74d0-469e-866a-8de986936082)  
-**Algorithm**
-![image](https://github.com/TabarakoAkula/ChtoZadano/assets/113298631/44140fc1-f8ec-4b9f-a5c8-8c079bf561cf)
+# Документация по API:
+## Users:
++ CodeConfirmationAPI:
+  + Путь: ``api/v1/code_confirmation/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: получить код для входа в систему
+  + Действие: при просьбе получение кода в ``боте``, последний отправляет запрос на сервер для создания записи в таблице ``SignIn``, данные в которой будут использованы при входе/регистрации
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя в телеграм
+    + ``confirmation_code`` - ``int`` 6и значный код подтверждения, который был выдан пользователю
+    + ``name`` - ``str``  текущее имя пользователя в Telegram
+  + Возвращает:
+    + ``HttpResponse``: ``Информация о пользователе {telegram_id} успешно внесена в таблицу SignIN``
++ BecomeAdminAPI:
+  + Путь: ``api/v1/become_admin/`` 
+  + Метод: ``GET | POST``
+  + ``GET``
+    + Ограничение по доступности: ``superuser``
+    + Суть: получить все заявки на становление администратором
+    + Действие: по запросу в ``боте``, последний возвращает с сервера все заявки на становление администратором 
+    + Параметры: 
+      + ``api_key`` - ``str`` апи ключ 
+      + ``telegram_id`` - ``int`` уникальный ``id`` пользователя в телеграм
+    + Возвращает: 
+      + ``JSON`` list of dictionaries with:  
+      ``id``: ``int``,  
+      ``grade``: ``int``,  
+      ``letter``: ``"str"``,  
+      ``group``: ``int``,  
+      ``first_name``: ``"str"``,  
+      ``last_name``: ``"str"``,  
+      ``telegram_id``: ``int``
+  + ``POST``
+    + Ограничение по доступности: ``нет``
+    + Суть: отправить заявку на становление администратором
+    + Действие: по запросу из ``боте``, последний отправляет на сервер запрос, данные из которого записываются в табличку ``BecomeAdmin`` 
+    + Параметры: 
+      + ``api_key`` - апи ключ 
+      + ``telegram_id`` - уникальный ``id`` пользователя в телеграм
+      + ``grade`` - ``int`` номер класса
+      + ``letter`` - ``str`` литера класса
+      + ``group`` - ``int`` группа в классе  
+      + ``first_name`` - ``str`` имя
+      + ``last_name`` - ``str`` фамилия
+    + Возвращает: 
+      + ``HttpResponse``:
+        + ``You are already admin``
+        + ``You are superuser, damn``
+        + ``Already have request``
+        + ``Successful``
+        + ``Wait pls``
++ ### IN PROGRESS
+## Homework:
++ ### IN PROGRESS

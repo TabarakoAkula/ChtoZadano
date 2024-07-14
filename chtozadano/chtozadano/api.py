@@ -6,7 +6,7 @@ import users.views
 urlpatterns = [
     path(
         "code_confirmation/",
-        users.views.CodeConfirmationApi.as_view(),
+        users.views.CodeConfirmationAPI.as_view(),
     ),
     path(
         "get_last_homework_all_subjects/",
