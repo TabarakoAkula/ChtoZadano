@@ -13,6 +13,7 @@ from homework.models import File, Homework, Image, Todo
 from homework.serializers import HomeworkSerializer
 from homework.utils import (
     get_abbreviation_from_name,
+    get_all_schedule,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
     get_user_subjects,
@@ -652,6 +653,24 @@ class MarkDone(View):
         except users.models.User.DoesNotExist and Homework.DoesNotExist:
             return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
         return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
+
+
+class SchedulePage(View):
+    def get(self, request):
+        user_obj = users.models.User.objects.get(user=request.user)
+        schedule = get_all_schedule(
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
+        for day in schedule:
+            for lesson in day:
+                lesson.subject = get_name_from_abbreviation(lesson.subject)
+        return render(
+            request,
+            "homework/schedule.html",
+            context={"data": schedule},
+        )
 
 
 class GetLastHomeworkAllSubjectsAPI(APIView):

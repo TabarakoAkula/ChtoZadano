@@ -12,6 +12,7 @@ from homework.views import (
     EditMailingPage,
     HomeworkPage,
     MarkDone,
+    SchedulePage,
 )
 
 app_name = "homework"
@@ -22,6 +23,7 @@ urlpatterns = [
     path("choose_class/", ChooseGrLePage.as_view(), name="choose_grad_let"),
     path("add/", AddHomeworkPage.as_view(), name="add_homework_page"),
     path("add_mailing/", AddMailingPage.as_view(), name="add_mailing_page"),
+    path("schedule/", SchedulePage.as_view(), name="schedule"),
     path(
         "delete/<int:homework_id>/",
         DeleteHomework.as_view(),

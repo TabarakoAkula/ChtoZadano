@@ -134,3 +134,20 @@ def get_tomorrow_schedule(grade, letter, group):
         .order_by("lesson")
         .all()
     )
+
+
+def get_all_schedule(grade, letter, group):
+    data = []
+    for i in range(1, 7):
+        schedule = (
+            homework.models.Schedule.objects.filter(
+                grade=grade,
+                letter=letter,
+                weekday=i,
+            )
+            .filter(Q(group=group) | Q(group=0))
+            .order_by("lesson")
+            .all()
+        )
+        data.append(schedule)
+    return data

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% load static %}
+	<h1>Schedule for a week</h1>
+	{% for schedule in data %}
+		<p>Day: {{ forloop.counter }}</p>
+		<table border="1">
+			{% for lesson in schedule %}
+				<tr>
+					<td>{{ lesson.lesson }}</td>
+					<td>{{ lesson.subject }}</td>
+				</tr>
+			{% endfor %}
+		</table>
+	{% endfor %}
+{% endblock %}
