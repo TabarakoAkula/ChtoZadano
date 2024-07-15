@@ -450,14 +450,14 @@ class AcceptDeclineBecomeAdminAPI(APIView):
             if decision == "decline":
                 BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
                 return HttpResponse("Successful declined")
-        return HttpResponse("Now allowed")
+        return HttpResponse("Not allowed")
 
 
 class ChangeGradeLetterAPI(APIView):
     def post(self, request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
-        if request.user.is_staff:
+        if request.user.is_staff and not request.user.is_superuser:
             return HttpResponse("Not allowed")
         telegram_id = request.data["telegram_id"]
         grade = request.data["grade"]
