@@ -750,6 +750,8 @@ class GetOneSubjectAPI(APIView):
             )
         except Homework.DoesNotExist:
             return HttpResponse("Does not exist")
+        if not hw_object:
+            return HttpResponse("Does not exist")
         images = [i.image.url for i in hw_object.images.all()]
         files = [i.file.url for i in hw_object.files.all()]
         serialized_data = HomeworkSerializer(hw_object).data
@@ -771,7 +773,6 @@ class GetAllHomeworkFromDateAPI(APIView):
         group = user_obj.group
         year, month, day = list(map(int, request.data["date"].split(".")))
         subjects = get_user_subjects_abbreviation(grade, letter)
-        subjects.insert(0, "info")
         data = {}
         for subject in subjects:
             try:

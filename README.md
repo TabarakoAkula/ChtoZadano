@@ -79,9 +79,10 @@
     + ``candidate_id`` - ``int`` уникальный ``id`` пользователя-кандидата в телеграм
     + ``decision`` - ``accept``/``decline`` вердикт
   + Возвращает:
-    + ``Это кто? Я такого не знаю``
-    + ``Successful accepted``
-    + ``Successful declined``
+      + ``HttpResponse``:
+        + ``Это кто? Я такого не знаю``
+        + ``Successful accepted``
+        + ``Successful declined``
 + ChangeGradeLetterAPI:
   + Путь: ``api/v1/change_grade_letter/`` 
   + Метод: ``POST``
@@ -94,7 +95,8 @@
     + ``grade`` - ``int`` класс
     + ``letter`` - ``int`` литера
   + Возвращает:
-    + ``Successful``
+      + ``HttpResponse``:
+        + ``Successful``
 + ChangeChatModeAPI:
   + Путь: ``api/v1/change_chat_mode/`` 
   + Метод: ``GET | POST``
@@ -106,17 +108,94 @@
       + ``api_key`` - ``str`` апи ключ 
       + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
     + Возвращает:
-      + ``True``/``False``
+      + ``HttpResponse``:
+        + ``True``/``False``
   + ``POST``
     + Ограничение по доступности: ``нет``
-    + Суть: изменить класс/литеру
-    + Действие: при выборе другого класса в ``боте``, последний меняет данные о пользователе в таблице ``Users``
+    + Суть: изменить получить текущее значение ``chatmode`` у пользователя
+    + Действие: при выборе другого класса в ``боте``, последний меняет ``chatmode`` пользователя в таблице ``Users``
     + Параметры: 
       + ``api_key`` - ``str`` апи ключ 
       + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
       + ``chat_mode`` - ``bool`` новое значение параметра ``chatmode``
     + Возвращает:
-      + ``Successful``
+      + ``HttpResponse``:
+        + ``Successful``
 
 ## Homework:
-+ ### IN PROGRESS
++ ChangeGradeLetterAPI:
+  + Путь: ``api/v1/get_last_homework_all_subjects/`` 
+  + Метод: ``GET``
+  + Ограничение по доступности: ``нет``
+  + Суть: получить дз последнее по всем предметам
+  + Действие: при запросе - возвращает по каждому из предметов последнее дз 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+  + Возвращает:
+      + ``JSON``:  
+      ``subject``: {  
+        ``id``: ``int``,  
+        ``grade``: ``int``,  
+        ``letter``: ``"str"``,  
+        ``description``: ``str``,  
+        ``subject``: ``"str"``,  
+        ``group``: ``"int"``,  
+        ``created_at``: ``datetime``,  
+        ``todo``: ``list``,  
+        ``author``: ``str``,  
+        ``images``: ``list``,   
+        ``files``: ``list``,  
+      }
++ GetOneSubjectAPI:
+  + Путь: ``api/v1/get_homework_for_subject/`` 
+  + Метод: ``GET``
+  + Ограничение по доступности: ``нет``
+  + Суть: получить дз последнее по конкретному предмету
+  + Действие: при запросе - возвращает последнее дз по отправленному в запросе предмету 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``subject`` - ``str`` название запрашиваемого предмета
+  + Возвращает:
+      + ``HttpResponse``:
+        + ``Does not exist``
+      + ``JSON``:    
+        ``id``: ``int``,  
+        ``grade``: ``int``,  
+        ``letter``: ``"str"``,  
+        ``description``: ``str``,  
+        ``subject``: ``"str"``,  
+        ``group``: ``"int"``,  
+        ``created_at``: ``datetime``,  
+        ``todo``: ``list``,  
+        ``images``: ``list``,   
+        ``files``: ``list``,
+        ``author``: ``str``,  
++ GetAllHomeworkFromDateAPI:
+  + Путь: ``api/v1/get_homework_from_date/`` 
+  + Метод: ``GET``
+  + Ограничение по доступности: ``нет``
+  + Суть: получить дз последнее по конкретному предмету
+  + Действие: при запросе - возвращает последнее дз по отправленному в запросе предмету 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``date`` - ``datetime`` дата в формате ``yy.mm.dd``
+  + Возвращает:
+      + ``HttpResponse``:
+        + ``Does not exist``
+      + ``JSON``:  
+      ``subject``: {  
+        ``id``: ``int``,  
+        ``grade``: ``int``,  
+        ``letter``: ``"str"``,  
+        ``description``: ``str``,  
+        ``subject``: ``"str"``,  
+        ``group``: ``"int"``,  
+        ``created_at``: ``datetime``,  
+        ``todo``: ``list``,  
+        ``author``: ``str``,  
+        ``images``: ``list``,   
+        ``files``: ``list``,  
+      }
