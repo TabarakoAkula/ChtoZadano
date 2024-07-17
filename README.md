@@ -170,14 +170,14 @@
         ``created_at``: ``datetime``,  
         ``todo``: ``list``,  
         ``images``: ``list``,   
-        ``files``: ``list``,
+        ``files``: ``list``,  
         ``author``: ``str``,  
 + GetAllHomeworkFromDateAPI:
   + Путь: ``api/v1/get_homework_from_date/`` 
   + Метод: ``GET``
   + Ограничение по доступности: ``нет``
-  + Суть: получить дз последнее по конкретному предмету
-  + Действие: при запросе - возвращает последнее дз по отправленному в запросе предмету 
+  + Суть: получить дз за дату
+  + Действие: при запросе - возвращает все дз по отправленной в запросе дате 
   + Параметры: 
     + ``api_key`` - ``str`` апи ключ 
     + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
@@ -199,3 +199,57 @@
         ``images``: ``list``,   
         ``files``: ``list``,  
       }
++ GetHomeworkFromIdAPI:
+  + Путь: ``api/v1/get_homework_from_id/`` 
+  + Метод: ``GET``
+  + Ограничение по доступности: ``нет``
+  + Суть: получить дз последнее по его ``id``
+  + Действие: при запросе - возвращает дз с указанным ``id`` 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``homework_id`` - ``int`` id домашки
+  + Возвращает:
+      + ``HttpResponse``:
+        + ``Undefined``
+        + ``Does not exist``
+      + ``JSON``:    
+        ``id``: ``int``,  
+        ``grade``: ``int``,  
+        ``letter``: ``"str"``,  
+        ``description``: ``str``,  
+        ``subject``: ``"str"``,  
+        ``group``: ``"int"``,  
+        ``created_at``: ``datetime``,  
+        ``todo``: ``list``,  
+        ``images``: ``list``,   
+        ``files``: ``list``,  
+        ``author``: ``str``,  
++ DeleteHomeworkAPI:
+  + Путь: ``api/v1/delete_homework/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``staff``/``superuser``
+  + Суть: удалить дз по его ``id``
+  + Действие: при запросе - удаляет дз с указанным ``id`` 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``homework_id`` - ``int`` id домашки
+  + Возвращает:
+      + ``HttpResponse``:
+        + ``Does not exist``
+        + ``Successful``
++ AddHomeWorkAPI:
+  + Путь: ``api/v1/add_homework/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``staff``/``superuser``
+  + Суть: удалить дз по его ``id``
+  + Действие: при запросе - удаляет дз с указанным ``id`` 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``homework_id`` - ``int`` id домашки
+  + Возвращает:
+      + ``HttpResponse``:
+        + ``Does not exist``
+        + ``Successful``

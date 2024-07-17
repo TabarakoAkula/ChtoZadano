@@ -1,0 +1,1 @@
+web: gunicorn chtozadano.wsgi --log-file -
