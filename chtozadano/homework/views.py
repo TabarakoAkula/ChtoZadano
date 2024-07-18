@@ -900,34 +900,6 @@ class AddHomeWorkAPI(APIView):
         return HttpResponse("Successful")
 
 
-class EditHomeworkAPI(APIView):
-    def get(self, request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
-        telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
-        django_user = user_obj.user
-        if not django_user.is_staff or not django_user.is_superuser:
-            return HttpResponse("Not allowed")
-        homework_id = request.data["homework_id"]
-        user_grade = user_obj.grade
-        user_letter = user_obj.letter
-        user_group = user_obj.group
-        try:
-            homework_obj = Homework.objects.filter(
-                Q(group=0) | Q(group=user_group),
-            ).get(grade=user_grade, letter=user_letter, id=homework_id)
-        except Homework.DoesNotExist:
-            return HttpResponse("Does not exist")
-        serialized_data = HomeworkSerializer(homework_obj).data
-        images = [i.image.url for i in homework_obj.images.all()]
-        files = [i.file.url for i in homework_obj.files.all()]
-        serialized_data["images"] = images
-        serialized_data["files"] = files
-        serialized_data["author"] = django_user.first_name
-        return HttpResponse(json.dumps(serialized_data))
-
-
 class EditHomeworkDescriptionAPI(APIView):
     def post(self, request):
         if request.data["api_key"] != settings.API_KEY:

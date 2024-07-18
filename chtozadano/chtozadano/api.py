@@ -49,10 +49,6 @@ urlpatterns = [
         homework.views.AddHomeWorkAPI.as_view(),
     ),
     path(
-        "edit_homework/",
-        homework.views.EditHomeworkAPI.as_view(),
-    ),
-    path(
         "edit_homework_description/",
         homework.views.EditHomeworkDescriptionAPI.as_view(),
     ),
