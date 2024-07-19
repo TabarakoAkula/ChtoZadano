@@ -61,16 +61,12 @@ urlpatterns = [
         homework.views.EditHomeworkFilesAPI.as_view(),
     ),
     path(
-        "get_homework_from_id/",
-        homework.views.AddHomeWorkAPI.as_view(),
+        "get_mailing/",
+        homework.views.GetMailingAPI.as_view(),
     ),
     path(
         "add_mailing/",
         homework.views.AddMailingAPI.as_view(),
-    ),
-    path(
-        "get_mailing/",
-        homework.views.GetMailingAPI.as_view(),
     ),
     path(
         "edit_mailing/",
