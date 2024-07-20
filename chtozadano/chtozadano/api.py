@@ -33,12 +33,20 @@ urlpatterns = [
         users.views.ChangeChatModeAPI.as_view(),
     ),
     path(
+        "change_contacts/",
+        users.views.ChangeContactsAPI.as_view(),
+    ),
+    path(
         "get_homework_from_date/",
         homework.views.GetAllHomeworkFromDateAPI.as_view(),
     ),
     path(
         "get_homework_from_id/",
         homework.views.GetHomeworkFromIdAPI.as_view(),
+    ),
+    path(
+        "get_tomorrow_homework/",
+        homework.views.GetTomorrowHomeworkAPI.as_view(),
     ),
     path(
         "delete_homework/",
@@ -89,16 +97,8 @@ urlpatterns = [
         homework.views.DeleteMailingAPI.as_view(),
     ),
     path(
-        "change_contacts/",
-        homework.views.ChangeContactsAPI.as_view(),
-    ),
-    path(
         "change_todo/",
         homework.views.TodoWorkAPI.as_view(),
-    ),
-    path(
-        "get_tomorrow_homework/",
-        homework.views.GetTomorrowHomeworkAPI.as_view(),
     ),
     path(
         "get_tomorrow_shedule/",

@@ -486,3 +486,33 @@ class ChangeChatModeAPI(APIView):
         user_obj.chat_mode = chat_mode
         user_obj.save()
         return HttpResponse("Successful")
+
+
+class ChangeContactsAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        return HttpResponse(
+            json.dumps(
+                {
+                    "first_name": django_user.first_name,
+                    "last_name": django_user.last_name,
+                },
+            ),
+        )
+
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
+        first_name = request.data["first_name"]
+        last_name = request.data["last_name"]
+        django_user.first_name = first_name
+        django_user.last_name = last_name
+        django_user.save()
+        return HttpResponse("Successful")

@@ -841,6 +841,37 @@ class GetHomeworkFromIdAPI(APIView):
         return HttpResponse("Undefined")
 
 
+class GetTomorrowHomeworkAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        schedule = get_tomorrow_schedule(
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
+        data = {}
+        for lesson in schedule:
+            try:
+                homework_obj = (
+                    Homework.objects.order_by("-created_at")
+                    .filter(Q(group=0) | Q(group=user_obj.group))
+                    .get(
+                        grade=user_obj.grade,
+                        letter=user_obj.letter,
+                        subject=lesson.subject,
+                    )
+                )
+            except Homework.DoesNotExist:
+                data[lesson.lesson] = "Nothing"
+            else:
+                serialized_obj = HomeworkSerializer(homework_obj).data
+                data[lesson.lesson] = serialized_obj
+        return HttpResponse(json.dumps(data))
+
+
 class DeleteHomeworkAPI(APIView):
     def post(self, request):
         if request.data["api_key"] != settings.API_KEY:
@@ -1211,36 +1242,6 @@ class DeleteMailingAPI(APIView):
         return HttpResponse("Successful")
 
 
-class ChangeContactsAPI(APIView):
-    def get(self, request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
-        telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
-        django_user = user_obj.user
-        return HttpResponse(
-            json.dumps(
-                {
-                    "first_name": django_user.first_name,
-                    "last_name": django_user.last_name,
-                },
-            ),
-        )
-
-    def post(self, request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
-        telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
-        django_user = user_obj.user
-        first_name = request.data["first_name"]
-        last_name = request.data["last_name"]
-        django_user.first_name = first_name
-        django_user.last_name = last_name
-        django_user.save()
-        return HttpResponse("Successful")
-
-
 class TodoWorkAPI(APIView):
     def post(self, request):
         if request.data["api_key"] != settings.API_KEY:
@@ -1264,37 +1265,6 @@ class TodoWorkAPI(APIView):
             homework_todo.is_done = not homework_todo.is_done
             homework_todo.save()
         return HttpResponse("Successful")
-
-
-class GetTomorrowHomeworkAPI(APIView):
-    def get(self, request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
-        telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
-        schedule = get_tomorrow_schedule(
-            user_obj.grade,
-            user_obj.letter,
-            user_obj.group,
-        )
-        data = {}
-        for lesson in schedule:
-            try:
-                homework_obj = (
-                    Homework.objects.order_by("-created_at")
-                    .filter(Q(group=0) | Q(group=user_obj.group))
-                    .get(
-                        grade=user_obj.grade,
-                        letter=user_obj.letter,
-                        subject=lesson.subject,
-                    )
-                )
-            except Homework.DoesNotExist:
-                data[lesson.lesson] = "Nothing"
-            else:
-                serialized_obj = HomeworkSerializer(homework_obj).data
-                data[lesson.lesson] = serialized_obj
-        return HttpResponse(json.dumps(data))
 
 
 class GetTomorrowScheduleAPI(APIView):
