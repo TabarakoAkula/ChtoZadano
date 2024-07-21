@@ -493,7 +493,7 @@ class ChangeContactsAPI(APIView):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        user_obj = User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
         return HttpResponse(
             json.dumps(
@@ -508,7 +508,7 @@ class ChangeContactsAPI(APIView):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        user_obj = User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
         first_name = request.data["first_name"]
         last_name = request.data["last_name"]
