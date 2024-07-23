@@ -1,1 +1,1 @@
-web: gunicorn chtozadano.wsgi --log-file -
+web: python manage.py migrate && python manage.py collectstatic && gunicorn chtozadano.wsgi--log - file -
