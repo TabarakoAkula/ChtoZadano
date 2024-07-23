@@ -74,7 +74,7 @@
 				</a>
 			</td>
 		{% endif %}
-		{% if user.is_authenticated and i.id in done_list %}
+		{% if done_list and user.is_authenticated and i.id in done_list %}
 			<td>
 				<a href="{% url "homework:mark_done" i.id %}">
 					<button>Mark undone</button>

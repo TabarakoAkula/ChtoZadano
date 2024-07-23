@@ -8,9 +8,6 @@ from homework.models import Homework
 DjangoUser = get_user_model()
 
 GRADE_CHOICES = (
-    (1, 1),
-    (2, 2),
-    (3, 3),
     (4, 4),
     (5, 5),
     (6, 6),

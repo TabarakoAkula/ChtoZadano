@@ -70,11 +70,14 @@ class HomeworkPage(View):
                     data.append(hw_object)
             except Homework.DoesNotExist:
                 pass
-        done_list = Todo.objects.filter(
-            user_todo=request.user.server_user,
-            is_done=True,
-        ).all()
-        done_list = [i.homework_todo.first().id for i in done_list]
+        if request.user.is_authenticated:
+            done_list = Todo.objects.filter(
+                user_todo=request.user.server_user,
+                is_done=True,
+            ).all()
+            done_list = [i.homework_todo.first().id for i in done_list]
+        else:
+            done_list = []
         info = []
         school_obj = (
             Homework.objects.filter(
@@ -657,12 +660,28 @@ class MarkDone(View):
 
 class SchedulePage(View):
     def get(self, request):
-        user_obj = users.models.User.objects.get(user=request.user)
-        schedule = get_all_schedule(
-            user_obj.grade,
-            user_obj.letter,
-            user_obj.group,
-        )
+        if request.user.is_authenticated:
+            user_obj = users.models.User.objects.get(user=request.user)
+            schedule = get_all_schedule(
+                user_obj.grade,
+                user_obj.letter,
+                user_obj.group,
+            )
+        else:
+            try:
+                data = json.loads(request.COOKIES.get("hw_data"))
+            except TypeError:
+                return redirect("homework:choose_grad_let")
+            grade = data["grade"]
+            letter = data["letter"]
+            group = data["group"]
+            if not grade or not letter:
+                return redirect("homework:choose_grad_let")
+            schedule = get_all_schedule(
+                grade,
+                letter,
+                group,
+            )
         for day in schedule:
             for lesson in day:
                 lesson.subject = get_name_from_abbreviation(lesson.subject)
