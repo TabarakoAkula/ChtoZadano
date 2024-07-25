@@ -6,7 +6,7 @@ import users.views
 urlpatterns = [
     path(
         "code_confirmation/",
-        users.views.CodeConfirmationApi.as_view(),
+        users.views.CodeConfirmationAPI.as_view(),
     ),
     path(
         "get_last_homework_all_subjects/",
@@ -33,6 +33,10 @@ urlpatterns = [
         users.views.ChangeChatModeAPI.as_view(),
     ),
     path(
+        "change_contacts/",
+        users.views.ChangeContactsAPI.as_view(),
+    ),
+    path(
         "get_homework_from_date/",
         homework.views.GetAllHomeworkFromDateAPI.as_view(),
     ),
@@ -41,16 +45,16 @@ urlpatterns = [
         homework.views.GetHomeworkFromIdAPI.as_view(),
     ),
     path(
+        "get_tomorrow_homework/",
+        homework.views.GetTomorrowHomeworkAPI.as_view(),
+    ),
+    path(
         "delete_homework/",
         homework.views.DeleteHomeworkAPI.as_view(),
     ),
     path(
         "add_homework/",
         homework.views.AddHomeWorkAPI.as_view(),
-    ),
-    path(
-        "edit_homework/",
-        homework.views.EditHomeworkAPI.as_view(),
     ),
     path(
         "edit_homework_description/",
@@ -65,16 +69,12 @@ urlpatterns = [
         homework.views.EditHomeworkFilesAPI.as_view(),
     ),
     path(
-        "get_homework_from_id/",
-        homework.views.AddHomeWorkAPI.as_view(),
+        "get_mailing/",
+        homework.views.GetMailingAPI.as_view(),
     ),
     path(
         "add_mailing/",
         homework.views.AddMailingAPI.as_view(),
-    ),
-    path(
-        "get_mailing/",
-        homework.views.GetMailingAPI.as_view(),
     ),
     path(
         "edit_mailing/",
@@ -97,16 +97,8 @@ urlpatterns = [
         homework.views.DeleteMailingAPI.as_view(),
     ),
     path(
-        "change_contacts/",
-        homework.views.ChangeContactsAPI.as_view(),
-    ),
-    path(
         "change_todo/",
         homework.views.TodoWorkAPI.as_view(),
-    ),
-    path(
-        "get_tomorrow_homework/",
-        homework.views.GetTomorrowHomeworkAPI.as_view(),
     ),
     path(
         "get_tomorrow_shedule/",

@@ -13,6 +13,7 @@ from homework.models import File, Homework, Image, Todo
 from homework.serializers import HomeworkSerializer
 from homework.utils import (
     get_abbreviation_from_name,
+    get_all_schedule,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
     get_user_subjects,
@@ -69,11 +70,14 @@ class HomeworkPage(View):
                     data.append(hw_object)
             except Homework.DoesNotExist:
                 pass
-        done_list = Todo.objects.filter(
-            user_todo=request.user.server_user,
-            is_done=True,
-        ).all()
-        done_list = [i.homework_todo.first().id for i in done_list]
+        if request.user.is_authenticated:
+            done_list = Todo.objects.filter(
+                user_todo=request.user.server_user,
+                is_done=True,
+            ).all()
+            done_list = [i.homework_todo.first().id for i in done_list]
+        else:
+            done_list = []
         info = []
         school_obj = (
             Homework.objects.filter(
@@ -654,6 +658,40 @@ class MarkDone(View):
         return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
 
 
+class SchedulePage(View):
+    def get(self, request):
+        if request.user.is_authenticated:
+            user_obj = users.models.User.objects.get(user=request.user)
+            schedule = get_all_schedule(
+                user_obj.grade,
+                user_obj.letter,
+                user_obj.group,
+            )
+        else:
+            try:
+                data = json.loads(request.COOKIES.get("hw_data"))
+            except TypeError:
+                return redirect("homework:choose_grad_let")
+            grade = data["grade"]
+            letter = data["letter"]
+            group = data["group"]
+            if not grade or not letter:
+                return redirect("homework:choose_grad_let")
+            schedule = get_all_schedule(
+                grade,
+                letter,
+                group,
+            )
+        for day in schedule:
+            for lesson in day:
+                lesson.subject = get_name_from_abbreviation(lesson.subject)
+        return render(
+            request,
+            "homework/schedule.html",
+            context={"data": schedule},
+        )
+
+
 class GetLastHomeworkAllSubjectsAPI(APIView):
     def get(self, request):
         if request.data["api_key"] != settings.API_KEY:
@@ -731,6 +769,8 @@ class GetOneSubjectAPI(APIView):
             )
         except Homework.DoesNotExist:
             return HttpResponse("Does not exist")
+        if not hw_object:
+            return HttpResponse("Does not exist")
         images = [i.image.url for i in hw_object.images.all()]
         files = [i.file.url for i in hw_object.files.all()]
         serialized_data = HomeworkSerializer(hw_object).data
@@ -752,7 +792,6 @@ class GetAllHomeworkFromDateAPI(APIView):
         group = user_obj.group
         year, month, day = list(map(int, request.data["date"].split(".")))
         subjects = get_user_subjects_abbreviation(grade, letter)
-        subjects.insert(0, "info")
         data = {}
         for subject in subjects:
             try:
@@ -821,6 +860,37 @@ class GetHomeworkFromIdAPI(APIView):
         return HttpResponse("Undefined")
 
 
+class GetTomorrowHomeworkAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        schedule = get_tomorrow_schedule(
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
+        data = {}
+        for lesson in schedule:
+            try:
+                homework_obj = (
+                    Homework.objects.order_by("-created_at")
+                    .filter(Q(group=0) | Q(group=user_obj.group))
+                    .get(
+                        grade=user_obj.grade,
+                        letter=user_obj.letter,
+                        subject=lesson.subject,
+                    )
+                )
+            except Homework.DoesNotExist:
+                data[lesson.lesson] = "Nothing"
+            else:
+                serialized_obj = HomeworkSerializer(homework_obj).data
+                data[lesson.lesson] = serialized_obj
+        return HttpResponse(json.dumps(data))
+
+
 class DeleteHomeworkAPI(APIView):
     def post(self, request):
         if request.data["api_key"] != settings.API_KEY:
@@ -878,34 +948,6 @@ class AddHomeWorkAPI(APIView):
             hw_object.images.add(Image.objects.create(file=file))
         hw_object.author.add(user_obj)
         return HttpResponse("Successful")
-
-
-class EditHomeworkAPI(APIView):
-    def get(self, request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
-        telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
-        django_user = user_obj.user
-        if not django_user.is_staff or not django_user.is_superuser:
-            return HttpResponse("Not allowed")
-        homework_id = request.data["homework_id"]
-        user_grade = user_obj.grade
-        user_letter = user_obj.letter
-        user_group = user_obj.group
-        try:
-            homework_obj = Homework.objects.filter(
-                Q(group=0) | Q(group=user_group),
-            ).get(grade=user_grade, letter=user_letter, id=homework_id)
-        except Homework.DoesNotExist:
-            return HttpResponse("Does not exist")
-        serialized_data = HomeworkSerializer(homework_obj).data
-        images = [i.image.url for i in homework_obj.images.all()]
-        files = [i.file.url for i in homework_obj.files.all()]
-        serialized_data["images"] = images
-        serialized_data["files"] = files
-        serialized_data["author"] = django_user.first_name
-        return HttpResponse(json.dumps(serialized_data))
 
 
 class EditHomeworkDescriptionAPI(APIView):
@@ -1219,36 +1261,6 @@ class DeleteMailingAPI(APIView):
         return HttpResponse("Successful")
 
 
-class ChangeContactsAPI(APIView):
-    def get(self, request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
-        telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
-        django_user = user_obj.user
-        return HttpResponse(
-            json.dumps(
-                {
-                    "first_name": django_user.first_name,
-                    "last_name": django_user.last_name,
-                },
-            ),
-        )
-
-    def post(self, request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
-        telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
-        django_user = user_obj.user
-        first_name = request.data["first_name"]
-        last_name = request.data["last_name"]
-        django_user.first_name = first_name
-        django_user.last_name = last_name
-        django_user.save()
-        return HttpResponse("Successful")
-
-
 class TodoWorkAPI(APIView):
     def post(self, request):
         if request.data["api_key"] != settings.API_KEY:
@@ -1272,37 +1284,6 @@ class TodoWorkAPI(APIView):
             homework_todo.is_done = not homework_todo.is_done
             homework_todo.save()
         return HttpResponse("Successful")
-
-
-class GetTomorrowHomeworkAPI(APIView):
-    def get(self, request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
-        telegram_id = request.data["telegram_id"]
-        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
-        schedule = get_tomorrow_schedule(
-            user_obj.grade,
-            user_obj.letter,
-            user_obj.group,
-        )
-        data = {}
-        for lesson in schedule:
-            try:
-                homework_obj = (
-                    Homework.objects.order_by("-created_at")
-                    .filter(Q(group=0) | Q(group=user_obj.group))
-                    .get(
-                        grade=user_obj.grade,
-                        letter=user_obj.letter,
-                        subject=lesson.subject,
-                    )
-                )
-            except Homework.DoesNotExist:
-                data[lesson.lesson] = "Nothing"
-            else:
-                serialized_obj = HomeworkSerializer(homework_obj).data
-                data[lesson.lesson] = serialized_obj
-        return HttpResponse(json.dumps(data))
 
 
 class GetTomorrowScheduleAPI(APIView):

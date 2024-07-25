@@ -1,6 +1,8 @@
 import django.forms
 from django.forms import Form
 
+from homework.forms import GRADE_CHOICES, GROUP_CHOICES, LETTER_CHOICES
+
 COLOR_CHOICES = ["#8b0000", "#ffff00", "#006400"]
 
 
@@ -9,9 +11,9 @@ class SignUpForm(Form):
         min_value=10000,
         max_value=999999,
     )
-    grade = django.forms.IntegerField(min_value=4, max_value=11)
-    letter = django.forms.CharField(max_length=1, min_length=1)
-    group = django.forms.IntegerField(max_value=2, min_value=1)
+    grade = django.forms.ChoiceField(choices=GRADE_CHOICES)
+    letter = django.forms.ChoiceField(choices=LETTER_CHOICES)
+    group = django.forms.ChoiceField(choices=GROUP_CHOICES)
 
 
 class SignInForm(Form):
@@ -25,9 +27,9 @@ class SignUpPasswordForm(Form):
     username = django.forms.CharField(max_length=255)
     password = django.forms.CharField(widget=django.forms.PasswordInput)
     repeat_password = django.forms.CharField(widget=django.forms.PasswordInput)
-    grade = django.forms.IntegerField(min_value=4, max_value=11)
-    letter = django.forms.CharField(max_length=1, min_length=1)
-    group = django.forms.IntegerField(max_value=2, min_value=1)
+    grade = django.forms.ChoiceField(choices=GRADE_CHOICES)
+    letter = django.forms.ChoiceField(choices=LETTER_CHOICES)
+    group = django.forms.ChoiceField(choices=GROUP_CHOICES)
 
 
 class SignInPasswordForm(Form):

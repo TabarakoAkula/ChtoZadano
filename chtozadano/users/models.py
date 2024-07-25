@@ -8,9 +8,6 @@ from homework.models import Homework
 DjangoUser = get_user_model()
 
 GRADE_CHOICES = (
-    (1, 1),
-    (2, 2),
-    (3, 3),
     (4, 4),
     (5, 5),
     (6, 6),
@@ -72,6 +69,7 @@ class User(django.db.models.Model):
     )
     todo = django.db.models.ManyToManyField(
         homework.models.Todo,
+        blank=True,
         related_name="user_todo",
     )
     homework = django.db.models.ManyToManyField(

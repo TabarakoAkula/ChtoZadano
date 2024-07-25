@@ -8,4 +8,4 @@ RUN mkdir /code
 WORKDIR /code
 ADD . /code/
 
-RUN pip install -r requirements/prod.txt
+RUN pip install -r requirements/dev.txt
