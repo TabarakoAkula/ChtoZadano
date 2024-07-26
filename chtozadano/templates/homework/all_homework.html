@@ -7,10 +7,23 @@
 </a><br>
 	{% if not user.is_staff or user.is_superuser %}
 		<a href="{% url "homework:choose_grad_let" %}">
-			<button>Change grade or letter</button>
+			<button>Сменить класс или литеру</button>
 		</a>
 	{% endif %}
 	<table border="1">
+		<tr>
+			<td>Класс</td>
+			<td>Литера</td>
+			<td>Предмет</td>
+			<td>Автор</td>
+			<td>Описание</td>
+			<td>Дата создания</td>
+			<td>Изображения</td>
+			<td>Файлы</td>
+			{% if user.is_superuser or user.is_staff %}
+				<td>Редактирование</td>
+			{% endif %}
+		</tr>
 		{% for i in homework %}
 			<tr>
 				<td>{{ i.grade }}</td>
@@ -25,13 +38,15 @@
 				<td>{% for j in i.files.all %}
 					<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
 				{% endfor %}</td>
-				<td><a href="{% url "homework:delete_homework" i.id %}">
-					<button type="submit">Delete</button>
-				</a>
-					<a href="{% url "homework:edit_homework" i.id %}">
-						<button type="submit">Edit</button>
+				{% if user.is_superuser or user.is_staff %}
+					<td><a href="{% url "homework:delete_homework" i.id %}">
+						<button type="submit">Удалить</button>
 					</a>
-				</td>
+						<a href="{% url "homework:edit_homework" i.id %}">
+							<button type="submit">Изменить</button>
+						</a>
+					</td>
+				{% endif %}
 			</tr>
 		{% endfor %}
 	</table>

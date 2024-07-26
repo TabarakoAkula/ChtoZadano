@@ -2,7 +2,17 @@
 
 {% block content %}
 	{% load static %}
+	<br>
 	<table border="1">
+		<tr>
+			<td>Класс</td>
+			<td>Литера</td>
+			<td>Описание</td>
+			<td>Предмет</td>
+			<td>Дата создания</td>
+			<td>Изображения</td>
+			<td>Файлы</td>
+		</tr>
 		<tr>
 			<td>{{ hw_info.grade }}</td>
 			<td>{{ hw_info.letter }}</td>
@@ -10,7 +20,7 @@
 				{% csrf_token %}
 				<td><textarea name="description">{{ hw_info.description }}</textarea></td>
 				<td>
-					<label for="subject">Choose a subject:</label>
+					<label for="subject">Выберите предмет:</label>
 					<select name="subject">
 						{% for subject in subjects %}
 							{% if subject == subject_now %}
@@ -26,7 +36,7 @@
 					{% for j in hw_info.images.all %}
 						<img src="{{ j.image.url }}" width="500" height="500">
 						<a href="{% url "homework:edit_files_homework" hw_info.id "img" j.id %}">
-							<button type="button">Delete</button>
+							<button type="button">Удалить</button>
 						</a>
 					{% endfor %}
 				</td>
@@ -34,7 +44,7 @@
 					{% for j in hw_info.files.all %}
 						<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
 						<a href="{% url "homework:edit_files_homework" hw_info.id "file" j.id %}">
-							<button type="button">Delete</button>
+							<button type="button">Удалить</button>
 						</a>
 					{% endfor %}
 				</td>
@@ -43,9 +53,9 @@
 	<div class="container">
 		<input type="file" id="file-input" onchange="preview()" multiple name="files">
 		<label for="file-input">
-			<i class="fas fa-upload"></i> &nbsp; Choose Files
+			<i class="fas fa-upload"></i> &nbsp; Выберите файлы
 		</label>
-		<p id="num-of-files">No Files Chosen</p>
+		<p id="num-of-files">Файлы не выбраны</p>
 		<div id="images"></div>
 	</div>
 	<script>
@@ -81,7 +91,7 @@
             }
         }
 	</script>
-	<button type="submit">Save</button>
+	<button type="submit">Сохранить</button>
 	</form>
 	<a href="{% url "homework:homework_page" %}">
 		<button>Вернуться</button>

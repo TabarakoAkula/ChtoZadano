@@ -4,16 +4,16 @@
 	{% load static %}
 	<br>
 	<table border="1">
-	<tr>
-		<td>Id</td>
-		<td>Grade</td>
-		<td>Letter</td>
-		<td>Group</td>
-		<td>First name</td>
-		<td>Last name</td>
-		<td>Tg account</td>
-		<td>Decision</td>
-	</tr>
+		<tr>
+			<td>Id</td>
+			<td>Класс</td>
+			<td>Литера</td>
+			<td>Группа</td>
+			<td>Имя</td>
+			<td>Фамилия</td>
+			<td>Телеграм аккаунт</td>
+			<td>Вердикт</td>
+		</tr>
 		{% for i in data %}
 			<tr>
 				<td>{{ i.id }}</td>
@@ -25,8 +25,12 @@
 				{% if i.telegram_id %}
 					<td><a href="tg://user?id={{ i.telegram_id }}">Link</a></td>
 					<td>
-						<a href="{% url "users:decline_become_admin" i.telegram_id %}"><button>Decline</button></a>
-						<a href="{% url "users:accept_become_admin" i.telegram_id %}"><button>Accept</button></a>
+						<a href="{% url "users:decline_become_admin" i.telegram_id %}">
+							<button>Отклонить</button>
+						</a>
+						<a href="{% url "users:accept_become_admin" i.telegram_id %}">
+							<button>Принять</button>
+						</a>
 					</td>
 				{% else %}
 					<td>Без связи :)</td>
