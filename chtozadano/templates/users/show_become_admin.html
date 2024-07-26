@@ -23,7 +23,7 @@
 				<td>{{ i.first_name }}</td>
 				<td>{{ i.last_name }}</td>
 				{% if i.telegram_id %}
-					<td><a href="tg://user?id={{ i.telegram_id }}">Link</a></td>
+					<td><a href="tg://user?id={{ i.telegram_id }}">Ссылка</a></td>
 					<td>
 						<a href="{% url "users:decline_become_admin" i.telegram_id %}">
 							<button>Отклонить</button>

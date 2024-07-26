@@ -9,7 +9,7 @@
 			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
 		{% endfor %}
 		{% csrf_token %}
-		<p>Код входа: {{ form.confirmation_code }}</p>
+		<p>Код идентификации: {{ form.confirmation_code }}</p>
 	 <p>Отправь <a href="https://t.me/ChtoZadano_bot">боту</a> слово "код"</p>
 		<button type="submit">Войти</button>
 	</form>
