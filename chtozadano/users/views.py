@@ -21,7 +21,11 @@ from users.forms import (
 )
 from users.models import BecomeAdmin, SignIn, User
 from users.serializers import BecomeAdminSerializer
-from users.utils import confirmation_code_expired, create_password
+from users.utils import (
+    confirmation_code_expired,
+    create_password,
+    validate_password,
+)
 
 
 class CodeConfirmationAPI(APIView):
@@ -63,7 +67,7 @@ class SignUpPage(View):
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("Error: Bad code",),
+                    "errors": ("Неправильный код",),
                 },
             )
 
@@ -73,7 +77,7 @@ class SignUpPage(View):
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("Error: Code expired",),
+                    "errors": ("Время действия кода истекло",),
                 },
             )
         telegram_id = my_sign_in.telegram_id
@@ -84,7 +88,9 @@ class SignUpPage(View):
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("Error: User already exist",),
+                    "errors": (
+                        "Пользователь с таким telegram аккаунтом уже существует",
+                    ),
                 },
             )
         name = my_sign_in.name
@@ -131,7 +137,7 @@ class SignInPage(View):
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("Error: Bad code",),
+                    "errors": ("Неправильный код",),
                 },
             )
         if confirmation_code_expired(database_datetime):
@@ -140,7 +146,7 @@ class SignInPage(View):
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("Error: Code expired",),
+                    "errors": ("Время действия кода истекло",),
                 },
             )
         telegram_id = my_sign_in.telegram_id
@@ -153,7 +159,9 @@ class SignInPage(View):
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("Error: Account with this id does not exist",),
+                    "errors": (
+                        "Аккаунт с таким telegram аккаунтов уже существует",
+                    ),
                 },
             )
         django.contrib.auth.login(request, django_user)
@@ -175,13 +183,24 @@ class SignUpPasswordPage(View):
         if request.user.is_authenticated:
             return redirect("mainpage")
         form = SignUpPasswordForm(request.POST).data
-        if form["password"] != form["repeat_password"]:
+        password = form["password"]
+        password_checker = validate_password(password)
+        if not password_checker[0]:
             return render(
                 request,
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": ("Error: Passwords don`t match",),
+                    "errors": (password_checker[1],),
+                },
+            )
+        if password != form["repeat_password"]:
+            return render(
+                request,
+                "users/sign_up_password.html",
+                context={
+                    "form": SignUpPasswordForm(request.POST),
+                    "errors": ("Введенные пароли не совпадают",),
                 },
             )
         try:
@@ -208,7 +227,7 @@ class SignUpPasswordPage(View):
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": ("Error: Choose another username",),
+                    "errors": ("Выберите другой логин",),
                 },
             )
 
@@ -237,7 +256,7 @@ class SignInPasswordPage(View):
                 "users/sign_in_password.html",
                 context={
                     "form": SignInPasswordForm(request.POST),
-                    "errors": ("Error: Uncorrect username",),
+                    "errors": ("Неправильный логин или пароль",),
                 },
             )
         if check_password(form["password"], django_user.password):
@@ -248,7 +267,7 @@ class SignInPasswordPage(View):
             "users/sign_in_password.html",
             context={
                 "form": SignInPasswordForm(request.POST),
-                "errors": ("Error: Uncorrect password",),
+                "errors": ("Неправильный логин или пароль",),
             },
         )
 
