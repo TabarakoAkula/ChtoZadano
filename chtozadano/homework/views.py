@@ -70,6 +70,8 @@ class HomeworkPage(View):
                     data.append(hw_object)
             except Homework.DoesNotExist:
                 pass
+        for homework in data:
+            homework.subject = get_name_from_abbreviation(homework.subject)
         if request.user.is_authenticated:
             done_list = Todo.objects.filter(
                 user_todo=request.user.server_user,
@@ -130,14 +132,15 @@ class AllHomeworkPage(View):
             group = request.user.server_user.group
         else:
             try:
-                data = json.loads(request.COOKIES.get("hw_data"))
+                cookies_data = json.loads(request.COOKIES.get("hw_data"))
             except TypeError:
                 return redirect("homework:choose_grad_let")
-            grade = data["grade"]
-            letter = data["letter"]
-            group = data["group"]
+            grade = cookies_data["grade"]
+            letter = cookies_data["letter"]
+            group = cookies_data["group"]
             if not grade or not letter:
                 return redirect("homework:choose_grad_let")
+        data = []
         try:
             if request.user.is_authenticated and request.user.is_staff:
                 data = (
@@ -161,6 +164,8 @@ class AllHomeworkPage(View):
                 )
         except Homework.DoesNotExist:
             pass
+        for homework in data:
+            homework.subject = get_name_from_abbreviation(homework.subject)
         info = []
         info.append(
             Homework.objects.filter(

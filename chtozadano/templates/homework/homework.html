@@ -12,7 +12,6 @@
 		<br>
 		<table border="1">
 			<tr>
-				<td>Предмет</td>
 				<td>Автор</td>
 				<td>Описание</td>
 				<td>Дата создания</td>
@@ -25,7 +24,6 @@
 			{% for i in info %}
 				{% if i %}
 					<tr>
-						<td>{{ i.subject }}</td>
 						<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
 						<td>{{ i.description }}</td>
 						<td>{{ i.created_at }}</td>
