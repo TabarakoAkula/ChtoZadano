@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 from django.conf import settings
@@ -1312,3 +1312,26 @@ class GetTomorrowScheduleAPI(APIView):
         for lesson in schedule:
             date[lesson.lesson] = lesson.subject
         return HttpResponse(json.dumps(date))
+
+
+class DeleteOldHomeworkAPI(APIView):
+    def get(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        user_obj = users.models.User.objects.get(telegram_id=telegram_id)
+        if not user_obj.user.is_superuser:
+            return HttpResponse("Not allowed ^)")
+
+        today = datetime.today().date()
+        two_weeks_ago = today - timedelta(days=14)
+        todo_objects = Todo.objects.filter(created_at__lt=two_weeks_ago)
+        hw_objects = Homework.objects.filter(created_at__lt=two_weeks_ago)
+        response_message = (
+            f"Successful delete {todo_objects.count()}"
+            f" Todo and {hw_objects.count()}"
+            f" Homework rows",
+        )
+        todo_objects.delete()
+        hw_objects.delete()
+        return HttpResponse(response_message)

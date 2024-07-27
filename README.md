@@ -501,3 +501,15 @@
   + Возвращает:
       + ``JSON``:
         + ``lesson``: ``subject``
++ DeleteOldHomeworkAPI:
+  + Путь: ``api/v1/delete_old_homework/`` 
+  + Метод: ``GET``
+  + Ограничение по доступности: ``superuser``
+  + Суть: удалить старое дз
+  + Действие: удаляет все домашки и связанные с ними изображения и файлы, которым более 14 дней  
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+  + Возвращает:
+      + ``HttpResponse``
+        + ``Successful delete {todo_d_counter:int} Todo and {homework_d_counter:int} Homework rows``
