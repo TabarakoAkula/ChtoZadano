@@ -89,7 +89,7 @@ class SignUpPage(View):
                 context={
                     "form": SignUpForm(request.POST),
                     "errors": (
-                        "Пользователь с таким telegram аккаунтом уже существует",
+                        "Пользователь уже существует",
                     ),
                 },
             )
