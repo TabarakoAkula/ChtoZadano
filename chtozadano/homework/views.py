@@ -781,7 +781,10 @@ class GetOneSubjectAPI(APIView):
         serialized_data = HomeworkSerializer(hw_object).data
         serialized_data["images"] = images
         serialized_data["files"] = files
-        serialized_data["author"] = user.user.first_name
+        serialized_data["author"] = (
+            f"{hw_object.author.first().user.first_name} "
+            f"{hw_object.author.first().user.last_name}"
+        )
         return HttpResponse(json.dumps(serialized_data))
 
 
@@ -1142,7 +1145,10 @@ class EditMailingAPI(APIView):
         serialized_data["images"] = images
         serialized_data["files"] = files
         if homework_obj.group != -3:
-            serialized_data["author"] = django_user.first_name
+            serialized_data["author"] = (
+                f"{homework_obj.author.first().user.first_name} "
+                f"{homework_obj.author.first().user.last_name}"
+            )
         return HttpResponse(json.dumps(serialized_data))
 
 

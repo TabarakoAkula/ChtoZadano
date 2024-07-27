@@ -88,9 +88,7 @@ class SignUpPage(View):
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": (
-                        "Пользователь уже существует",
-                    ),
+                    "errors": ("Пользователь уже существует",),
                 },
             )
         name = my_sign_in.name
