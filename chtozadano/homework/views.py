@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import json
 
 from django.conf import settings
+from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
@@ -34,11 +35,20 @@ class HomeworkPage(View):
             try:
                 data = json.loads(request.COOKIES.get("hw_data"))
             except TypeError:
+                messages.error(
+                    request,
+                    "Сначала необходимо выбрать в каком вы классе",
+                )
                 return redirect("homework:choose_grad_let")
             grade = data["grade"]
             letter = data["letter"]
+            letter = data["letter"]
             group = data["group"]
             if not grade or not letter:
+                messages.error(
+                    request,
+                    "Сначала необходимо выбрать в каком вы классе",
+                )
                 return redirect("homework:choose_grad_let")
         subjects = get_user_subjects_abbreviation(grade, letter)
         data = []
@@ -134,11 +144,19 @@ class AllHomeworkPage(View):
             try:
                 cookies_data = json.loads(request.COOKIES.get("hw_data"))
             except TypeError:
+                messages.error(
+                    request,
+                    "Сначала необходимо выбрать в каком вы классе",
+                )
                 return redirect("homework:choose_grad_let")
             grade = cookies_data["grade"]
             letter = cookies_data["letter"]
             group = cookies_data["group"]
             if not grade or not letter:
+                messages.error(
+                    request,
+                    "Сначала необходимо выбрать в каком вы классе",
+                )
                 return redirect("homework:choose_grad_let")
         data = []
         try:
@@ -233,6 +251,11 @@ class ChooseGrLePage(View):
             user_obj.letter = letter
             user_obj.group = group
             user_obj.save()
+        messages.success(
+            request,
+            f"Класс и литера успешно изменены, сейчас"
+            f" вы в {grade}{letter} классе, группа {group}",
+        )
         return response
 
 
@@ -247,10 +270,20 @@ class AddHomeworkPage(View):
                 "homework/add_homework.html",
                 context={"subjects": response_list},
             )
+        messages.error(
+            request,
+            "Для добавления домашнего задания у вас"
+            " должны быть права администратора",
+        )
         return redirect("homework:homework_page")
 
     def post(self, request):
         if not request.user.is_staff or not request.user.is_superuser:
+            messages.error(
+                request,
+                "Для добавления домашнего задания у вас"
+                " должны быть права администратора",
+            )
             return redirect("homework:homework_page")
         description = request.POST["description"]
         subject = request.POST["subject"]
@@ -294,6 +327,7 @@ class AddHomeworkPage(View):
                     file_name=file_name.split("/")[-1],
                 )
                 homework_object.files.add(file_object)
+        messages.success(request, "Домашнее задание успешно добавлено")
         return redirect("homework:homework_page")
 
 
@@ -310,6 +344,11 @@ class AddMailingPage(View):
                 "Сообщение для класса",
             ]
         else:
+            messages.error(
+                request,
+                "Для добавления рассылки у вас"
+                " должны быть права администратора",
+            )
             return redirect("homework:homework_page")
         return render(
             request,
@@ -319,6 +358,11 @@ class AddMailingPage(View):
 
     def post(self, request):
         if not request.user.is_superuser or not request.user.is_staff:
+            messages.error(
+                request,
+                "Для добавления рассылки у вас"
+                " должны быть права администратора",
+            )
             return redirect("homework:homework_page")
         description = request.POST["description"]
         request_subject = request.POST["subject"]
@@ -365,6 +409,7 @@ class AddMailingPage(View):
                     file_name=file_name.split("/")[-1],
                 )
                 homework_object.files.add(file_object)
+        messages.success(request, "Рассылка успешно добавлена")
         return redirect("homework:homework_page")
 
 
@@ -379,12 +424,18 @@ class DeleteHomework(View):
                     letter=request_user.letter,
                 )
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             return render(
                 request,
                 "homework/delete_homework.html",
                 context={"hw_info": hw_info},
             )
+        messages.error(
+            request,
+            "Для удаления домашнего задания у вас"
+            " должны быть права администратора",
+        )
         return redirect("homework:homework_page")
 
     def post(self, request, homework_id):
@@ -397,7 +448,9 @@ class DeleteHomework(View):
                     letter=request_user.letter,
                 ).delete()
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
+            messages.success(request, "Домашнее задание успешно удалено")
         return redirect("homework:homework_page")
 
 
@@ -409,6 +462,7 @@ class DeleteMailing(View):
                     id=homework_id,
                 )
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             return render(
                 request,
@@ -422,12 +476,18 @@ class DeleteMailing(View):
                     group=-1,
                 )
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             return render(
                 request,
                 "homework/delete_homework.html",
                 context={"hw_info": hw_info},
             )
+        messages.error(
+            request,
+            f"Для удаления рассылки у вас"
+            f" должны быть права администратора{''}",
+        )
         return redirect("homework:homework_page")
 
     def post(self, request, homework_id):
@@ -437,7 +497,9 @@ class DeleteMailing(View):
                     id=homework_id,
                 ).delete()
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
+            messages.success(request, "Рассылка успешно удалена")
         elif request.user.is_staff:
             try:
                 Homework.objects.get(
@@ -445,7 +507,15 @@ class DeleteMailing(View):
                     group=-1,
                 ).delete()
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
+            messages.success(request, "Рассылка успешно удалена")
+        else:
+            messages.error(
+                request,
+                "Для удаления рассылки у вас"
+                " должны быть права администратора",
+            )
         return redirect("homework:homework_page")
 
 
@@ -468,6 +538,7 @@ class EditHomework(View):
                     ),
                 )[0]
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             return render(
                 request,
@@ -479,6 +550,11 @@ class EditHomework(View):
                     "subject_now": get_name_from_abbreviation(hw_info.subject),
                 },
             )
+        messages.error(
+            request,
+            "Для редактирования домашнего задания у вас"
+            " должны быть права администратора",
+        )
         return redirect("homework:homework_page")
 
     def post(self, request, homework_id):
@@ -489,11 +565,12 @@ class EditHomework(View):
             request_files_list = request.FILES.getlist("files")
             files_list_for_model = save_files(request_files_list)
             if files_list_for_model[0] == "Error":
-                render(
+                messages.error(request, "Неподходящий формат файла")
+                return render(
                     request,
                     "homework/add_homework.html",
                     context={
-                        "errors": ("Unsupported file format"),
+                        "errors": ("Unsupported file format",),
                     },
                 )
             files_list_for_model = files_list_for_model[1]
@@ -505,8 +582,8 @@ class EditHomework(View):
                     letter=server_user.letter,
                 )
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
-
             for file in files_list_for_model:
                 file_name = file[0]
                 file_type = file[1]
@@ -527,7 +604,13 @@ class EditHomework(View):
             homework_object.description = description
             homework_object.subject = subject
             homework_object.save()
+            messages.success(request, "Успешно обновлено")
             return redirect("homework:edit_homework", homework_id=homework_id)
+        messages.error(
+            request,
+            "Для редактирования домашнего задания у вас"
+            " должны быть права администратора",
+        )
         return redirect("homework:homework_page")
 
 
@@ -542,12 +625,19 @@ class EditHomeworkData(View):
                     letter=request_user.letter,
                 )
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             if r_type == "img":
                 Image.objects.get(id=file_id, homework=hw_object).delete()
             elif r_type == "file":
                 File.objects.get(id=file_id, homework=hw_object).delete()
+            messages.success(request, "Успешно обновлено")
             return redirect("homework:edit_homework", homework_id=homework_id)
+        messages.error(
+            request,
+            "Для редактирования домашнего задания у вас"
+            " должны быть права администратора",
+        )
         return redirect("homework:homework_page")
 
 
@@ -566,6 +656,7 @@ class EditMailingPage(View):
                     subject="info",
                 )
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             if hw_info.group == -1:
                 subject_now = "Сообщение для класса"
@@ -582,6 +673,11 @@ class EditMailingPage(View):
                     "subject_now": subject_now,
                 },
             )
+        messages.error(
+            request,
+            "Для редактирования рассылки у вас"
+            " должны быть права администратора",
+        )
         return redirect("homework:homework_page")
 
     def post(self, request, homework_id):
@@ -597,7 +693,8 @@ class EditMailingPage(View):
             request_files_list = request.FILES.getlist("files")
             files_list_for_model = save_files(request_files_list)
             if files_list_for_model[0] == "Error":
-                render(
+                messages.error(request, "Неподходящий формат файла")
+                return render(
                     request,
                     "homework/add_homework.html",
                     context={
@@ -610,6 +707,7 @@ class EditMailingPage(View):
                     id=homework_id,
                 )
             except Homework.DoesNotExist:
+                messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             for file in files_list_for_model:
                 file_name = file[0]
@@ -627,17 +725,26 @@ class EditMailingPage(View):
                         file_name=file_name.split("/")[-1],
                     )
                     homework_object.files.add(file_object)
-
             homework_object.description = description
             homework_object.group = group
             homework_object.save()
-            return redirect("homework:edit_homework", homework_id=homework_id)
+            messages.success(request, "Успешно обновлено")
+            return redirect("homework:edit_mailing", homework_id=homework_id)
+        messages.error(
+            request,
+            "Для редактирования рассылки у вас"
+            " должны быть права администратора",
+        )
         return redirect("homework:homework_page")
 
 
 class MarkDone(View):
     def get(self, request, homework_id):
         if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Необходимо войти в аккаунт для этого действия",
+            )
             return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
         try:
             user = users.models.User.objects.get(user=request.user)
@@ -676,11 +783,19 @@ class SchedulePage(View):
             try:
                 data = json.loads(request.COOKIES.get("hw_data"))
             except TypeError:
+                messages.error(
+                    request,
+                    "Сначала необходимо выбрать в каком вы классе",
+                )
                 return redirect("homework:choose_grad_let")
             grade = data["grade"]
             letter = data["letter"]
             group = data["group"]
             if not grade or not letter:
+                messages.error(
+                    request,
+                    "Сначала необходимо выбрать в каком вы классе",
+                )
                 return redirect("homework:choose_grad_let")
             schedule = get_all_schedule(
                 grade,

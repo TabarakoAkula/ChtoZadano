@@ -3,6 +3,7 @@ import json
 import os
 
 from django.conf import settings
+from django.contrib import messages
 import django.contrib.auth
 from django.contrib.auth.base_user import check_password
 import django.db.utils
@@ -48,6 +49,9 @@ class CodeConfirmationAPI(APIView):
 
 class SignUpPage(View):
     def get(self, request):
+        if request.user.is_authenticated:
+            messages.error(request, "Вы уже вошли в аккаунт")
+            return redirect("users:account_page")
         return render(
             request,
             "users/sign_up.html",
@@ -55,6 +59,9 @@ class SignUpPage(View):
         )
 
     def post(self, request):
+        if request.user.is_authenticated:
+            messages.error(request, "Вы уже вошли в аккаунт")
+            return redirect("users:account_page")
         code = request.POST["confirmation_code"]
         my_sign_in = SignIn.objects.filter(confirmation_code=code).first()
         try:
@@ -106,6 +113,7 @@ class SignUpPage(View):
         )
         django.contrib.auth.login(request, django_user)
         my_sign_in.delete()
+        messages.success(request, "Аккаунт успешно создан")
         return redirect("users:account_page")
 
 
@@ -117,11 +125,13 @@ class SignInPage(View):
                 "users/sign_in.html",
                 context={"form": SignInForm},
             )
-        return redirect("mainpage")
+        messages.error(request, "Вы уже вошли в аккаунт")
+        return redirect("users:account_page")
 
     def post(self, request):
         if request.user.is_authenticated:
-            return redirect("mainpage")
+            messages.error(request, "Вы уже вошли в аккаунт")
+            return redirect("users:account_page")
         my_sign_in = SignIn.objects.filter(
             confirmation_code=request.POST["confirmation_code"],
         ).first()
@@ -164,13 +174,15 @@ class SignInPage(View):
             )
         django.contrib.auth.login(request, django_user)
         my_sign_in.delete()
+        messages.success(request, "Вы успешно вошли в аккаунт")
         return redirect("users:account_page")
 
 
 class SignUpPasswordPage(View):
     def get(self, request):
         if request.user.is_authenticated:
-            return redirect("mainpage")
+            messages.error(request, "Вы уже вошли в аккаунт")
+            return redirect("users:account_page")
         return render(
             request,
             "users/sign_up_password.html",
@@ -179,7 +191,8 @@ class SignUpPasswordPage(View):
 
     def post(self, request):
         if request.user.is_authenticated:
-            return redirect("mainpage")
+            messages.error(request, "Вы уже вошли в аккаунт")
+            return redirect("users:account_page")
         form = SignUpPasswordForm(request.POST).data
         password = form["password"]
         password_checker = validate_password(password)
@@ -218,6 +231,7 @@ class SignUpPasswordPage(View):
                 group=request.POST["group"],
             )
             django.contrib.auth.login(request, django_user)
+            messages.success(request, "Аккаунт успешно создан")
             return redirect("users:account_page")
         else:
             return render(
@@ -238,11 +252,13 @@ class SignInPasswordPage(View):
                 "users/sign_in_password.html",
                 context={"form": SignInPasswordForm},
             )
-        return redirect("mainpage")
+        messages.error(request, "Вы уже вошли в аккаунт")
+        return redirect("users:account_page")
 
     def post(self, request):
         if request.user.is_authenticated:
-            return redirect("mainpage")
+            messages.error(request, "Вы уже вошли в аккаунт")
+            return redirect("users:account_page")
         form = SignInPasswordForm(request.POST).data
         try:
             django_user = django.contrib.auth.models.User.objects.get(
@@ -259,6 +275,7 @@ class SignInPasswordPage(View):
             )
         if check_password(form["password"], django_user.password):
             django.contrib.auth.login(request, django_user)
+            messages.success(request, "Вы успешно вошли в аккаунт")
             return redirect("users:account_page")
         return render(
             request,
@@ -273,6 +290,10 @@ class SignInPasswordPage(View):
 class AccountPage(View):
     def get(self, request):
         if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Необходимо войти в аккаунт для этого действия",
+            )
             return redirect("mainpage")
         show_admin = False
         try:
@@ -294,16 +315,26 @@ class AccountPage(View):
 class Logout(View):
     def get(self, request):
         if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Необходимо войти в аккаунт для этого действия",
+            )
             return redirect("mainpage")
         django.contrib.auth.logout(request)
+        messages.success(request, "Вы вышли из аккаунта")
         return redirect("mainpage")
 
 
 class BecomeAdminPage(View):
     def get(self, request):
         if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Необходимо войти в аккаунт для этого действия",
+            )
             return redirect("mainpage")
         if request.user.is_staff:
+            messages.error(request, "Вы уже имеете роль администратора")
             return redirect("homework:homework_page")
         try:
             BecomeAdmin.objects.get(
@@ -311,12 +342,18 @@ class BecomeAdminPage(View):
             )
         except BecomeAdmin.DoesNotExist:
             return render(request, "users/become_admin.html")
+        messages.error(request, "Вы уже подавали заявку, ожидайте")
         return redirect("users:account_page")
 
     def post(self, request):
         if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Необходимо войти в аккаунт для этого действия",
+            )
             return redirect("mainpage")
         if request.user.is_staff:
+            messages.error(request, "Вы уже имеете роль администратора")
             return redirect("homework:homework_page")
         first_name, last_name = (
             request.POST["first_name"],
@@ -331,6 +368,7 @@ class BecomeAdminPage(View):
             group=user_obj.group,
             telegram_id=user_obj.telegram_id,
         )
+        messages.success(request, "Заявка успешно отправлена")
         return redirect("users:account_page")
 
 
@@ -343,7 +381,8 @@ class ShowBecomeAdmin(View):
                 "users/show_become_admin.html",
                 context={"data": data},
             )
-        return redirect("mainpage")
+        messages.error(request, "У вас недостаточно прав для этого действия")
+        return redirect("users:account_page")
 
 
 class BecomeAdminAccept(View):
@@ -353,20 +392,38 @@ class BecomeAdminAccept(View):
             user_obj = User.objects.get(telegram_id=telegram_id).user
             user_obj.is_staff = True
             user_obj.save()
+            messages.success(
+                request,
+                f"Пользователь {user_obj.first_name}"
+                f" {user_obj.last_name} назначен администратором",
+            )
             return redirect("users:show_become_admin")
-        return redirect("mainpage")
+        messages.error(request, "У вас недостаточно прав для этого действия")
+        return redirect("users:account_page")
 
 
 class BecomeAdminDecline(View):
     def get(self, request, telegram_id):
         if request.user.is_superuser:
             BecomeAdmin.objects.get(telegram_id=telegram_id).delete()
+            messages.success(
+                request,
+                f"Заявка пользователя {request.user.first_name}"
+                f" {request.user.last_name} отклонена",
+            )
             return redirect("users:show_become_admin")
-        return redirect("mainpage")
+        messages.error(request, "У вас недостаточно прав для этого действия")
+        return redirect("users:account_page")
 
 
 class ChangeContactsPage(View):
     def get(self, request):
+        if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Необходимо войти в аккаунт для этого действия",
+            )
+            return redirect("mainpage")
         return render(
             request,
             "users/change_contacts.html",
@@ -374,16 +431,29 @@ class ChangeContactsPage(View):
         )
 
     def post(self, request):
+        if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Необходимо войти в аккаунт для этого действия",
+            )
+            return redirect("mainpage")
         form = ChangeContactsForm(request.POST).data
         django_user = request.user
         django_user.first_name = form["first_name"]
         django_user.last_name = form["last_name"]
         django_user.save()
+        messages.success(request, "Данные обновлены")
         return redirect("users:account_page")
 
 
 class EditNotebook(View):
     def get(self, request):
+        if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Необходимо войти в аккаунт для этого действия",
+            )
+            return redirect("mainpage")
         return render(
             request,
             "users/edit_notebook.html",
@@ -391,6 +461,12 @@ class EditNotebook(View):
         )
 
     def post(self, request):
+        if not request.user.is_authenticated:
+            messages.error(
+                request,
+                "Необходимо войти в аккаунт для этого действия",
+            )
+            return redirect("mainpage")
         form = EditNotebookForm(request.POST).data
         user = User.objects.get(user=request.user)
         user.notebook = form["text"]
