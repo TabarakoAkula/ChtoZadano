@@ -9,7 +9,7 @@
 		{% csrf_token %}
 		{{ form.as_p }}
 		<a href="{% url "users:signin_password_page" %}">
-		<button>Сменить</button>
-	</a>
+			<button>Сменить</button>
+		</a>
 	</form>
 {% endblock %}

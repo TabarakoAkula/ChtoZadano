@@ -7,10 +7,10 @@
 	{% endfor %}
 	<form method="POST" enctype="multipart/form-data" style="margin-left: 30em; margin-right: 30em; margin-bottom: 5em">
 		{% csrf_token %}
-		{{ form }}
+		{{ form.as_p }}
 		<br>
-		<label for="color">Choose color</label>
+		<label for="color">Выберите цвет</label>
 		<input id="color" maxlength="7" name="color" type="color">
-		<button type="submit">Enter</button>
+		<button type="submit">Сохранить</button>
 	</form>
 {% endblock %}

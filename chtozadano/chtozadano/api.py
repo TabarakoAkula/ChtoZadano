@@ -104,4 +104,8 @@ urlpatterns = [
         "get_tomorrow_shedule/",
         homework.views.GetTomorrowScheduleAPI.as_view(),
     ),
+    path(
+        "delete_old_homework/",
+        homework.views.DeleteOldHomeworkAPI.as_view(),
+    ),
 ]

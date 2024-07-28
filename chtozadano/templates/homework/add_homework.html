@@ -8,19 +8,19 @@
 			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
 		{% endfor %}
 		<br>
-		<label for="subject">Choose a subject:</label>
+		<label for="subject">Выберите предмет:</label>
 		<select name="subject">
 			{% for subject in subjects %}
 				<option>{{ subject }}</option>
 			{% endfor %}
 		</select><br>
-		<textarea name="description">Enter description</textarea><br>
+		<textarea name="description">Введите описание</textarea><br>
 		<div class="container">
 			<input type="file" id="file-input" onchange="preview()" multiple name="files">
 			<label for="file-input">
-				<i class="fas fa-upload"></i> &nbsp; Choose Files
+				<i class="fas fa-upload"></i> &nbsp; Выберите файлы
 			</label>
-			<p id="num-of-files">No Files Chosen</p>
+			<p id="num-of-files">Файлы не выбраны</p>
 			<div id="images"></div>
 		</div>
 		<script>
@@ -56,7 +56,6 @@
                 }
             }
 		</script>
-		<button type="submit">Submit</button>
+		<button type="submit">Добавить</button>
 	</form>
-
 {% endblock %}

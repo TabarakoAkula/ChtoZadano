@@ -3,18 +3,20 @@
 {% block content %}
 	{% load static %}
 	<p><br></p>
-	<a href="{% url "users:signup_password_page" %}"><button>Зарегестрироваться без Telegram</button></a>
+	<a href="{% url "users:signup_password_page" %}">
+		<button>Зарегистрироваться без Telegram</button>
+	</a>
 	<form method="POST" enctype="multipart/form-data" style="margin-left: 30em; margin-right: 30em; margin-bottom: 5em">
 		{% for error in errors %}
 			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
 		{% endfor %}
 		{% csrf_token %}
-		<p>Enter your code: {{ form.confirmation_code }}</p>
-		<p style="background-color: rgba(108,204,73,0.29)">Write to <a href="https://t.me/ChtoZadano_bot">bot</a> a word
+		<p>Код идентификации: {{ form.confirmation_code }}</p>
+		<p style="background-color: rgba(108,204,73,0.29)">Отправь <a href="https://t.me/ChtoZadano_bot">боту</a> слово
 			"код"</p>
-		<p>Choose your grade: {{ form.grade }}</p>
-		<p>Choose your letter: {{ form.letter }} </p>
-		<p>Choose your group: {{ form.group }} </p>
-		<button title="Enter your code">Enter</button>
+		<p>Класс: {{ form.grade }}</p>
+		<p>Литера: {{ form.letter }} </p>
+		<p>Группа: {{ form.group }} </p>
+		<button>Зарегистрироваться</button>
 	</form>
 {% endblock %}

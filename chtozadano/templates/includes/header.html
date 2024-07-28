@@ -1,48 +1,120 @@
+<style>
+    .alert {
+        position: relative;
+        top: 10;
+        left: 0;
+        width: auto;
+        height: auto;
+        padding: 10px;
+        margin: 10px;
+        line-height: 1.8;
+        border-radius: 5px;
+        cursor: hand;
+        cursor: pointer;
+        font-family: sans-serif;
+        font-weight: 400;
+    }
+
+    .alertCheckbox {
+        display: none;
+    }
+
+    :checked + .alert {
+        display: none;
+    }
+
+    .alertText {
+        display: table;
+        margin: 0 auto;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .alertClose {
+        float: right;
+        padding-top: 5px;
+        font-size: 10px;
+    }
+
+    .clear {
+        clear: both;
+    }
+
+    .success {
+        background-color: #EFE;
+        border: 1px solid #DED;
+        color: #9A9;
+    }
+
+    .error {
+        background-color: #FEE;
+        border: 1px solid #EDD;
+        color: #A66;
+    }
+</style>
 <header>
 	<div class="container">
 		{% if request.user.is_authenticated %}
-			<p>Hi, {{ request.user }}</p>
+			<p>Привет, {{ request.user }}</p>
 			<a href="{% url "users:account_page" %}">
-				<button>Account</button>
+				<button>Аккаунт</button>
 			</a>
 		{% endif %}
 		<a href="{% url "mainpage" %}">
-			<button>Mainpage</button>
+			<button>Главная</button>
 		</a>
 		<a href="{% url "homework:schedule" %}">
-			<button>Schedule</button>
+			<button>Расписание</button>
 		</a>
 		<a href="{% url "homework:homework_page" %}">
-			<button>Homework</button>
+			<button>Домашка</button>
 		</a>
 		{% if request.user.is_staff or request.user.is_superuser %}
 			<a href="{% url "homework:add_homework_page" %}">
-				<button>Add hw</button>
-			</a>
-		{% endif %}
-		{% if request.user.is_authenticated %}
-			<a href="{% url "users:logout" %}">
-				<button>Logout</button>
-			</a>
-		{% else %}
-			<a href="{% url "users:signin_page" %}">
-				<button>Sign in</button>
-			</a>
-			<a href="{% url "users:signup_page" %}">
-				<button>Sign up</button>
+				<button>Добавить дз</button>
 			</a>
 		{% endif %}
 		{% if request.user.is_superuser %}
 			<a href="/admin/">
-				<button>Admin panel</button>
+				<button>Админ панель</button>
 			</a>
 			<a href="{% url "users:show_become_admin" %}">
-				<button>Requests to Admin</button>
+				<button>Заявки на администратора</button>
 			</a>
 			<a href="{% url "homework:add_mailing_page" %}">
-				<button>Add mailing</button>
+				<button>Добавить рассылку</button>
 			</a>
-
+		{% endif %}
+		{% if request.user.is_authenticated %}
+			<a href="{% url "users:logout" %}">
+				<button>Выйти</button>
+			</a>
+		{% else %}
+			<a href="{% url "users:signin_page" %}">
+				<button>Войти</button>
+			</a>
+			<a href="{% url "users:signup_page" %}">
+				<button>Зарегистрироваться</button>
+			</a>
+		{% endif %}
+	</div>
+	<div>
+		{% if messages %}
+			{% for message in messages %}
+				<label>
+					<input type="checkbox" class="alertCheckbox" autocomplete="off"/>
+					{% if message.tags == "success" %}
+						<div class="alert success">
+					{% elif message.tags == "error" %}
+						<div class="alert error">
+					{% endif %}
+					<span class="alertClose">X</span>
+					<span class="alertText">{{ message }}
+                                <br class="clear"/>
+								</span>
+					</div>
+				</label>
+			{% endfor %}
 		{% endif %}
 	</div>
 </header>

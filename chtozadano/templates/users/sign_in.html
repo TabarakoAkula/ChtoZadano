@@ -9,8 +9,8 @@
 			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
 		{% endfor %}
 		{% csrf_token %}
-		<p>Enter your code: {{ form.confirmation_code }}</p>
-	 <p>Write to <a href="https://t.me/ChtoZadano_bot">bot</a> a word "код"</p>
-		<button title="Enter your code" type="submit">Enter</button>
+		<p>Код идентификации: {{ form.confirmation_code }}</p>
+	 <p>Отправь <a href="https://t.me/ChtoZadano_bot">боту</a> слово "код"</p>
+		<button type="submit">Войти</button>
 	</form>
 {% endblock %}

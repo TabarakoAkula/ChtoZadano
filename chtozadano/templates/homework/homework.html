@@ -3,49 +3,80 @@
 {% block content %}
 	{% load static %}
 	{% if not user.is_staff or user.is_superuser %}
+		<br>
 		<a href="{% url "homework:choose_grad_let" %}">
-			<button>Change grade or letter</button>
+			<button>Сменить класс или литеру</button>
 		</a>
 	{% endif %}
-	<table border="1">
-		{% for i in info %}
+	{% if info %}
+		<br>
+		<table border="1">
 			<tr>
-				<td>{{ i.subject }}</td>
-				<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
-				<td>{{ i.description }}</td>
-				<td>{{ i.created_at }}</td>
-				<td>
-					{% for j in i.images.all %}
-						<img src="{{ j.image.url }}" width="500" height="500">
-					{% endfor %}</td>
-				<td>{% for j in i.files.all %}
-					<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
-				{% endfor %}</td>
-				{% if i.group == -1 and user.is_staff  or i.group == -1 and user.is_superuser %}
-					<td><a href="{% url "homework:delete_mailing" i.id %}">
-						<button type="submit">Delete</button>
-					</a>
-						<a href="{% url "homework:edit_mailing" i.id %}">
-							<button type="submit">Edit</button>
-						</a>
-					</td>
-				{% elif i.group == -2 and user.is_superuser or i.group == -3 and user.is_superuser %}
-					<td><a href="{% url "homework:delete_mailing" i.id %}">
-						<button type="submit">Delete</button>
-					</a>
-						<a href="{% url "homework:edit_mailing" i.id %}">
-							<button type="submit">Edit</button>
-						</a>
-					</td>
+				<td>Автор</td>
+				<td>Описание</td>
+				<td>Дата создания</td>
+				<td>Изображения</td>
+				<td>Файлы</td>
+				{% if user.is_superuser or user.is_staff %}
+					<td>Редактирование</td>
 				{% endif %}
 			</tr>
-		{% endfor %}
-	</table>
+			{% for i in info %}
+				{% if i %}
+					<tr>
+						<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
+						<td>{{ i.description }}</td>
+						<td>{{ i.created_at }}</td>
+						<td>
+							{% for j in i.images.all %}
+								<img src="{{ j.image.url }}" width="500" height="500">
+							{% endfor %}</td>
+						<td>{% for j in i.files.all %}
+							<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
+						{% endfor %}</td>
+						{% if i.group == -1 and user.is_staff  or i.group == -1 and user.is_superuser %}
+							<td><a href="{% url "homework:delete_mailing" i.id %}">
+								<button type="submit">Удалить</button>
+							</a>
+								<a href="{% url "homework:edit_mailing" i.id %}">
+									<button type="submit">Изменить</button>
+								</a>
+							</td>
+						{% elif i.group == -2 and user.is_superuser or i.group == -3 and user.is_superuser %}
+							<td><a href="{% url "homework:delete_mailing" i.id %}">
+								<button type="submit">Удалить</button>
+							</a>
+								<a href="{% url "homework:edit_mailing" i.id %}">
+									<button type="submit">Изменить</button>
+								</a>
+							</td>
+						{% endif %}
+					</tr>
+				{% endif %}
+			{% endfor %}
+		</table>
+	{% endif %}
 	<h1>ДЗ для {{ grade }}{{ letter }} класса</h1>
 	<a href="{% url "homework:all_homework_page" %}">
 		<button>Посмотреть все дз за последние 2 недели</button>
 	</a><br>
 	<table border="1">
+		<tr>
+			<td>Класс</td>
+			<td>Литера</td>
+			<td>Предмет</td>
+			<td>Автор</td>
+			<td>Описание</td>
+			<td>Дата создания</td>
+			<td>Изображения</td>
+			<td>Файлы</td>
+			{% if user.is_superuser or user.is_staff %}
+				<td>Редактирование</td>
+			{% endif %}
+			{% if request.user.is_authenticated %}
+				<td>Выполненность</td>
+			{% endif %}
+		</tr>
 		{% for i in homework %}
 			{% if user.is_authenticated and i.id in done_list %}
 				<tr style="background-color: rgba(135,145,148,0.22)">
@@ -67,23 +98,23 @@
 		{% endfor %}</td>
 		{% if user.is_superuser or user.is_staff %}
 			<td><a href="{% url "homework:delete_homework" i.id %}">
-				<button type="submit">Delete</button>
+				<button type="submit">Удалить</button>
 			</a>
 				<a href="{% url "homework:edit_homework" i.id %}">
-					<button type="submit">Edit</button>
+					<button type="submit">Изменить</button>
 				</a>
 			</td>
 		{% endif %}
 		{% if done_list and user.is_authenticated and i.id in done_list %}
 			<td>
 				<a href="{% url "homework:mark_done" i.id %}">
-					<button>Mark undone</button>
+					<button>Пометить как невыполненное</button>
 				</a>
 			</td>
 		{% elif user.is_authenticated %}
 			<td>
 				<a href="{% url "homework:mark_done" i.id %}">
-					<button>Mark done</button>
+					<button>Пометить как выполненное</button>
 				</a>
 			</td>
 		{% endif %}

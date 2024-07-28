@@ -22,7 +22,7 @@ LETTER_CHOICES = (
     ("А", "А"),
     ("Б", "Б"),
     ("Г", "В"),
-    ("Г", "В"),
+    ("Г", "Г"),
 )
 
 
@@ -93,7 +93,7 @@ class SignIn(django.db.models.Model):
         on_delete=django.db.models.DO_NOTHING,
         null=True,
         blank=True,
-        verbose_name="Пользователб",
+        verbose_name="Пользователь",
     )
     telegram_id = django.db.models.CharField(
         null=True,
@@ -103,7 +103,7 @@ class SignIn(django.db.models.Model):
     confirmation_code = django.db.models.CharField(
         null=True,
         blank=True,
-        verbose_name="Код подтверждения",
+        verbose_name="Код идентификации",
     )
     created_at = DateTimeWithoutTZField(
         auto_now_add=True,
@@ -119,14 +119,38 @@ class SignIn(django.db.models.Model):
         return str(self.id)
 
     class Meta:
-        verbose_name = "Sign in"
-        verbose_name_plural = "Sign in"
+        verbose_name = "Идентификация"
+        verbose_name_plural = "Идентификации"
 
 
 class BecomeAdmin(django.db.models.Model):
-    grade = django.db.models.IntegerField(choices=GRADE_CHOICES)
-    letter = django.db.models.CharField(choices=LETTER_CHOICES)
-    group = django.db.models.CharField(choices=((1, 1), (2, 2)))
-    first_name = django.db.models.CharField()
-    last_name = django.db.models.CharField()
-    telegram_id = django.db.models.CharField(null=True, blank=True)
+    grade = django.db.models.IntegerField(
+        choices=GRADE_CHOICES,
+        verbose_name="Класс",
+    )
+    letter = django.db.models.CharField(
+        choices=LETTER_CHOICES,
+        verbose_name="Литера",
+    )
+    group = django.db.models.IntegerField(
+        choices=((1, 1), (2, 2)),
+        verbose_name="Группа",
+    )
+    first_name = django.db.models.CharField(
+        verbose_name="Имя",
+    )
+    last_name = django.db.models.CharField(
+        verbose_name="Фамилия",
+    )
+    telegram_id = django.db.models.CharField(
+        null=True,
+        blank=True,
+        verbose_name="Телеграм id",
+    )
+
+    def __str__(self):
+        return str(self.telegram_id)
+
+    class Meta:
+        verbose_name = "Заявка на администратора"
+        verbose_name_plural = "Заявки на администратора"

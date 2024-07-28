@@ -2,9 +2,18 @@
 
 {% block content %}
 	{% load static %}
+	<br>
 	<form method="post">
 		{% csrf_token %}
 		<table border="1">
+			<tr>
+				<td>Класс</td>
+				<td>Литера</td>
+				<td>Описание</td>
+				<td>Дата создания</td>
+				<td>Изображения</td>
+				<td>Файлы</td>
+			</tr>
 			<tr>
 				<td>{{ hw_info.grade }}</td>
 				<td>{{ hw_info.letter }}</td>

@@ -2,9 +2,9 @@
 
 {% block content %}
 	{% load static %}
-	<h1>Schedule for a week</h1>
+	<h1>Расписание на неделю</h1>
 	{% for schedule in data %}
-		<p>Day: {{ forloop.counter }}</p>
+		<p>День: {{ forloop.counter }}</p>
 		<table border="1">
 			{% for lesson in schedule %}
 				<tr>
