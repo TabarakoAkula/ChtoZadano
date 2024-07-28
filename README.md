@@ -1,21 +1,24 @@
-[![master CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/master.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/master.yml)
-[![server CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/server.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/server.yml)
-[![bot CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/bot.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/bot.yml)
-
-<h1>ChtoZadano</h1>
-
-+ python version: 3.10.x
-+ Django version: 5.0.6
-
-Запуск сервера (WGSI, standart):
-+ перейдите в директорию ``chtozadano``
-+ пропишите в консоли:
-  ```bash
-  python manage.py runserver
-  ```
+<p align="center">
+  <a href="https://github.com/TabarakoAkula/ChtoZadano">
+    <img width="300px" height="300px" alt="AChtoZadano" src="https://github.com/user-attachments/assets/559b5c28-5df0-45ba-9c1c-dc9d0a49f516">
+  </a>
+<h1 align="center">
+  AChtoZadano
+</h1>
+</p>
+<div align="center">  
+  
+  [![master CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/master.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/master.yml)
+  [![server CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/server.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/server.yml)
+  [![bot CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/bot.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/bot.yml)  
+  [![python - 3.10 | 3.11 | 3.12](https://img.shields.io/badge/python-3.10_|_3.11_|_3.12-4b4de3)](https://)
+  [![Django - 5.0.6](https://img.shields.io/badge/Django-5.0-4b4de3)](https://)  
+  [![Issues](https://img.shields.io/github/license/mashape/apistatus.svg)](https://)
+</div>
   
 # Документация по API:
-## Users:
+<details><summary><h2>Users:</h2></summary>
+  
 + CodeConfirmationAPI:
   + Путь: ``api/v1/code_confirmation/`` 
   + Метод: ``POST``
@@ -147,8 +150,9 @@
     + Возвращает:
       + ``HttpResponse``:
         + ``Successful``
+</details>
+<details><summary><h2>Homework:</h2></summary>
 
-## Homework:
 + ChangeGradeLetterAPI:
   + Путь: ``api/v1/get_last_homework_all_subjects/`` 
   + Метод: ``GET``
@@ -513,3 +517,4 @@
   + Возвращает:
       + ``HttpResponse``
         + ``Successful delete {todo_d_counter:int} Todo and {homework_d_counter:int} Homework rows``
+</details>
