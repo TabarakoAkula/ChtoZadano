@@ -15,7 +15,25 @@
   [![Django - 5.0.6](https://img.shields.io/badge/Django-5.0-4b4de3)](https://)  
   [![Issues](https://img.shields.io/github/license/mashape/apistatus.svg)](https://)
 </div>
-  
+
+## Launch
++ #### First launch
+  + ```bash
+    docker compose up --build -d
+    ```
++ #### Base launch:
+  + ```bash
+    docker compose up -d
+    ```
+
+### Install initial data fixture:
++ #### Launch docker
++ #### Exec in terminal:
+  + ```bash
+    docker exec -it chtozadano-web-1 bash
+    cd chtozadano && python3 manage.py loaddata fixtures/initial_data.json
+    ```
+
 # Документация по API:
 <details><summary><h2>Users:</h2></summary>
   
