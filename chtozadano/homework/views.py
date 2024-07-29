@@ -4,7 +4,7 @@ import json
 from django.conf import settings
 from django.contrib import messages
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from rest_framework.views import APIView
@@ -745,7 +745,7 @@ class MarkDone(View):
                 request,
                 "Необходимо войти в аккаунт для этого действия",
             )
-            return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
+            return redirect("users:signin_page")
         try:
             user = users.models.User.objects.get(user=request.user)
             homework = Homework.objects.get(id=homework_id)
@@ -766,8 +766,8 @@ class MarkDone(View):
                 todo_obj.is_done = True
                 todo_obj.save()
         except users.models.User.DoesNotExist and Homework.DoesNotExist:
-            return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
-        return HttpResponseRedirect(self.request.META.get("HTTP_REFERER"))
+            return redirect("homework:homework_page")
+        return redirect("homework:homework_page")
 
 
 class SchedulePage(View):

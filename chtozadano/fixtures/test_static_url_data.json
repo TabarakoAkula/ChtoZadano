@@ -29,7 +29,7 @@
       "is_staff": true
     }
   },
-    {
+  {
     "model": "auth.user",
     "pk": 4,
     "fields": {
@@ -72,7 +72,7 @@
       "telegram_id": 3
     }
   },
-    {
+  {
     "model": "users.user",
     "pk": 4,
     "fields": {
@@ -83,7 +83,7 @@
       "telegram_id": 4
     }
   },
-    {
+  {
     "model": "users.becomeadmin",
     "pk": 1,
     "fields": {
@@ -93,6 +93,71 @@
       "telegram_id": 4,
       "first_name": "test_name",
       "last_name": "test_surname"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 1,
+    "fields": {
+      "grade": 10,
+      "letter": "Б",
+      "group": 0,
+      "description": "test_description",
+      "created_at": "2024-07-28 03:38:59.433000",
+      "subject": "rus"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 2,
+    "fields": {
+      "grade": 10,
+      "letter": "Б",
+      "group": -1,
+      "description": "test_description",
+      "created_at": "2024-07-28 03:38:59.433000",
+      "subject": "info"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 3,
+    "fields": {
+      "grade": 10,
+      "letter": "Б",
+      "group": -2,
+      "description": "test_description",
+      "created_at": "2024-07-28 03:38:59.433000",
+      "subject": "info"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 4,
+    "fields": {
+      "grade": 10,
+      "letter": "Б",
+      "group": -3,
+      "description": "test_description",
+      "created_at": "2024-07-28 03:38:59.433000",
+      "subject": "info"
+    }
+  },
+  {
+    "model": "homework.image",
+    "pk": 1,
+    "fields": {
+      "homework_id": 1,
+      "image": "path"
+    }
+  },
+  {
+    "model": "homework.file",
+    "pk": 1,
+    "fields": {
+      "homework_id": 1,
+      "file_name": "test_file_name",
+      "file": "path"
     }
   }
 ]
