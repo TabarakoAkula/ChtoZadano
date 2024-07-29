@@ -37,9 +37,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements/dev.txt
-    - name: Django tests users
+    - name: Django setup
       run: |
         cd chtozadano
+        python manage.py makemigrations
+        python manage.py migrate
+        python manage.py collectstatic --noinput
+    - name: Django tests users
+      run: |
         python manage.py test users --debug-mode
         cd ../
       env:
