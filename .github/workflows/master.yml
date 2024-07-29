@@ -8,12 +8,23 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
         python-version: ["3.10"]
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
     - uses: actions/checkout@v4
@@ -30,6 +41,12 @@ jobs:
         cd chtozadano
         python manage.py test
         cd ../
+      env:
+          POSTGRES_NAME: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
     - name: Linting | Black
       run: |
         black --check --color --diff  --line-length 79  --exclude migrations --verbose .
