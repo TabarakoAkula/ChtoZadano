@@ -294,7 +294,7 @@ class AccountPage(View):
                 request,
                 "Необходимо войти в аккаунт для этого действия",
             )
-            return redirect("mainpage")
+            return redirect("users:signin_page")
         show_admin = False
         try:
             BecomeAdmin.objects.get(
@@ -319,7 +319,7 @@ class Logout(View):
                 request,
                 "Необходимо войти в аккаунт для этого действия",
             )
-            return redirect("mainpage")
+            return redirect("users:signin_page")
         django.contrib.auth.logout(request)
         messages.success(request, "Вы вышли из аккаунта")
         return redirect("mainpage")
@@ -332,7 +332,7 @@ class BecomeAdminPage(View):
                 request,
                 "Необходимо войти в аккаунт для этого действия",
             )
-            return redirect("mainpage")
+            return redirect("users:signin_page")
         if request.user.is_staff:
             messages.error(request, "Вы уже имеете роль администратора")
             return redirect("homework:homework_page")
@@ -351,7 +351,7 @@ class BecomeAdminPage(View):
                 request,
                 "Необходимо войти в аккаунт для этого действия",
             )
-            return redirect("mainpage")
+            return redirect("users:signin_page")
         if request.user.is_staff:
             messages.error(request, "Вы уже имеете роль администратора")
             return redirect("homework:homework_page")
@@ -423,7 +423,7 @@ class ChangeContactsPage(View):
                 request,
                 "Необходимо войти в аккаунт для этого действия",
             )
-            return redirect("mainpage")
+            return redirect("users:signin_page")
         return render(
             request,
             "users/change_contacts.html",
@@ -436,7 +436,7 @@ class ChangeContactsPage(View):
                 request,
                 "Необходимо войти в аккаунт для этого действия",
             )
-            return redirect("mainpage")
+            return redirect("users:signin_page")
         form = ChangeContactsForm(request.POST).data
         django_user = request.user
         django_user.first_name = form["first_name"]
@@ -453,7 +453,7 @@ class EditNotebook(View):
                 request,
                 "Необходимо войти в аккаунт для этого действия",
             )
-            return redirect("mainpage")
+            return redirect("users:signin_page")
         return render(
             request,
             "users/edit_notebook.html",
@@ -466,7 +466,7 @@ class EditNotebook(View):
                 request,
                 "Необходимо войти в аккаунт для этого действия",
             )
-            return redirect("mainpage")
+            return redirect("users:signin_page")
         form = EditNotebookForm(request.POST).data
         user = User.objects.get(user=request.user)
         user.notebook = form["text"]

@@ -10,7 +10,7 @@ from django.views.static import serve
 app_name = "chtozadano"
 
 urlpatterns = [
-    path("", chtozadano.views.RedirectToMainPage.as_view()),
+    path("", chtozadano.views.RedirectToMainPage.as_view(), name="index"),
     path("api/v1/", include("chtozadano.api")),
     path("mainpage/", chtozadano.views.MainPage.as_view(), name="mainpage"),
     path("admin/", admin.site.urls),
