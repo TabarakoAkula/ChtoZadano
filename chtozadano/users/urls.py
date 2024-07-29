@@ -19,20 +19,25 @@ from users.views import (
 app_name = "users"
 
 urlpatterns = [
-    path("sign_in/", SignInPage.as_view(), name="signin_page"),
     path("sign_up/", SignUpPage.as_view(), name="signup_page"),
-    path(
-        "sign_in_password/",
-        SignInPasswordPage.as_view(),
-        name="signin_password_page",
-    ),
     path(
         "sign_up_password/",
         SignUpPasswordPage.as_view(),
         name="signup_password_page",
     ),
+    path("sign_in/", SignInPage.as_view(), name="signin_page"),
+    path(
+        "sign_in_password/",
+        SignInPasswordPage.as_view(),
+        name="signin_password_page",
+    ),
     path("account/", AccountPage.as_view(), name="account_page"),
     path("logout/", Logout.as_view(), name="logout"),
+    path(
+        "change_contacts/",
+        ChangeContactsPage.as_view(),
+        name="change_contacts",
+    ),
     path("become_admin/", BecomeAdminPage.as_view(), name="become_admin"),
     path(
         "show_become_admin/",
@@ -48,11 +53,6 @@ urlpatterns = [
         "show_become_decline/<int:telegram_id>",
         BecomeAdminDecline.as_view(),
         name="decline_become_admin",
-    ),
-    path(
-        "change_contacts/",
-        ChangeContactsPage.as_view(),
-        name="change_contacts",
     ),
     path("edit_notebook/", EditNotebook.as_view(), name="edit_notebook"),
 ]

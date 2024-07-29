@@ -1,16 +1,36 @@
 from django.urls import path
 
 import homework.views
-import users.views
+import users.api
 
 urlpatterns = [
     path(
         "code_confirmation/",
-        users.views.CodeConfirmationAPI.as_view(),
+        users.api.CodeConfirmationAPI.as_view(),
     ),
     path(
         "create_user/",
-        users.views.CreateUserAPI.as_view(),
+        users.api.CreateUserAPI.as_view(),
+    ),
+    path(
+        "change_contacts/",
+        users.api.ChangeContactsAPI.as_view(),
+    ),
+    path(
+        "change_grade_letter/",
+        users.api.ChangeGradeLetterAPI.as_view(),
+    ),
+    path(
+        "change_chat_mode/",
+        users.api.ChangeChatModeAPI.as_view(),
+    ),
+    path(
+        "become_admin/",
+        users.api.BecomeAdminAPI.as_view(),
+    ),
+    path(
+        "become_admin_accept_decline/",
+        users.api.AcceptDeclineBecomeAdminAPI.as_view(),
     ),
     path(
         "get_last_homework_all_subjects/",
@@ -19,26 +39,6 @@ urlpatterns = [
     path(
         "get_homework_for_subject/",
         homework.views.GetOneSubjectAPI.as_view(),
-    ),
-    path(
-        "become_admin/",
-        users.views.BecomeAdminAPI.as_view(),
-    ),
-    path(
-        "become_admin_accept_decline/",
-        users.views.AcceptDeclineBecomeAdminAPI.as_view(),
-    ),
-    path(
-        "change_grade_letter/",
-        users.views.ChangeGradeLetterAPI.as_view(),
-    ),
-    path(
-        "change_chat_mode/",
-        users.views.ChangeChatModeAPI.as_view(),
-    ),
-    path(
-        "change_contacts/",
-        users.views.ChangeContactsAPI.as_view(),
     ),
     path(
         "get_homework_from_date/",
