@@ -9,6 +9,10 @@ urlpatterns = [
         users.views.CodeConfirmationAPI.as_view(),
     ),
     path(
+        "create_user/",
+        users.views.CreateUserAPI.as_view(),
+    ),
+    path(
         "get_last_homework_all_subjects/",
         homework.views.GetLastHomeworkAllSubjectsAPI.as_view(),
     ),

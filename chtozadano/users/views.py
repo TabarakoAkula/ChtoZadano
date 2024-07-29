@@ -47,6 +47,29 @@ class CodeConfirmationAPI(APIView):
         )
 
 
+class CreateUserAPI(APIView):
+    def post(self, request):
+        if request.data["api_key"] != settings.API_KEY:
+            return HttpResponse("Uncorrect api key")
+        telegram_id = request.data["telegram_id"]
+        all_users = User.objects.filter(telegram_id=telegram_id).all()
+        if all_users:
+            return HttpResponse("Пользователь уже зарегистрирован")
+        django_user = django.contrib.auth.models.User.objects.create_user(
+            username=request.data["name"],
+            first_name=request.data["name"],
+            password=create_password(telegram_id, os.getenv("SECRET_KEY")),
+        )
+        User.objects.create(
+            user=django_user,
+            grade=request.data["grade"],
+            letter=request.data["letter"],
+            group=request.data["group"],
+            telegram_id=telegram_id,
+        )
+        return HttpResponse("Successful")
+
+
 class SignUpPage(View):
     def get(self, request):
         if request.user.is_authenticated:
