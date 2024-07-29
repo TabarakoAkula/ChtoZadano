@@ -28,7 +28,7 @@ jobs:
     - name: Django tests
       run: |
         cd chtozadano
-        python manage.py test
+        python manage.py test users --debug-mode
         cd ../
     - name: Linting | Black
       run: |
