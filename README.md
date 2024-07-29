@@ -188,7 +188,7 @@
 </details>
 <details><summary><h2>Homework:</h2></summary>
 
-+ ChangeGradeLetterAPI:
++ GetLastHomeworkAllSubjectsAPI:
   + Путь: ``api/v1/get_last_homework_all_subjects/`` 
   + Метод: ``GET``
   + Ограничение по доступности: ``нет``
@@ -314,21 +314,7 @@
           ``images``: ``list``,   
           ``files``: ``list``,  
           ``author``: ``str``,  
-        }
-+ DeleteHomeworkAPI:
-  + Путь: ``api/v1/delete_homework/`` 
-  + Метод: ``POST``
-  + Ограничение по доступности: ``staff``/``superuser``
-  + Суть: удалить дз по его ``id``
-  + Действие: удаляет дз с указанным ``id`` 
-  + Параметры: 
-    + ``api_key`` - ``str`` апи ключ 
-    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
-    + ``homework_id`` - ``int`` id домашки
-  + Возвращает:
-      + ``HttpResponse``:
-        + ``Does not exist``
-        + ``Successful``
+        }  
 + AddHomeWorkAPI:
   + Путь: ``api/v1/add_homework/`` 
   + Метод: ``POST``
@@ -389,6 +375,20 @@
   + Возвращает:
       + ``HttpResponse``:
         + ``Does not exist`` 
+        + ``Successful``
++ DeleteHomeworkAPI:
+  + Путь: ``api/v1/delete_homework/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``staff``/``superuser``
+  + Суть: удалить дз по его ``id``
+  + Действие: удаляет дз с указанным ``id`` 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``homework_id`` - ``int`` id домашки
+  + Возвращает:
+      + ``HttpResponse``:
+        + ``Does not exist``
         + ``Successful``
 + GetMailingAPI:
   + Путь: ``api/v1/get_mailing/`` 
