@@ -44,7 +44,7 @@
     "pk": 1,
     "fields": {
       "user_id": 1,
-      "grade": 10,
+      "grade": 11,
       "letter": "Б",
       "group": 1,
       "telegram_id": 1
@@ -55,7 +55,7 @@
     "pk": 2,
     "fields": {
       "user_id": 2,
-      "grade": 10,
+      "grade": 11,
       "letter": "Б",
       "group": 1,
       "telegram_id": 2
@@ -66,7 +66,7 @@
     "pk": 3,
     "fields": {
       "user_id": 3,
-      "grade": 10,
+      "grade": 11,
       "letter": "Б",
       "group": 1,
       "telegram_id": 3
@@ -77,7 +77,7 @@
     "pk": 4,
     "fields": {
       "user_id": 4,
-      "grade": 10,
+      "grade": 11,
       "letter": "Б",
       "group": 1,
       "telegram_id": 4
@@ -87,7 +87,7 @@
     "model": "users.becomeadmin",
     "pk": 1,
     "fields": {
-      "grade": 10,
+      "grade": 11,
       "letter": "Б",
       "group": 1,
       "telegram_id": 4,
@@ -99,7 +99,7 @@
     "model": "homework.homework",
     "pk": 1,
     "fields": {
-      "grade": 10,
+      "grade": 11,
       "letter": "Б",
       "group": 0,
       "description": "test_description",
@@ -111,7 +111,7 @@
     "model": "homework.homework",
     "pk": 2,
     "fields": {
-      "grade": 10,
+      "grade": 11,
       "letter": "Б",
       "group": -1,
       "description": "test_description",
@@ -123,7 +123,7 @@
     "model": "homework.homework",
     "pk": 3,
     "fields": {
-      "grade": 10,
+      "grade": 11,
       "letter": "Б",
       "group": -2,
       "description": "test_description",
@@ -135,7 +135,7 @@
     "model": "homework.homework",
     "pk": 4,
     "fields": {
-      "grade": 10,
+      "grade": 11,
       "letter": "Б",
       "group": -3,
       "description": "test_description",
