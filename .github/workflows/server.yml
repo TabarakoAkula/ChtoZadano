@@ -43,6 +43,12 @@ jobs:
         python manage.py makemigrations
         python manage.py migrate
         python manage.py collectstatic --noinput
+      env:
+        POSTGRES_NAME: postgres
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
     - name: Django tests users
       run: |
         python manage.py test users --debug-mode
