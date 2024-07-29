@@ -36,20 +36,42 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements/dev.txt
-    - name: Django tests
+    - name: Django setup
       run: |
         cd chtozadano
-        python manage.py test
-        cd ../
+        python manage.py makemigrations
+        python manage.py migrate
+        python manage.py collectstatic --noinput
+      env:
+        POSTGRES_NAME: postgres
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+    - name: Django tests users
+      run: |
+        cd chtozadano
+        python manage.py test users --debug-mode
       env:
           POSTGRES_NAME: postgres
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
+    - name: Django tests homework
+      run: |
+        cd chtozadano
+        python manage.py test homework --debug-mode
+        cd ../
+      env:
+        POSTGRES_NAME: postgres
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
     - name: Linting | Black
       run: |
         black --check --color --diff  --line-length 79  --exclude migrations --verbose .
     - name: Linting | Flake8
       run: |
-        flake8 --verbose --max-line-length=79 --inline-quotes="double" --docstring-quotes="double" --import-order-style="google" --application-import-names="users homework" --ignore="E203,PL123" --exclude=".git,__pycache__,docs/source/conf.py,old,build,dist,migrations"
+        flake8 --verbose --max-line-length=79 --inline-quotes="double" --docstring-quotes="double" --import-order-style="google" --application-import-names="users homework" --ignore="E203,PL123,W503" --exclude=".git,__pycache__,docs/source/conf.py,old,build,dist,migrations"
