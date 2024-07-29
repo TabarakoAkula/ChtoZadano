@@ -8,7 +8,7 @@ from parameterized import parameterized
 
 class StaticUrlTests(TestCase):
     multi_db = True
-    fixtures = ["users/fixtures/test_data.json"]
+    fixtures = ["fixtures/test_static_url_data.json"]
 
     @parameterized.expand(
         [
