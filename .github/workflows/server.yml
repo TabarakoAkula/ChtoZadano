@@ -51,8 +51,8 @@ jobs:
         POSTGRES_PORT: 5432
     - name: Django tests users
       run: |
+        cd chtozadano
         python manage.py test users --debug-mode
-        cd ../
       env:
           POSTGRES_NAME: postgres
           POSTGRES_USER: postgres
