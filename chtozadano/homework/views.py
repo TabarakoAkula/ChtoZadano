@@ -19,7 +19,8 @@ import users.models
 
 
 class HomeworkPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.user.is_authenticated:
             grade = request.user.server_user.grade
             letter = request.user.server_user.letter
@@ -34,7 +35,6 @@ class HomeworkPage(View):
                 )
                 return redirect("homework:choose_grad_let")
             grade = data["grade"]
-            letter = data["letter"]
             letter = data["letter"]
             group = data["group"]
             if not grade or not letter:
@@ -128,7 +128,8 @@ class HomeworkPage(View):
 
 
 class AllHomeworkPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.user.is_authenticated:
             grade = request.user.server_user.grade
             letter = request.user.server_user.letter
@@ -214,7 +215,8 @@ class AllHomeworkPage(View):
 
 
 class ChooseGrLePage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.user.is_staff and not request.user.is_superuser:
             return redirect("homework:homework_page")
         return render(
@@ -225,7 +227,8 @@ class ChooseGrLePage(View):
             },
         )
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.user.is_staff and not request.user.is_superuser:
             return redirect("homework:homework_page")
         grade = request.POST.get("grade")
@@ -253,7 +256,8 @@ class ChooseGrLePage(View):
 
 
 class AddHomeworkPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.user.is_staff or request.user.is_superuser:
             user = request.user.server_user
             grade, letter, group = user.grade, user.letter, user.group
@@ -270,7 +274,8 @@ class AddHomeworkPage(View):
         )
         return redirect("homework:homework_page")
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if not request.user.is_staff or not request.user.is_superuser:
             messages.error(
                 request,
@@ -325,7 +330,8 @@ class AddHomeworkPage(View):
 
 
 class EditHomework(View):
-    def get(self, request, homework_id):
+    @staticmethod
+    def get(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
             user_subjects = get_user_subjects(
@@ -362,7 +368,8 @@ class EditHomework(View):
         )
         return redirect("homework:homework_page")
 
-    def post(self, request, homework_id):
+    @staticmethod
+    def post(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             description = request.POST["description"]
             subject = request.POST["subject"]
@@ -420,7 +427,8 @@ class EditHomework(View):
 
 
 class EditHomeworkData(View):
-    def get(self, request, homework_id, r_type, file_id):
+    @staticmethod
+    def get(request, homework_id, r_type, file_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
             try:
@@ -447,7 +455,8 @@ class EditHomeworkData(View):
 
 
 class DeleteHomework(View):
-    def get(self, request, homework_id):
+    @staticmethod
+    def get(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
             try:
@@ -471,7 +480,8 @@ class DeleteHomework(View):
         )
         return redirect("homework:homework_page")
 
-    def post(self, request, homework_id):
+    @staticmethod
+    def post(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
             try:
@@ -488,7 +498,8 @@ class DeleteHomework(View):
 
 
 class AddMailingPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.user.is_superuser:
             response_list = [
                 "Сообщение для класса",
@@ -512,7 +523,8 @@ class AddMailingPage(View):
             context={"subjects": response_list},
         )
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if not request.user.is_superuser or not request.user.is_staff:
             messages.error(
                 request,
@@ -570,7 +582,8 @@ class AddMailingPage(View):
 
 
 class EditMailingPage(View):
-    def get(self, request, homework_id):
+    @staticmethod
+    def get(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             user_subjects = []
             if request.user.is_superuser:
@@ -608,7 +621,8 @@ class EditMailingPage(View):
         )
         return redirect("homework:homework_page")
 
-    def post(self, request, homework_id):
+    @staticmethod
+    def post(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             description = request.POST["description"]
             request_subject = request.POST["subject"]
@@ -667,7 +681,8 @@ class EditMailingPage(View):
 
 
 class DeleteMailing(View):
-    def get(self, request, homework_id):
+    @staticmethod
+    def get(request, homework_id):
         if request.user.is_superuser:
             try:
                 hw_info = Homework.objects.get(
@@ -702,7 +717,8 @@ class DeleteMailing(View):
         )
         return redirect("homework:homework_page")
 
-    def post(self, request, homework_id):
+    @staticmethod
+    def post(request, homework_id):
         if request.user.is_superuser:
             try:
                 Homework.objects.get(
@@ -732,7 +748,8 @@ class DeleteMailing(View):
 
 
 class MarkDone(View):
-    def get(self, request, homework_id):
+    @staticmethod
+    def get(request, homework_id):
         if not request.user.is_authenticated:
             messages.error(
                 request,
@@ -764,7 +781,8 @@ class MarkDone(View):
 
 
 class SchedulePage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.user.is_authenticated:
             user_obj = users.models.User.objects.get(user=request.user)
             schedule = get_all_schedule(

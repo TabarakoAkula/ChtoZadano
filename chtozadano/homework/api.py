@@ -17,7 +17,8 @@ import users.models
 
 
 class GetLastHomeworkAllSubjectsAPI(APIView):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         user = users.models.User.objects.get(
@@ -69,7 +70,8 @@ class GetLastHomeworkAllSubjectsAPI(APIView):
 
 
 class GetOneSubjectAPI(APIView):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         user = users.models.User.objects.get(
@@ -108,7 +110,8 @@ class GetOneSubjectAPI(APIView):
 
 
 class GetAllHomeworkFromDateAPI(APIView):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         user_obj = users.models.User.objects.get(
@@ -150,7 +153,8 @@ class GetAllHomeworkFromDateAPI(APIView):
 
 
 class GetHomeworkFromIdAPI(APIView):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         user_obj = users.models.User.objects.get(
@@ -188,7 +192,8 @@ class GetHomeworkFromIdAPI(APIView):
 
 
 class GetTomorrowHomeworkAPI(APIView):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -219,7 +224,8 @@ class GetTomorrowHomeworkAPI(APIView):
 
 
 class AddHomeWorkAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -254,7 +260,8 @@ class AddHomeWorkAPI(APIView):
 
 
 class EditHomeworkDescriptionAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -279,7 +286,8 @@ class EditHomeworkDescriptionAPI(APIView):
 
 
 class EditHomeworkImagesAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -306,7 +314,8 @@ class EditHomeworkImagesAPI(APIView):
 
 
 class EditHomeworkFilesAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -336,7 +345,8 @@ class EditHomeworkFilesAPI(APIView):
 
 
 class DeleteHomeworkAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -360,7 +370,8 @@ class DeleteHomeworkAPI(APIView):
 
 
 class GetMailingAPI(APIView):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -386,7 +397,8 @@ class GetMailingAPI(APIView):
 
 
 class AddMailingAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -437,7 +449,8 @@ class AddMailingAPI(APIView):
 
 
 class EditMailingAPI(APIView):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -472,7 +485,8 @@ class EditMailingAPI(APIView):
 
 
 class EditMailingDescriptionAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -503,7 +517,8 @@ class EditMailingDescriptionAPI(APIView):
 
 
 class EditMailingImagesAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -532,7 +547,8 @@ class EditMailingImagesAPI(APIView):
 
 
 class EditMailingFilesAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -564,7 +580,8 @@ class EditMailingFilesAPI(APIView):
 
 
 class DeleteMailingAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -592,7 +609,8 @@ class DeleteMailingAPI(APIView):
 
 
 class TodoWorkAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -617,7 +635,8 @@ class TodoWorkAPI(APIView):
 
 
 class GetTomorrowScheduleAPI(APIView):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
@@ -634,7 +653,8 @@ class GetTomorrowScheduleAPI(APIView):
 
 
 class DeleteOldHomeworkAPI(APIView):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.data["api_key"] != settings.API_KEY:
             return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]

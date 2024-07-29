@@ -25,7 +25,8 @@ from users.utils import (
 
 
 class SignUpPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.user.is_authenticated:
             messages.error(request, "Вы уже вошли в аккаунт")
             return redirect("users:account_page")
@@ -35,7 +36,8 @@ class SignUpPage(View):
             context={"form": SignUpForm},
         )
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.user.is_authenticated:
             messages.error(request, "Вы уже вошли в аккаунт")
             return redirect("users:account_page")
@@ -95,7 +97,8 @@ class SignUpPage(View):
 
 
 class SignUpPasswordPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.user.is_authenticated:
             messages.error(request, "Вы уже вошли в аккаунт")
             return redirect("users:account_page")
@@ -105,7 +108,8 @@ class SignUpPasswordPage(View):
             context={"form": SignUpPasswordForm},
         )
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.user.is_authenticated:
             messages.error(request, "Вы уже вошли в аккаунт")
             return redirect("users:account_page")
@@ -161,7 +165,8 @@ class SignUpPasswordPage(View):
 
 
 class SignInPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if not request.user.is_authenticated:
             return render(
                 request,
@@ -171,7 +176,8 @@ class SignInPage(View):
         messages.error(request, "Вы уже вошли в аккаунт")
         return redirect("users:account_page")
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.user.is_authenticated:
             messages.error(request, "Вы уже вошли в аккаунт")
             return redirect("users:account_page")
@@ -222,7 +228,8 @@ class SignInPage(View):
 
 
 class SignInPasswordPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if not request.user.is_authenticated:
             return render(
                 request,
@@ -232,7 +239,8 @@ class SignInPasswordPage(View):
         messages.error(request, "Вы уже вошли в аккаунт")
         return redirect("users:account_page")
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if request.user.is_authenticated:
             messages.error(request, "Вы уже вошли в аккаунт")
             return redirect("users:account_page")
@@ -265,7 +273,8 @@ class SignInPasswordPage(View):
 
 
 class AccountPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if not request.user.is_authenticated:
             messages.error(
                 request,
@@ -290,7 +299,8 @@ class AccountPage(View):
 
 
 class Logout(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if not request.user.is_authenticated:
             messages.error(
                 request,
@@ -303,7 +313,8 @@ class Logout(View):
 
 
 class ChangeContactsPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if not request.user.is_authenticated:
             messages.error(
                 request,
@@ -316,7 +327,8 @@ class ChangeContactsPage(View):
             context={"form": ChangeContactsForm},
         )
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if not request.user.is_authenticated:
             messages.error(
                 request,
@@ -333,7 +345,8 @@ class ChangeContactsPage(View):
 
 
 class BecomeAdminPage(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if not request.user.is_authenticated:
             messages.error(
                 request,
@@ -352,7 +365,8 @@ class BecomeAdminPage(View):
         messages.error(request, "Вы уже подавали заявку, ожидайте")
         return redirect("users:account_page")
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if not request.user.is_authenticated:
             messages.error(
                 request,
@@ -380,7 +394,8 @@ class BecomeAdminPage(View):
 
 
 class ShowBecomeAdmin(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if request.user.is_superuser:
             data = BecomeAdmin.objects.all()
             return render(
@@ -393,7 +408,8 @@ class ShowBecomeAdmin(View):
 
 
 class BecomeAdminAccept(View):
-    def get(self, request, telegram_id):
+    @staticmethod
+    def get(request, telegram_id):
         if request.user.is_superuser:
             BecomeAdmin.objects.get(telegram_id=telegram_id).delete()
             user_obj = User.objects.get(telegram_id=telegram_id).user
@@ -410,7 +426,8 @@ class BecomeAdminAccept(View):
 
 
 class BecomeAdminDecline(View):
-    def get(self, request, telegram_id):
+    @staticmethod
+    def get(request, telegram_id):
         if request.user.is_superuser:
             BecomeAdmin.objects.get(telegram_id=telegram_id).delete()
             messages.success(
@@ -424,7 +441,8 @@ class BecomeAdminDecline(View):
 
 
 class EditNotebook(View):
-    def get(self, request):
+    @staticmethod
+    def get(request):
         if not request.user.is_authenticated:
             messages.error(
                 request,
@@ -437,7 +455,8 @@ class EditNotebook(View):
             context={"form": EditNotebookForm},
         )
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if not request.user.is_authenticated:
             messages.error(
                 request,
