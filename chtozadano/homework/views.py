@@ -8,6 +8,7 @@ from django.views import View
 from homework.forms import ChooseGradLetForm
 from homework.models import File, Homework, Image, Todo
 from homework.utils import (
+    check_grade_letter,
     get_abbreviation_from_name,
     get_all_schedule,
     get_name_from_abbreviation,
@@ -21,28 +22,10 @@ import users.models
 class HomeworkPage(View):
     @staticmethod
     def get(request):
-        if request.user.is_authenticated:
-            grade = request.user.server_user.grade
-            letter = request.user.server_user.letter
-            group = request.user.server_user.group
-        else:
-            try:
-                data = json.loads(request.COOKIES.get("hw_data"))
-            except TypeError:
-                messages.error(
-                    request,
-                    "Сначала необходимо выбрать в каком вы классе",
-                )
-                return redirect("homework:choose_grad_let")
-            grade = data["grade"]
-            letter = data["letter"]
-            group = data["group"]
-            if not grade or not letter:
-                messages.error(
-                    request,
-                    "Сначала необходимо выбрать в каком вы классе",
-                )
-                return redirect("homework:choose_grad_let")
+        checker = check_grade_letter(request)
+        if checker[0] == "Error":
+            return checker[1]
+        grade, letter, group = checker[1]
         subjects = get_user_subjects_abbreviation(grade, letter)
         data = []
         for subject in subjects:
@@ -130,28 +113,10 @@ class HomeworkPage(View):
 class AllHomeworkPage(View):
     @staticmethod
     def get(request):
-        if request.user.is_authenticated:
-            grade = request.user.server_user.grade
-            letter = request.user.server_user.letter
-            group = request.user.server_user.group
-        else:
-            try:
-                cookies_data = json.loads(request.COOKIES.get("hw_data"))
-            except TypeError:
-                messages.error(
-                    request,
-                    "Сначала необходимо выбрать в каком вы классе",
-                )
-                return redirect("homework:choose_grad_let")
-            grade = cookies_data["grade"]
-            letter = cookies_data["letter"]
-            group = cookies_data["group"]
-            if not grade or not letter:
-                messages.error(
-                    request,
-                    "Сначала необходимо выбрать в каком вы классе",
-                )
-                return redirect("homework:choose_grad_let")
+        checker = check_grade_letter(request)
+        if checker[0] == "Error":
+            return checker[1]
+        grade, letter, group = checker[1]
         data = []
         try:
             if request.user.is_authenticated and request.user.is_staff:
@@ -783,36 +748,10 @@ class MarkDone(View):
 class SchedulePage(View):
     @staticmethod
     def get(request):
-        if request.user.is_authenticated:
-            user_obj = users.models.User.objects.get(user=request.user)
-            schedule = get_all_schedule(
-                user_obj.grade,
-                user_obj.letter,
-                user_obj.group,
-            )
-        else:
-            try:
-                data = json.loads(request.COOKIES.get("hw_data"))
-            except TypeError:
-                messages.error(
-                    request,
-                    "Сначала необходимо выбрать в каком вы классе",
-                )
-                return redirect("homework:choose_grad_let")
-            grade = data["grade"]
-            letter = data["letter"]
-            group = data["group"]
-            if not grade or not letter:
-                messages.error(
-                    request,
-                    "Сначала необходимо выбрать в каком вы классе",
-                )
-                return redirect("homework:choose_grad_let")
-            schedule = get_all_schedule(
-                grade,
-                letter,
-                group,
-            )
+        checker = check_grade_letter(request)
+        if checker[0] == "Error":
+            return checker[1]
+        schedule = get_all_schedule(*checker[1])
         for day in schedule:
             for lesson in day:
                 lesson.subject = get_name_from_abbreviation(lesson.subject)
