@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 import django.db.models
 
 import homework.models
-from homework.models import Homework
 
 DjangoUser = get_user_model()
 
@@ -71,12 +70,6 @@ class User(django.db.models.Model):
         homework.models.Todo,
         blank=True,
         related_name="user_todo",
-    )
-    homework = django.db.models.ManyToManyField(
-        Homework,
-        related_name="author",
-        blank=True,
-        verbose_name="Домашнее задание",
     )
 
     def __str__(self):

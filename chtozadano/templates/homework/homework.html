@@ -24,7 +24,7 @@
 			{% for i in info %}
 				{% if i %}
 					<tr>
-						<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
+						<td>{{ i.author }}</td>
 						<td>{{ i.description }}</td>
 						<td>{{ i.created_at }}</td>
 						<td>
@@ -86,7 +86,7 @@
 		<td>{{ i.grade }}</td>
 		<td>{{ i.letter }}</td>
 		<td>{{ i.subject }}</td>
-		<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
+		<td>{{ i.author }}</td>
 		<td>{{ i.description }}</td>
 		<td>{{ i.created_at }}</td>
 		<td>

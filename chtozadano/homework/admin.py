@@ -13,7 +13,7 @@ class HomeworkAdmin(admin.ModelAdmin):
         "group",
         "subject_name",
         "short_description",
-        "author_name",
+        "author",
         "created_at",
     )
     ordering = (
@@ -30,14 +30,10 @@ class HomeworkAdmin(admin.ModelAdmin):
     def short_description(self, obj):
         return obj.description[:50]
 
-    def author_name(self, obj):
-        return obj.author.first().user.first_name
-
     def subject_name(self, obj):
         return get_name_from_abbreviation(obj.subject)
 
     short_description.short_description = "Описание"
-    author_name.short_description = "Автор"
     subject_name.short_description = "Предмет"
 
 

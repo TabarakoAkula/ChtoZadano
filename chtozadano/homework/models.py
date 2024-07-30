@@ -71,6 +71,7 @@ class Homework(models.Model):
         verbose_name="Дата создания",
     )
     todo = models.ManyToManyField(Todo, related_name="homework_todo")
+    author = models.CharField(default="Anonym", verbose_name="Автор")
 
     def __str__(self):
         return f"{self.grade}{self.letter} - {self.subject}"

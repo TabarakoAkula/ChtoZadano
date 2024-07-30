@@ -56,10 +56,6 @@ class GetLastHomeworkAllSubjectsAPI(APIView):
                 images = [i.image.url for i in hw_object.images.all()]
                 files = [i.file.url for i in hw_object.files.all()]
                 serializer_data = HomeworkSerializer(hw_object).data
-                serializer_data["author"] = (
-                    f"{hw_object.author.first().user.first_name} "
-                    f"{hw_object.author.first().user.last_name}"
-                )
                 serializer_data["images"] = images
                 serializer_data["files"] = files
                 data[subject] = serializer_data
@@ -97,10 +93,6 @@ class GetOneSubjectAPI(APIView):
         serialized_data = HomeworkSerializer(hw_object).data
         serialized_data["images"] = images
         serialized_data["files"] = files
-        serialized_data["author"] = (
-            f"{hw_object.author.first().user.first_name} "
-            f"{hw_object.author.first().user.last_name}"
-        )
         return HttpResponse(json.dumps(serialized_data))
 
 
@@ -135,10 +127,6 @@ class GetAllHomeworkFromDateAPI(APIView):
                 images = [i.image.url for i in hw_object.images.all()]
                 files = [i.file.url for i in hw_object.files.all()]
                 serializer_data = HomeworkSerializer(hw_object).data
-                serializer_data["author"] = (
-                    f"{hw_object.author.first().user.first_name} "
-                    f"{hw_object.author.first().user.last_name}"
-                )
                 serializer_data["images"] = images
                 serializer_data["files"] = files
                 data[subject] = serializer_data
@@ -172,10 +160,6 @@ class GetHomeworkFromIdAPI(APIView):
             images = [i.image.url for i in hw_object.images.all()]
             files = [i.file.url for i in hw_object.files.all()]
             serializer_data = HomeworkSerializer(hw_object).data
-            serializer_data["author"] = (
-                f"{hw_object.author.first().user.first_name} "
-                f"{hw_object.author.first().user.last_name}"
-            )
             serializer_data["images"] = images
             serializer_data["files"] = files
             return HttpResponse(json.dumps(serializer_data))
@@ -237,12 +221,12 @@ class AddHomeWorkAPI(APIView):
             description=description,
             group=group,
             subject=subject_abbreviation,
+            author=f"{django_user.first_name} {django_user.last_name}",
         )
         for image in images:
             hw_object.images.add(Image.objects.create(image=image))
         for file in files:
             hw_object.images.add(Image.objects.create(file=file))
-        hw_object.author.add(user_obj)
         return HttpResponse("Successful")
 
 
@@ -418,7 +402,9 @@ class AddMailingAPI(APIView):
             homework_obj.group = -3
         homework_obj.description = request.data["description"]
         homework_obj.subject = "info"
-        homework_obj.author.add(user_obj)
+        homework_obj.author = (
+            f"{django_user.first_name} {django_user.last_name}"
+        )
         homework_obj.save()
         return HttpResponse("Successful")
 
@@ -449,11 +435,6 @@ class EditMailingAPI(APIView):
         files = [i.file.url for i in homework_obj.files.all()]
         serialized_data["images"] = images
         serialized_data["files"] = files
-        if homework_obj.group != -3:
-            serialized_data["author"] = (
-                f"{homework_obj.author.first().user.first_name} "
-                f"{homework_obj.author.first().user.last_name}"
-            )
         return HttpResponse(json.dumps(serialized_data))
 
 

@@ -246,8 +246,8 @@ class AddHomeworkPage(View):
             letter=server_user.letter,
             subject=subject,
             group=group,
+            author=f"{request.user.first_name} {request.user.last_name}",
         )
-        homework_object.author.add(server_user)
         for file in files_list_for_model:
             file_name = file[0]
             file_type = file[1]
@@ -490,15 +490,14 @@ class AddMailingPage(View):
                 },
             )
         files_list_for_model = files_list_for_model[1]
-        server_user = request.user.server_user
         homework_object = Homework.objects.create(
             description=description,
             grade=0,
             letter="",
             subject="info",
             group=group,
+            author=f"{request.user.first_name} {request.user.last_name}",
         )
-        homework_object.author.add(server_user)
 
         for file in files_list_for_model:
             file_name = file[0]
