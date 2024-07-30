@@ -188,6 +188,18 @@
         + ``Это кто? Я такого не знаю``
         + ``Successful accepted``
         + ``Successful declined``
++ IsUserInSystemAPI:
+  + Путь: ``api/v1/is_user_in_system/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: узнать есть ли пользователь в системе
+  + Действие: пытается получить пользователя по его ``telegram_id``
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ  
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм  
+  + Возвращает:  
+      + ``HttpResponse``:  
+        + ``True``/``False``  
 </details>
 <details><summary><h2>Homework:</h2></summary>
 

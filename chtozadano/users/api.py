@@ -184,3 +184,12 @@ class AcceptDeclineBecomeAdminAPI(APIView):
                 BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
                 return HttpResponse("Successful declined")
         return HttpResponse("Not allowed")
+
+
+class IsUserInSystemAPI(APIView):
+    def post(self, request):
+        if User.objects.filter(
+            telegram_id=request.data["telegram_id"],
+        ).first():
+            return HttpResponse(True)
+        return HttpResponse(False)

@@ -45,6 +45,10 @@ urlpatterns = [
         users.api.AcceptDeclineBecomeAdminAPI.as_view(),
     ),
     path(
+        "is_user_in_system/",
+        users.api.IsUserInSystemAPI.as_view(),
+    ),
+    path(
         "get_last_homework_all_subjects/",
         homework.api.GetLastHomeworkAllSubjectsAPI.as_view(),
     ),
