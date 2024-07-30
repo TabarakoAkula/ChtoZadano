@@ -3,12 +3,13 @@ services:
     image: nginx:latest
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - "./nginx.conf:/etc/nginx/nginx.conf"
+      - "./nginx/cert.pem:/etc/cert.pem"
+      - "./nginx/key.pem:/etc/key.pem"
     depends_on:
-      - db
       - bot
-      - web
     networks:
       - django-network
 
@@ -33,11 +34,11 @@ services:
                       python manage.py makemigrations &&
                       python manage.py migrate &&
                       python manage.py collectstatic --noinput &&
-                      python manage.py runserver 0.0.0.0:8000"
+                      gunicorn --config gunicorn_config.py chtozadano.wsgi:application"
     volumes:
       - .:/code
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     depends_on:
       - db
     links:
