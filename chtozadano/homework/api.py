@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 import json
 
-from django.conf import settings
 from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework.views import APIView
@@ -19,8 +18,6 @@ import users.models
 class GetLastHomeworkAllSubjectsAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         user = users.models.User.objects.get(
             telegram_id=request.data["telegram_id"],
         )
@@ -72,8 +69,6 @@ class GetLastHomeworkAllSubjectsAPI(APIView):
 class GetOneSubjectAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         user = users.models.User.objects.get(
             telegram_id=request.data["telegram_id"],
         )
@@ -112,8 +107,6 @@ class GetOneSubjectAPI(APIView):
 class GetAllHomeworkFromDateAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         user_obj = users.models.User.objects.get(
             telegram_id=request.data["telegram_id"],
         )
@@ -155,8 +148,6 @@ class GetAllHomeworkFromDateAPI(APIView):
 class GetHomeworkFromIdAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         user_obj = users.models.User.objects.get(
             telegram_id=request.data["telegram_id"],
         )
@@ -194,8 +185,6 @@ class GetHomeworkFromIdAPI(APIView):
 class GetTomorrowHomeworkAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         schedule = get_tomorrow_schedule(
@@ -226,8 +215,6 @@ class GetTomorrowHomeworkAPI(APIView):
 class AddHomeWorkAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -262,8 +249,6 @@ class AddHomeWorkAPI(APIView):
 class EditHomeworkDescriptionAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -288,8 +273,6 @@ class EditHomeworkDescriptionAPI(APIView):
 class EditHomeworkImagesAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -316,8 +299,6 @@ class EditHomeworkImagesAPI(APIView):
 class EditHomeworkFilesAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -347,8 +328,6 @@ class EditHomeworkFilesAPI(APIView):
 class DeleteHomeworkAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -372,8 +351,6 @@ class DeleteHomeworkAPI(APIView):
 class GetMailingAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -399,8 +376,6 @@ class GetMailingAPI(APIView):
 class AddMailingAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -451,8 +426,6 @@ class AddMailingAPI(APIView):
 class EditMailingAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -487,8 +460,6 @@ class EditMailingAPI(APIView):
 class EditMailingDescriptionAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -519,8 +490,6 @@ class EditMailingDescriptionAPI(APIView):
 class EditMailingImagesAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -549,8 +518,6 @@ class EditMailingImagesAPI(APIView):
 class EditMailingFilesAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -582,8 +549,6 @@ class EditMailingFilesAPI(APIView):
 class DeleteMailingAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -611,8 +576,6 @@ class DeleteMailingAPI(APIView):
 class TodoWorkAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         homework_id = request.data["homework_id"]
@@ -637,8 +600,6 @@ class TodoWorkAPI(APIView):
 class GetTomorrowScheduleAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         schedule = get_tomorrow_schedule(
@@ -655,8 +616,6 @@ class GetTomorrowScheduleAPI(APIView):
 class DeleteOldHomeworkAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = users.models.User.objects.get(telegram_id=telegram_id)
         if not user_obj.user.is_superuser:

@@ -1,7 +1,6 @@
 import json
 import os
 
-from django.conf import settings
 import django.contrib.auth
 import django.db.utils
 from django.http import HttpResponse
@@ -17,8 +16,6 @@ from users.utils import (
 class CodeConfirmationAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         confirmation_code = request.data["confirmation_code"]
         user_name = request.data["name"]
@@ -36,8 +33,6 @@ class CodeConfirmationAPI(APIView):
 class CreateUserAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         all_users = User.objects.filter(telegram_id=telegram_id).all()
         if all_users:
@@ -60,8 +55,6 @@ class CreateUserAPI(APIView):
 class GetContactsAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -78,8 +71,6 @@ class GetContactsAPI(APIView):
 class ChangeContactsAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
@@ -94,8 +85,6 @@ class ChangeContactsAPI(APIView):
 class ChangeGradeLetterAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         if request.user.is_staff and not request.user.is_superuser:
             return HttpResponse("Not allowed")
         telegram_id = request.data["telegram_id"]
@@ -111,8 +100,6 @@ class ChangeGradeLetterAPI(APIView):
 class GetChatModeAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         user_obj = User.objects.get(telegram_id=telegram_id)
         return HttpResponse(user_obj.chat_mode)
@@ -121,8 +108,6 @@ class GetChatModeAPI(APIView):
 class ChangeChatModeAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         chat_mode = request.data["chat_mode"]
         user_obj = User.objects.get(telegram_id=telegram_id)
@@ -134,8 +119,6 @@ class ChangeChatModeAPI(APIView):
 class ShowBecomeAdminAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         if User.objects.get(
             telegram_id=request.data["telegram_id"],
         ).user.is_superuser:
@@ -151,8 +134,6 @@ class ShowBecomeAdminAPI(APIView):
 class BecomeAdminAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         telegram_id = request.data["telegram_id"]
         grade = request.data["grade"]
         letter = request.data["letter"]
@@ -184,8 +165,6 @@ class BecomeAdminAPI(APIView):
 class AcceptDeclineBecomeAdminAPI(APIView):
     @staticmethod
     def post(request):
-        if request.data["api_key"] != settings.API_KEY:
-            return HttpResponse("Uncorrect api key")
         if User.objects.get(
             telegram_id=request.data["telegram_id"],
         ).user.is_superuser:
