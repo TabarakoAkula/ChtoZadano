@@ -85,6 +85,9 @@ class User(django.db.models.Model):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        indexes = [
+            django.db.models.Index(fields=["grade", "letter"]),
+        ]
 
 
 class SignIn(django.db.models.Model):

@@ -78,6 +78,9 @@ class Homework(models.Model):
     class Meta:
         verbose_name = "Домашнее задание"
         verbose_name_plural = "Домашние задания"
+        indexes = [
+            models.Index(fields=["grade", "letter"]),
+        ]
 
 
 class Image(models.Model):
