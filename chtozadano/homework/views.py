@@ -3,7 +3,7 @@ import json
 from django.contrib import messages
 from django.db.models import Q
 from django.shortcuts import redirect, render
-from django.views import View
+from django.views import generic, View
 
 from homework.forms import ChooseGradLetForm
 from homework.models import File, Homework, Image, Todo
@@ -110,32 +110,40 @@ class HomeworkPage(View):
         )
 
 
-class AllHomeworkPage(View):
-    @staticmethod
-    def get(request):
+class AllHomeworkPage(generic.ListView):
+    model = Homework
+    template_name = "homework/all_homework.html"
+    paginate_by = 10
+
+    def dispatch(self, request, *args, **kwargs):
         checker = check_grade_letter(request)
         if checker[0] == "Error":
             return checker[1]
-        grade, letter, group = checker[1]
-        data = []
+        self.grade, self.letter, self.group = checker[1]
+        self.is_authenticated = request.user.is_authenticated
+        self.is_staff = request.user.is_staff
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        data = ()
         try:
-            if request.user.is_authenticated and request.user.is_staff:
+            if self.is_authenticated and self.is_staff:
                 data = (
                     Homework.objects.filter(
-                        grade=grade,
-                        letter=letter,
+                        grade=self.grade,
+                        letter=self.letter,
                     )
-                    .filter(Q(group=0) | Q(group=group))
+                    .filter(Q(group=0) | Q(group=self.group))
                     .order_by("-created_at")
                     .all()
                 )
             else:
                 data = (
                     Homework.objects.filter(
-                        grade=grade,
-                        letter=letter,
+                        grade=self.grade,
+                        letter=self.letter,
                     )
-                    .filter(Q(group=0) | Q(group=group))
+                    .filter(Q(group=0) | Q(group=self.group))
                     .order_by("group", "-subject", "-created_at")
                     .all()
                 )
@@ -143,40 +151,7 @@ class AllHomeworkPage(View):
             pass
         for homework in data:
             homework.subject = get_name_from_abbreviation(homework.subject)
-        info = []
-        info.append(
-            Homework.objects.filter(
-                subject="info",
-                group=-3,
-            )
-            .order_by("-created_at")
-            .first(),
-        )
-        if request.user.is_staff or request.user.is_superuser:
-            info.append(
-                Homework.objects.filter(
-                    subject="info",
-                    group=-2,
-                )
-                .order_by("-created_at")
-                .first(),
-            )
-        info.append(
-            Homework.objects.filter(
-                subject="info",
-                group=-1,
-            )
-            .order_by("-created_at")
-            .first(),
-        )
-        return render(
-            request,
-            "homework/all_homework.html",
-            context={
-                "homework": data,
-                "info": info,
-            },
-        )
+        return data
 
 
 class ChooseGrLePage(View):
