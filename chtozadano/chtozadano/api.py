@@ -13,6 +13,10 @@ urlpatterns = [
         users.api.CreateUserAPI.as_view(),
     ),
     path(
+        "get_contacts/",
+        users.api.GetContactsAPI.as_view(),
+    ),
+    path(
         "change_contacts/",
         users.api.ChangeContactsAPI.as_view(),
     ),
@@ -21,8 +25,16 @@ urlpatterns = [
         users.api.ChangeGradeLetterAPI.as_view(),
     ),
     path(
+        "get_chat_mode/",
+        users.api.GetChatModeAPI.as_view(),
+    ),
+    path(
         "change_chat_mode/",
         users.api.ChangeChatModeAPI.as_view(),
+    ),
+    path(
+        "show_become_admin/",
+        users.api.ShowBecomeAdminAPI.as_view(),
     ),
     path(
         "become_admin/",
