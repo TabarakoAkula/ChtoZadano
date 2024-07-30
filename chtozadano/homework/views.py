@@ -6,11 +6,10 @@ from django.shortcuts import redirect, render
 from django.views import generic, View
 
 from homework.forms import ChooseGradLetForm
-from homework.models import File, Homework, Image, Todo
+from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
     check_grade_letter,
     get_abbreviation_from_name,
-    get_all_schedule,
     get_name_from_abbreviation,
     get_user_subjects,
     get_user_subjects_abbreviation,
@@ -720,18 +719,25 @@ class MarkDone(View):
         return redirect("homework:homework_page")
 
 
-class SchedulePage(View):
-    @staticmethod
-    def get(request):
+class SchedulePage(generic.ListView):
+    model = Schedule
+    template_name = "homework/schedule.html"
+
+    def dispatch(self, request, *args, **kwargs):
         checker = check_grade_letter(request)
         if checker[0] == "Error":
             return checker[1]
-        schedule = get_all_schedule(*checker[1])
-        for day in schedule:
-            for lesson in day:
-                lesson.subject = get_name_from_abbreviation(lesson.subject)
-        return render(
-            request,
-            "homework/schedule.html",
-            context={"data": schedule},
+        self.grade, self.letter, self.group = checker[1]
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        schedule = (
+            Schedule.objects.filter(grade=self.grade, letter=self.letter)
+            .filter(Q(group=self.group) | Q(group=0))
+            .order_by("weekday", "lesson")
+            .only("lesson", "subject", "weekday")
+            .all()
         )
+        for lesson in schedule:
+            lesson.subject = get_name_from_abbreviation(lesson.subject)
+        return schedule

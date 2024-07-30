@@ -3,15 +3,36 @@
 {% block content %}
 	{% load static %}
 	<h1>Расписание на неделю</h1>
-	{% for schedule in data %}
-		<p>День: {{ forloop.counter }}</p>
-		<table border="1">
-			{% for lesson in schedule %}
+	{% with day_temp=1 %}
+		<table>
+		{% for day in object_list %}
+			{% if day.lesson == 1 %}
+				</table>
+				{% if day.weekday == 1 %}
+					<h3>Понедельник</h3>
+				{% elif day.weekday == 2 %}
+					<h3>Вторник</h3>
+				{% elif day.weekday == 3 %}
+					<h3>Среда</h3>
+				{% elif day.weekday == 4 %}
+					<h3>Четверг</h3>
+				{% elif day.weekday == 5 %}
+					<h3>Пятница</h3>
+				{% elif day.weekday == 6 %}
+					<h3>Суббота</h3>
+				{% endif %}
+				<table border="1">
 				<tr>
-					<td>{{ lesson.lesson }}</td>
-					<td>{{ lesson.subject }}</td>
+					<td>{{ day.lesson }}</td>
+					<td>{{ day.subject }}</td>
 				</tr>
-			{% endfor %}
-		</table>
-	{% endfor %}
+
+			{% else %}
+				<tr>
+					<td>{{ day.lesson }}</td>
+					<td>{{ day.subject }}</td>
+				</tr>
+			{% endif %}
+		{% endfor %}
+	{% endwith %}
 {% endblock %}

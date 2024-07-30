@@ -138,23 +138,6 @@ def get_tomorrow_schedule(grade, letter, group):
     )
 
 
-def get_all_schedule(grade, letter, group):
-    data = []
-    for i in range(1, 7):
-        schedule = (
-            homework.models.Schedule.objects.filter(
-                grade=grade,
-                letter=letter,
-                weekday=i,
-            )
-            .filter(Q(group=group) | Q(group=0))
-            .order_by("lesson")
-            .all()
-        )
-        data.append(schedule)
-    return data
-
-
 def check_grade_letter(request):
     if request.user.is_authenticated:
         grade = request.user.server_user.grade
