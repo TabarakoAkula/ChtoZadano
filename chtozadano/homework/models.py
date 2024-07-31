@@ -71,6 +71,7 @@ class Homework(models.Model):
         verbose_name="Дата создания",
     )
     todo = models.ManyToManyField(Todo, related_name="homework_todo")
+    author = models.CharField(default="Anonym", verbose_name="Автор")
 
     def __str__(self):
         return f"{self.grade}{self.letter} - {self.subject}"
@@ -78,6 +79,9 @@ class Homework(models.Model):
     class Meta:
         verbose_name = "Домашнее задание"
         verbose_name_plural = "Домашние задания"
+        indexes = [
+            models.Index(fields=["grade", "letter"]),
+        ]
 
 
 class Image(models.Model):
@@ -134,3 +138,7 @@ class Schedule(models.Model):
     weekday = models.IntegerField(verbose_name="День недели")
     lesson = models.IntegerField(verbose_name="Урок")
     subject = models.CharField(verbose_name="Предмет")
+
+    class Meta:
+        verbose_name = "Расписание"
+        verbose_name_plural = "Расписания"

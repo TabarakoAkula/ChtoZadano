@@ -2,9 +2,11 @@ import datetime
 import json
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.files.storage import default_storage
 from django.db.models import Q
+from django.shortcuts import redirect
 
 import homework.models
 
@@ -136,18 +138,27 @@ def get_tomorrow_schedule(grade, letter, group):
     )
 
 
-def get_all_schedule(grade, letter, group):
-    data = []
-    for i in range(1, 7):
-        schedule = (
-            homework.models.Schedule.objects.filter(
-                grade=grade,
-                letter=letter,
-                weekday=i,
+def check_grade_letter(request):
+    if request.user.is_authenticated:
+        grade = request.user.server_user.grade
+        letter = request.user.server_user.letter
+        group = request.user.server_user.group
+    else:
+        try:
+            data = json.loads(request.COOKIES.get("hw_data"))
+        except TypeError:
+            messages.error(
+                request,
+                "Сначала необходимо выбрать в каком вы классе",
             )
-            .filter(Q(group=group) | Q(group=0))
-            .order_by("lesson")
-            .all()
-        )
-        data.append(schedule)
-    return data
+            return "Error", redirect("homework:choose_grad_let")
+        grade = data["grade"]
+        letter = data["letter"]
+        group = data["group"]
+        if not grade or not letter:
+            messages.error(
+                request,
+                "Сначала необходимо выбрать в каком вы классе",
+            )
+            return "Error", redirect("homework:choose_grad_let")
+    return "Successful", [grade, letter, group]

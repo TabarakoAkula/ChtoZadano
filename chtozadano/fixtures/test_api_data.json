@@ -103,7 +103,7 @@
       "letter": "Б",
       "group": 0,
       "description": "test_description",
-      "created_at": "2024-07-28 03:38:59.433000",
+      "created_at": "2024-07-28 00:00:00.0000000",
       "subject": "rus"
     }
   },
@@ -113,10 +113,10 @@
     "fields": {
       "grade": 11,
       "letter": "Б",
-      "group": -1,
+      "group": 1,
       "description": "test_description",
-      "created_at": "2024-07-28 03:38:59.433000",
-      "subject": "info"
+      "created_at": "2024-07-28 00:00:00.0000000",
+      "subject": "eng1"
     }
   },
   {
@@ -125,10 +125,10 @@
     "fields": {
       "grade": 11,
       "letter": "Б",
-      "group": -2,
+      "group": 0,
       "description": "test_description",
-      "created_at": "2024-07-28 03:38:59.433000",
-      "subject": "info"
+      "created_at": "2024-07-29 00:00:00.0000000",
+      "subject": "rus"
     }
   },
   {
@@ -137,27 +137,115 @@
     "fields": {
       "grade": 11,
       "letter": "Б",
-      "group": -3,
+      "group": 0,
       "description": "test_description",
-      "created_at": "2024-07-28 03:38:59.433000",
+      "created_at": "2024-07-29 00:00:00.0000000",
+      "subject": "math"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 5,
+    "fields": {
+      "grade": 11,
+      "letter": "Б",
+      "group": 0,
+      "description": "test_description",
+      "created_at": "2024-07-29 00:00:00.0000000",
+      "subject": "phys"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 6,
+    "fields": {
+      "grade": 10,
+      "letter": "Б",
+      "group": -1,
+      "description": "test_class_mailing",
+      "created_at": "2024-07-29 00:00:00.0000000",
       "subject": "info"
     }
   },
   {
-    "model": "homework.image",
-    "pk": 1,
+    "model": "homework.homework",
+    "pk": 7,
     "fields": {
-      "homework_id": 1,
-      "image": "path"
+      "grade": 0,
+      "letter": "",
+      "group": -2,
+      "description": "test_admin_mailing",
+      "created_at": "2024-07-29 00:00:00.0000000",
+      "subject": "info"
     }
   },
   {
-    "model": "homework.file",
+    "model": "homework.homework",
+    "pk": 8,
+    "fields": {
+      "grade": 0,
+      "letter": "",
+      "group": 0,
+      "description": "test_old_row",
+      "created_at": "1995-07-29 00:00:00.0000000",
+      "subject": "math"
+    }
+  },
+  {
+    "model": "homework.schedule",
     "pk": 1,
     "fields": {
-      "homework_id": 1,
-      "file_name": "test_file_name",
-      "file": "path"
+      "grade": 11,
+      "letter": "Б",
+      "weekday": 4,
+      "lesson": 1,
+      "subject": "rus"
+    }
+  },
+  {
+    "model": "homework.schedule",
+    "pk": 2,
+    "fields": {
+      "grade": 11,
+      "letter": "Б",
+      "weekday": 4,
+      "lesson": 2,
+      "subject": "phys"
+    }
+  },
+  {
+    "model": "homework.schedule",
+    "pk": 3,
+    "fields": {
+      "grade": 11,
+      "letter": "Б",
+      "weekday": 4,
+      "lesson": 3,
+      "subject": "math"
+    }
+  },
+  {
+    "model": "users.user_todo",
+    "pk": 1,
+    "fields": {
+      "user_id": 1,
+      "todo_id": 1
+    }
+  },
+  {
+    "model": "homework.homework_todo",
+    "pk": 1,
+    "fields": {
+      "homework_id": 4,
+      "todo_id": 1
+    }
+  },
+  {
+    "model": "homework.todo",
+    "pk": 1,
+    "fields": {
+      "is_done": false,
+      "created_at": "2024-07-29 00:00:00.0000000"
     }
   }
 ]

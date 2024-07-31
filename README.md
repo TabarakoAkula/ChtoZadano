@@ -5,7 +5,6 @@
 <h1 align="center">
   AChtoZadano
 </h1>
-</p>
 <div align="center">  
   
   [![master CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/master.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/master.yml)
@@ -15,7 +14,25 @@
   [![Django - 5.0.6](https://img.shields.io/badge/Django-5.0-4b4de3)](https://)  
   [![Issues](https://img.shields.io/github/license/mashape/apistatus.svg)](https://)
 </div>
-  
+
+## Launch
++ #### First launch
+  + ```bash
+    docker compose up --build -d
+    ```
++ #### Base launch:
+  + ```bash
+    docker compose up -d
+    ```
+
+### Install initial data fixture:
++ #### Launch docker
++ #### Exec in terminal:
+  + ```bash
+    docker exec -it chtozadano-web-1 bash
+    cd chtozadano && python3 manage.py createsuperuser
+    ```
+
 # Документация по API:
 <details><summary><h2>Users:</h2></summary>
   
@@ -31,45 +48,130 @@
     + ``confirmation_code`` - ``int`` 6и значный код идентификации, который был выдан пользователю
     + ``name`` - ``str``  текущее имя пользователя в Telegram
   + Возвращает:
-    + ``HttpResponse``: ``Информация о пользователе {telegram_id} успешно внесена в таблицу SignIN``
+    + ``HttpResponse``: ``Информация о пользователе {telegram_id} успешно внесена в таблицу SignIN``  
++ CreateUserAPI:
+  + Путь: ``api/v1/create_user/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: создать аккаунт
+  + Действие: отправляет запрос на сервер для создания записи в таблицах ``auth.user`` и ``users.user``
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя в телеграм
+    + ``name`` - ``str``  текущее имя пользователя в Telegram
+    + ``grade`` - ``int`` номера класса
+    + ``letter`` - ``str`` литера класса
+    + ``group`` - ``int`` группа класса
+  + Возвращает:
+    + ``HttpResponse``:
+      + ``Successful``
+      + ``Пользователь уже существует``  
++ GetContactsAPI:  
+  + Путь: ``api/v1/get_contacts/``  
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: получить текущие имя и фамилию пользователя
+  + Действие: возвращает ``first_name`` и ``last_name`` указанного пользователя
+  + Параметры: 
+  + ``api_key`` - ``str`` апи ключ 
+  + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+  + Возвращает:
+  + ``JSON``:  
+  + ``first_name``: ``str``  
+  + ``last_name``: ``str``  
+  + ``POST``  
++ ChangeContactsAPI:  
+  + Путь: ``api/v1/change_contacts/``   
+  + Метод: ``POST``  
+  + Ограничение по доступности: ``нет``
+  + Суть: изменить имя и фамилию текущего пользователя
+  + Действие: изменяет ``first_name`` и ``last_name`` указанного пользователя
+  + Параметры: 
+  + ``api_key`` - ``str`` апи ключ 
+  + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+  + ``first_name`` - ``str`` новое имя пользователя 
+  + ``last_name`` - ``str`` новая фамилия пользователя
+  + Возвращает:
+  + ``HttpResponse``:
+  + ``Successful``
++ ChangeGradeLetterAPI:
+  + Путь: ``api/v1/change_grade_letter/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``user``/``superuser``
+  + Суть: изменить класс/литеру
+  + Действие: по запросу меняет данные о пользователе в таблице ``Users``
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``grade`` - ``int`` класс
+    + ``letter`` - ``int`` литера
+  + Возвращает:
+      + ``HttpResponse``:
+        + ``Successful``
++ GetChatModeAPI:
+  + Путь: ``api/v1/get_chat_mode/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: изменить получить текущее значение ``chatmode`` у пользователя
+  + Действие: возвращает текущее значение ``chatmode``
+  + Параметры: 
+  + ``api_key`` - ``str`` апи ключ 
+  + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+  + Возвращает:
+  + ``HttpResponse``:
+  + ``True``/``False``
++ ChangeChatModeAPI:
+  + Путь: ``api/v1/change_chat_mode/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: изменить получить текущее значение ``chatmode`` у пользователя
+  + Действие: отправляет запрос на изменение ``chatmode`` пользователя в таблице ``Users``
+  + Параметры: 
+  + ``api_key`` - ``str`` апи ключ 
+  + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+  + ``chat_mode`` - ``bool`` новое значение параметра ``chatmode``
+  + Возвращает:
+  + ``HttpResponse``:
+  + ``Successful``  
++ ShowBecomeAdminAPI:
+  + Путь: ``api/v1/show_become_admin/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``superuser``
+  + Суть: получить все заявки на становление администратором
+  + Действие: возвращает с сервера все заявки на становление администратором с таблички ``BecomeAdmin``
+  + Параметры: 
+  + ``api_key`` - ``str`` апи ключ 
+  + ``telegram_id`` - ``int`` уникальный ``id`` пользователя в телеграм
+  + Возвращает: 
+    + ``JSON`` list of dictionaries with:  
+    ``id``: ``int``,  
+    ``grade``: ``int``,  
+    ``letter``: ``"str"``,  
+    ``group``: ``int``,  
+    ``first_name``: ``"str"``,  
+    ``last_name``: ``"str"``,  
+    ``telegram_id``: ``int``  
 + BecomeAdminAPI:
   + Путь: ``api/v1/become_admin/`` 
-  + Метод: ``GET | POST``
-  + ``GET``
-    + Ограничение по доступности: ``superuser``
-    + Суть: получить все заявки на становление администратором
-    + Действие: возвращает с сервера все заявки на становление администратором с таблички ``BecomeAdmin``
-    + Параметры: 
-      + ``api_key`` - ``str`` апи ключ 
-      + ``telegram_id`` - ``int`` уникальный ``id`` пользователя в телеграм
-    + Возвращает: 
-      + ``JSON`` list of dictionaries with:  
-      ``id``: ``int``,  
-      ``grade``: ``int``,  
-      ``letter``: ``"str"``,  
-      ``group``: ``int``,  
-      ``first_name``: ``"str"``,  
-      ``last_name``: ``"str"``,  
-      ``telegram_id``: ``int``
-  + ``POST``
-    + Ограничение по доступности: ``нет``
-    + Суть: отправить заявку на становление администратором
-    + Действие: отправляет на сервер запрос, данные из которого записываются в табличку ``BecomeAdmin`` 
-    + Параметры: 
-      + ``api_key`` - апи ключ 
-      + ``telegram_id`` - уникальный ``id`` пользователя в телеграм
-      + ``grade`` - ``int`` номер класса
-      + ``letter`` - ``str`` литера класса
-      + ``group`` - ``int`` группа в классе  
-      + ``first_name`` - ``str`` имя
-      + ``last_name`` - ``str`` фамилия
-    + Возвращает: 
-      + ``HttpResponse``:
-        + ``You are already admin``
-        + ``You are superuser, damn``
-        + ``Already have request``
-        + ``Successful``
-        + ``Wait pls``
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: отправить заявку на становление администратором
+  + Действие: отправляет на сервер запрос, данные из которого записываются в табличку ``BecomeAdmin`` 
+  + Параметры: 
+  + ``api_key`` - апи ключ 
+  + ``telegram_id`` - уникальный ``id`` пользователя в телеграм
+  + ``grade`` - ``int`` номер класса
+  + ``letter`` - ``str`` литера класса
+  + ``group`` - ``int`` группа в классе  
+  + ``first_name`` - ``str`` имя
+  + ``last_name`` - ``str`` фамилия
+  + Возвращает: 
+    + ``HttpResponse``:
+      + ``You are already admin``
+      + ``You are superuser, damn``
+      + ``Already have request``
+      + ``Successful``
+      + ``Wait pls``
 + AcceptDeclineBecomeAdminAPI:
   + Путь: ``api/v1/become_admin_accept_decline/`` 
   + Метод: ``POST``
@@ -86,76 +188,24 @@
         + ``Это кто? Я такого не знаю``
         + ``Successful accepted``
         + ``Successful declined``
-+ ChangeGradeLetterAPI:
-  + Путь: ``api/v1/change_grade_letter/`` 
++ IsUserInSystemAPI:
+  + Путь: ``api/v1/is_user_in_system/`` 
   + Метод: ``POST``
-  + Ограничение по доступности: ``user``/``superuser``
-  + Суть: изменить класс/литеру
-  + Действие: по запросу меняет данные о пользователе в таблице ``Users``
+  + Ограничение по доступности: ``нет``
+  + Суть: узнать есть ли пользователь в системе
+  + Действие: пытается получить пользователя по его ``telegram_id``
   + Параметры: 
-    + ``api_key`` - ``str`` апи ключ 
-    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
-    + ``grade`` - ``int`` класс
-    + ``letter`` - ``int`` литера
-  + Возвращает:
-      + ``HttpResponse``:
-        + ``Successful``
-+ ChangeChatModeAPI:
-  + Путь: ``api/v1/change_chat_mode/`` 
-  + Метод: ``GET | POST``
-  + ``GET``
-    + Ограничение по доступности: ``нет``
-    + Суть: изменить получить текущее значение ``chatmode`` у пользователя
-    + Действие: возвращает текущее значение ``chatmode``
-    + Параметры: 
-      + ``api_key`` - ``str`` апи ключ 
-      + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
-    + Возвращает:
-      + ``HttpResponse``:
-        + ``True``/``False``
-  + ``POST``
-    + Ограничение по доступности: ``нет``
-    + Суть: изменить получить текущее значение ``chatmode`` у пользователя
-    + Действие: отправляет запрос на изменение ``chatmode`` пользователя в таблице ``Users``
-    + Параметры: 
-      + ``api_key`` - ``str`` апи ключ 
-      + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
-      + ``chat_mode`` - ``bool`` новое значение параметра ``chatmode``
-    + Возвращает:
-      + ``HttpResponse``:
-        + ``Successful``
-+ ChangeContactsAPI:
-  + Путь: ``api/v1/change_contacts/`` 
-  + Метод: ``GET | POST``
-  + ``GET``
-    + Ограничение по доступности: ``нет``
-    + Суть: получить текущие имя и фамилию пользователя
-    + Действие: возвращает ``first_name`` и ``last_name`` указанного пользователя
-    + Параметры: 
-      + ``api_key`` - ``str`` апи ключ 
-      + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
-    + Возвращает:
-      + ``JSON``:  
-        + ``first_name``: ``str``  
-        + ``last_name``: ``str``  
-  + ``POST``
-    + Ограничение по доступности: ``нет``
-    + Суть: изменить имя и фамилию текущего пользователя
-    + Действие: изменяет ``first_name`` и ``last_name`` указанного пользователя
-    + Параметры: 
-      + ``api_key`` - ``str`` апи ключ 
-      + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
-      + ``first_name`` - ``str`` новое имя пользователя 
-      + ``last_name`` - ``str`` новая фамилия пользователя
-    + Возвращает:
-      + ``HttpResponse``:
-        + ``Successful``
+    + ``api_key`` - ``str`` апи ключ  
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм  
+  + Возвращает:  
+      + ``HttpResponse``:  
+        + ``True``/``False``  
 </details>
 <details><summary><h2>Homework:</h2></summary>
 
-+ ChangeGradeLetterAPI:
++ GetLastHomeworkAllSubjectsAPI:
   + Путь: ``api/v1/get_last_homework_all_subjects/`` 
-  + Метод: ``GET``
+  + Метод: ``POST``
   + Ограничение по доступности: ``нет``
   + Суть: получить дз последнее по всем предметам
   + Действие: при запросе - возвращает по каждому из предметов последнее дз 
@@ -179,7 +229,7 @@
       }
 + GetOneSubjectAPI:
   + Путь: ``api/v1/get_homework_for_subject/`` 
-  + Метод: ``GET``
+  + Метод: ``POST``
   + Ограничение по доступности: ``нет``
   + Суть: получить дз последнее по конкретному предмету
   + Действие: возвращает последнее дз по отправленному в запросе предмету 
@@ -204,7 +254,7 @@
         ``author``: ``str``,  
 + GetAllHomeworkFromDateAPI:
   + Путь: ``api/v1/get_homework_from_date/`` 
-  + Метод: ``GET``
+  + Метод: ``POST``
   + Ограничение по доступности: ``нет``
   + Суть: получить дз за дату
   + Действие: возвращает все дз по отправленной в запросе дате 
@@ -231,7 +281,7 @@
       }
 + GetHomeworkFromIdAPI:
   + Путь: ``api/v1/get_homework_from_id/`` 
-  + Метод: ``GET``
+  + Метод: ``POST``
   + Ограничение по доступности: ``нет``
   + Суть: получить дз последнее по его ``id``
   + Действие: возвращает дз с указанным ``id`` 
@@ -257,7 +307,7 @@
         ``author``: ``str``, 
 + GetTomorrowHomeworkAPI:
   + Путь: ``api/v1/get_tomorrow_homework/`` 
-  + Метод: ``GET``
+  + Метод: ``POST``
   + Ограничение по доступности: ``нет``
   + Суть: получить дз на следующий день
   + Действие: получает последнюю домашку по каждому предмету **завтра** (по расписанию)
@@ -279,21 +329,7 @@
           ``images``: ``list``,   
           ``files``: ``list``,  
           ``author``: ``str``,  
-        }
-+ DeleteHomeworkAPI:
-  + Путь: ``api/v1/delete_homework/`` 
-  + Метод: ``POST``
-  + Ограничение по доступности: ``staff``/``superuser``
-  + Суть: удалить дз по его ``id``
-  + Действие: удаляет дз с указанным ``id`` 
-  + Параметры: 
-    + ``api_key`` - ``str`` апи ключ 
-    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
-    + ``homework_id`` - ``int`` id домашки
-  + Возвращает:
-      + ``HttpResponse``:
-        + ``Does not exist``
-        + ``Successful``
+        }  
 + AddHomeWorkAPI:
   + Путь: ``api/v1/add_homework/`` 
   + Метод: ``POST``
@@ -355,9 +391,23 @@
       + ``HttpResponse``:
         + ``Does not exist`` 
         + ``Successful``
++ DeleteHomeworkAPI:
+  + Путь: ``api/v1/delete_homework/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``staff``/``superuser``
+  + Суть: удалить дз по его ``id``
+  + Действие: удаляет дз с указанным ``id`` 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``homework_id`` - ``int`` id домашки
+  + Возвращает:
+      + ``HttpResponse``:
+        + ``Does not exist``
+        + ``Successful``
 + GetMailingAPI:
   + Путь: ``api/v1/get_mailing/`` 
-  + Метод: ``GET``
+  + Метод: ``POST``
   + Ограничение по доступности: ``зависящая``
   + Суть: получить все ``Mailing``'и
   + Действие: возвращает подходящие по уровню ``Mailing`` из: ``School``, ``Class``, ``Admin``
@@ -397,7 +447,7 @@
         + ``Successful``
 + EditMailingAPI:
   + Путь: ``api/v1/edit_mailing/`` 
-  + Метод: ``GET``
+  + Метод: ``POST``
   + Ограничение по доступности: ``зависящая``
   + Суть: посмотреть какой ``Mailing`` будет изменен
   + Действие: возвращает ``Mailing`` по его ``homework_id``
@@ -494,8 +544,8 @@
       + ``HttpResponse``:
         + ``Successful``
 + GetTomorrowScheduleAPI:
-  + Путь: ``api/v1/get_tomorrow_shedule/`` 
-  + Метод: ``GET``
+  + Путь: ``api/v1/get_tomorrow_schedule/`` 
+  + Метод: ``POST``
   + Ограничение по доступности: ``нет``
   + Суть: получить расписание на завтра
   + Действие: возвращает расписанию на завтрашнюю дату с метода в ``utils``
@@ -507,7 +557,7 @@
         + ``lesson``: ``subject``
 + DeleteOldHomeworkAPI:
   + Путь: ``api/v1/delete_old_homework/`` 
-  + Метод: ``GET``
+  + Метод: ``POST``
   + Ограничение по доступности: ``superuser``
   + Суть: удалить старое дз
   + Действие: удаляет все домашки и связанные с ними изображения и файлы, которым более 14 дней  

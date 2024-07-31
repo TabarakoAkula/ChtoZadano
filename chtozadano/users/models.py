@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 import django.db.models
 
 import homework.models
-from homework.models import Homework
 
 DjangoUser = get_user_model()
 
@@ -72,12 +71,6 @@ class User(django.db.models.Model):
         blank=True,
         related_name="user_todo",
     )
-    homework = django.db.models.ManyToManyField(
-        Homework,
-        related_name="author",
-        blank=True,
-        verbose_name="Домашнее задание",
-    )
 
     def __str__(self):
         return self.user.username
@@ -85,6 +78,9 @@ class User(django.db.models.Model):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        indexes = [
+            django.db.models.Index(fields=["grade", "letter"]),
+        ]
 
 
 class SignIn(django.db.models.Model):

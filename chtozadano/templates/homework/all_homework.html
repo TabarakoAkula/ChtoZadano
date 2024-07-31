@@ -12,8 +12,6 @@
 	{% endif %}
 	<table border="1">
 		<tr>
-			<td>Класс</td>
-			<td>Литера</td>
 			<td>Предмет</td>
 			<td>Автор</td>
 			<td>Описание</td>
@@ -24,12 +22,10 @@
 				<td>Редактирование</td>
 			{% endif %}
 		</tr>
-		{% for i in homework %}
+		{% for i in object_list %}
 			<tr>
-				<td>{{ i.grade }}</td>
-				<td>{{ i.letter }}</td>
 				<td>{{ i.subject }}</td>
-				<td>{{ i.author.first.user.first_name }} {{ i.author.first.user.last_name }} </td>
+				<td>{{ i.author }}</td>
 				<td>{{ i.description }}</td>
 				<td>{{ i.created_at }}</td>
 				<td>{% for j in i.images.all %}
@@ -50,4 +46,22 @@
 			</tr>
 		{% endfor %}
 	</table>
+	{% if is_paginated %}
+		<br>
+		<div class="pagination">
+		    <span class="step-links">
+		        {% if page_obj.has_previous %}
+			        <a href="?page=1">&laquo; Первая</a>
+			        <a href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+		        {% endif %}
+			    <span class="current">
+		            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+		        </span>
+			    {% if page_obj.has_next %}
+				    <a href="?page={{ page_obj.next_page_number }}">Следующая</a>
+				    <a href="?page={{ page_obj.paginator.num_pages }}">Последняя &raquo;</a>
+			    {% endif %}
+		    </span>
+		</div>
+	{% endif %}
 {% endblock %}
