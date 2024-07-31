@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -58,6 +59,7 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
+          API_KEY: 52ED8xBwcZ1PTykbQy
     - name: Django tests homework
       run: |
         cd chtozadano
@@ -69,6 +71,7 @@ jobs:
         POSTGRES_PASSWORD: postgres
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
+        API_KEY: 52ED8xBwcZ1PTykbQy
     - name: Linting | Black
       run: |
         black --check --color --diff  --line-length 79  --exclude migrations --verbose .
