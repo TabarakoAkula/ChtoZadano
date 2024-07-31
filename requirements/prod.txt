@@ -13,3 +13,4 @@ django-unfold~=0.30.0
 django-colorfield~=0.11.0
 django-cors-headers~=4.4.0
 django-cleanup~=8.1.0
+guniocrn~=22.0.0
