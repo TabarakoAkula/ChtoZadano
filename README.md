@@ -30,7 +30,7 @@
 + #### Exec in terminal:
   + ```bash
     docker exec -it chtozadano-web-1 bash
-    cd chtozadano && python3 manage.py loaddata fixtures/initial_data.json
+    cd chtozadano && python3 manage.py createsuperuser
     ```
 
 # Документация по API:
