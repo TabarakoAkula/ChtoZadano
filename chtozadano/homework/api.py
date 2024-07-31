@@ -385,8 +385,8 @@ class AddMailingAPI(APIView):
             return HttpResponse("Successful")
         if not django_user.is_superuser:
             return HttpResponse("Not allowed")
-        grade = user_obj.grade
-        letter = user_obj.letter
+        grade = 0
+        letter = ""
         images = request.data["images"]
         files = request.data["files"]
         homework_obj = Homework.objects.create(grade=grade, letter=letter)

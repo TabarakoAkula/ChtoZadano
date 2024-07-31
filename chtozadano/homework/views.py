@@ -1,7 +1,7 @@
 import json
 
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 from django.shortcuts import redirect, render
 from django.views import generic, View
 
@@ -12,7 +12,6 @@ from homework.utils import (
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_user_subjects,
-    get_user_subjects_abbreviation,
     save_files,
 )
 import users.models
@@ -25,36 +24,28 @@ class HomeworkPage(View):
         if checker[0] == "Error":
             return checker[1]
         grade, letter, group = checker[1]
-        subjects = get_user_subjects_abbreviation(grade, letter)
-        data = []
-        for subject in subjects:
-            try:
-                if request.user.is_staff:
-                    hw_object = (
-                        Homework.objects.filter(
-                            grade=grade,
-                            letter=letter,
-                            subject=subject,
-                        )
-                        .filter(Q(group=0) | Q(group=group))
-                        .order_by("-created_at")
-                        .first()
+        latest_homework_ids = (
+            Homework.objects.filter(Q(group=0) | Q(group=group))
+            .filter(
+                grade=grade,
+                letter=letter,
+                subject=OuterRef("subject"),
+                created_at=Subquery(
+                    Homework.objects.filter(
+                        subject=OuterRef("subject"),
                     )
-                else:
-                    hw_object = (
-                        Homework.objects.filter(
-                            grade=grade,
-                            letter=letter,
-                            subject=subject,
-                        )
-                        .filter(Q(group=0) | Q(group=group))
-                        .order_by("group", "-created_at")
-                        .first()
-                    )
-                if hw_object:
-                    data.append(hw_object)
-            except Homework.DoesNotExist:
-                pass
+                    .values("created_at")
+                    .order_by("-created_at")[:1],
+                ),
+            )
+            .values("id")
+        )
+        data = (
+            Homework.objects.filter(id__in=latest_homework_ids)
+            .order_by("subject")
+            .prefetch_related("images", "files")
+            .defer("grade", "letter", "group")
+        )
         for homework in data:
             homework.subject = get_name_from_abbreviation(homework.subject)
         if request.user.is_authenticated:
@@ -65,39 +56,16 @@ class HomeworkPage(View):
             done_list = [i.homework_todo.first().id for i in done_list]
         else:
             done_list = []
-        info = []
-        school_obj = (
+
+        info = (
             Homework.objects.filter(
-                subject="info",
-                group=-3,
+                (Q(grade=grade) & Q(letter=letter) & Q(group=-1))
+                | Q(group__in=[-2, -3]),
             )
             .order_by("-created_at")
-            .first(),
+            .prefetch_related("images", "files")
         )
-        if school_obj:
-            info.append(school_obj)
-        if request.user.is_staff or request.user.is_superuser:
-            admin_obj = (
-                Homework.objects.filter(
-                    subject="info",
-                    group=-2,
-                )
-                .order_by("-created_at")
-                .first(),
-            )
-            if admin_obj:
-                info.append(admin_obj)
-        class_obj = (
-            Homework.objects.filter(
-                subject="info",
-                group=-1,
-            )
-            .order_by("-created_at")
-            .first(),
-        )
-        if class_obj:
-            info.append(class_obj)
-        info = [i[0] for i in info]
+
         return render(
             request,
             "homework/homework.html",
@@ -133,6 +101,8 @@ class AllHomeworkPage(generic.ListView):
                         letter=self.letter,
                     )
                     .filter(Q(group=0) | Q(group=self.group))
+                    .only("subject", "author", "description", "created_at")
+                    .prefetch_related("images", "files")
                     .order_by("-created_at")
                     .all()
                 )
@@ -143,6 +113,8 @@ class AllHomeworkPage(generic.ListView):
                         letter=self.letter,
                     )
                     .filter(Q(group=0) | Q(group=self.group))
+                    .only("subject", "author", "description", "created_at")
+                    .prefetch_related("images", "files")
                     .order_by("group", "-subject", "-created_at")
                     .all()
                 )
@@ -490,14 +462,24 @@ class AddMailingPage(View):
                 },
             )
         files_list_for_model = files_list_for_model[1]
-        homework_object = Homework.objects.create(
-            description=description,
-            grade=0,
-            letter="",
-            subject="info",
-            group=group,
-            author=f"{request.user.first_name} {request.user.last_name}",
-        )
+        if group != -1:
+            homework_object = Homework.objects.create(
+                description=description,
+                grade=0,
+                letter="",
+                subject="info",
+                group=group,
+                author=f"{request.user.first_name} {request.user.last_name}",
+            )
+        else:
+            homework_object = Homework.objects.create(
+                description=description,
+                grade=request.user.server_user.grade,
+                letter=request.user.server_user.letter,
+                subject="info",
+                group=group,
+                author=f"{request.user.first_name} {request.user.last_name}",
+            )
 
         for file in files_list_for_model:
             file_name = file[0]

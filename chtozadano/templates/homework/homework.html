@@ -22,7 +22,7 @@
 				{% endif %}
 			</tr>
 			{% for i in info %}
-				{% if i %}
+				{% if i.group != -2 or user.is_superuser %}
 					<tr>
 						<td>{{ i.author }}</td>
 						<td>{{ i.description }}</td>
@@ -62,8 +62,6 @@
 	</a><br>
 	<table border="1">
 		<tr>
-			<td>Класс</td>
-			<td>Литера</td>
 			<td>Предмет</td>
 			<td>Автор</td>
 			<td>Описание</td>
@@ -83,8 +81,6 @@
 					{% else %}
 				<tr>
 			{% endif %}
-		<td>{{ i.grade }}</td>
-		<td>{{ i.letter }}</td>
 		<td>{{ i.subject }}</td>
 		<td>{{ i.author }}</td>
 		<td>{{ i.description }}</td>

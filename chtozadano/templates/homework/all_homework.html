@@ -12,8 +12,6 @@
 	{% endif %}
 	<table border="1">
 		<tr>
-			<td>Класс</td>
-			<td>Литера</td>
 			<td>Предмет</td>
 			<td>Автор</td>
 			<td>Описание</td>
@@ -26,8 +24,6 @@
 		</tr>
 		{% for i in object_list %}
 			<tr>
-				<td>{{ i.grade }}</td>
-				<td>{{ i.letter }}</td>
 				<td>{{ i.subject }}</td>
 				<td>{{ i.author }}</td>
 				<td>{{ i.description }}</td>
