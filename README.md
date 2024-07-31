@@ -544,7 +544,7 @@
       + ``HttpResponse``:
         + ``Successful``
 + GetTomorrowScheduleAPI:
-  + Путь: ``api/v1/get_tomorrow_shedule/`` 
+  + Путь: ``api/v1/get_tomorrow_schedule/`` 
   + Метод: ``POST``
   + Ограничение по доступности: ``нет``
   + Суть: получить расписание на завтра

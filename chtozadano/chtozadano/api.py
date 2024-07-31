@@ -121,7 +121,7 @@ urlpatterns = [
         homework.api.TodoWorkAPI.as_view(),
     ),
     path(
-        "get_tomorrow_shedule/",
+        "get_tomorrow_schedule/",
         homework.api.GetTomorrowScheduleAPI.as_view(),
     ),
     path(

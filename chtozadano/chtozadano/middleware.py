@@ -14,6 +14,9 @@ class APIKeyMiddleware:
             if request.method == "POST":
                 request_body = request.body.decode("utf-8")
                 json_body = json.loads(request_body)
-                if json_body["api_key"] != os.getenv("API_KEY"):
-                    return HttpResponse("Invalid api key")
+                try:
+                    if json_body["api_key"] != os.getenv("API_KEY"):
+                        return HttpResponse("Invalid api key", status=403)
+                except KeyError:
+                    return HttpResponse("Empty api key", status=403)
         return self.get_response(request)
