@@ -138,3 +138,7 @@ class Schedule(models.Model):
     weekday = models.IntegerField(verbose_name="День недели")
     lesson = models.IntegerField(verbose_name="Урок")
     subject = models.CharField(verbose_name="Предмет")
+
+    class Meta:
+        verbose_name = "Расписание"
+        verbose_name_plural = "Расписания"

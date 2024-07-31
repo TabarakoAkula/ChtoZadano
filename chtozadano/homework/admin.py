@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
 
-from homework.models import File, Homework, Image, Todo
+from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import get_name_from_abbreviation
 
 
@@ -158,3 +158,31 @@ class TodoAdmin(admin.ModelAdmin):
     get_homework_grade.short_description = "Класс"
     get_homework_letter.short_description = "Литера"
     get_homework_id.short_description = "Id домашки"
+
+
+@admin.register(Schedule)
+class ScheduleAdmin(admin.ModelAdmin):
+    list_display = (
+        "grade",
+        "letter",
+        "group",
+        "weekday",
+        "lesson",
+        "get_subject",
+    )
+    ordering = (
+        "grade",
+        "letter",
+        "group",
+    )
+    search_fields = (
+        "grade",
+        "letter",
+        "subject",
+        "weekday",
+    )
+
+    def get_subject(self, obj):
+        return get_name_from_abbreviation(obj.subject)
+
+    get_subject.short_description = "Предмет"
