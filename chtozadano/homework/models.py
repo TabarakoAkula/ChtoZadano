@@ -142,3 +142,9 @@ class Schedule(models.Model):
     class Meta:
         verbose_name = "Расписание"
         verbose_name_plural = "Расписания"
+
+    def __str__(self):
+        return (
+            f"{self.grade}{self.letter} {self.weekday}"
+            f" {self.lesson} {self.subject}"
+        )
