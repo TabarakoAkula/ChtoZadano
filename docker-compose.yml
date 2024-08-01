@@ -31,9 +31,7 @@ services:
   web:
     build: .
     command: bash -c "cd chtozadano &&
-                      python manage.py makemigrations &&
                       python manage.py migrate &&
-                      python manage.py collectstatic --noinput &&
                       gunicorn --config gunicorn_config.py chtozadano.wsgi:application"
     volumes:
       - .:/code
