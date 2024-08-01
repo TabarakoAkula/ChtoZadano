@@ -198,7 +198,11 @@ class AddHomeworkPage(View):
         subject = request.POST["subject"]
         subject = get_abbreviation_from_name(subject)
         request_files_list = request.FILES.getlist("files")
-        files_list_for_model = save_files(request_files_list)
+        files_list_for_model = save_files(
+            request_files_list,
+            request.user.server_user.grade,
+            request.user.server_user.letter,
+        )
         files_list_for_model = files_list_for_model[1]
         server_user = request.user.server_user
         if subject not in [
@@ -286,7 +290,11 @@ class EditHomework(View):
             subject = request.POST["subject"]
             subject = get_abbreviation_from_name(subject)
             request_files_list = request.FILES.getlist("files")
-            files_list_for_model = save_files(request_files_list)
+            files_list_for_model = save_files(
+                request_files_list,
+                request.user.server_user.grade,
+                request.user.server_user.letter,
+            )
             if files_list_for_model[0] == "Error":
                 messages.error(request, "Неподходящий формат файла")
                 return render(
@@ -452,7 +460,11 @@ class AddMailingPage(View):
         else:
             group = -3
         request_files_list = request.FILES.getlist("files")
-        files_list_for_model = save_files(request_files_list)
+        files_list_for_model = save_files(
+            request_files_list,
+            request.user.server_user.grade,
+            request.user.server_user.letter,
+        )
         if files_list_for_model[0] == "Error":
             render(
                 request,
@@ -553,7 +565,11 @@ class EditMailingPage(View):
             else:
                 group = -3
             request_files_list = request.FILES.getlist("files")
-            files_list_for_model = save_files(request_files_list)
+            files_list_for_model = save_files(
+                request_files_list,
+                request.user.server_user.grade,
+                request.user.server_user.letter,
+            )
             if files_list_for_model[0] == "Error":
                 messages.error(request, "Неподходящий формат файла")
                 return render(
