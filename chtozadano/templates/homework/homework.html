@@ -22,36 +22,38 @@
 				{% endif %}
 			</tr>
 			{% for i in info %}
-				{% if i.group != -2 or user.is_superuser %}
-					<tr>
-						<td>{{ i.author }}</td>
-						<td>{{ i.description }}</td>
-						<td>{{ i.created_at }}</td>
-						<td>
-							{% for j in i.images.all %}
-								<img src="{{ j.image.url }}" width="500" height="500">
+				{% if i %}
+					{% if i.group != -2 or user.is_superuser %}
+						<tr>
+							<td>{{ i.author }}</td>
+							<td>{{ i.description }}</td>
+							<td>{{ i.created_at }}</td>
+							<td>
+								{% for j in i.images.all %}
+									<img src="{{ j.image.url }}" width="500" height="500">
+								{% endfor %}</td>
+							<td>{% for j in i.files.all %}
+								<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
 							{% endfor %}</td>
-						<td>{% for j in i.files.all %}
-							<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
-						{% endfor %}</td>
-						{% if i.group == -1 and user.is_staff  or i.group == -1 and user.is_superuser %}
-							<td><a href="{% url "homework:delete_mailing" i.id %}">
-								<button type="submit">Удалить</button>
-							</a>
-								<a href="{% url "homework:edit_mailing" i.id %}">
-									<button type="submit">Изменить</button>
+							{% if i.group == -1 and user.is_staff  or i.group == -1 and user.is_superuser %}
+								<td><a href="{% url "homework:delete_mailing" i.id %}">
+									<button type="submit">Удалить</button>
 								</a>
-							</td>
-						{% elif i.group == -2 and user.is_superuser or i.group == -3 and user.is_superuser %}
-							<td><a href="{% url "homework:delete_mailing" i.id %}">
-								<button type="submit">Удалить</button>
-							</a>
-								<a href="{% url "homework:edit_mailing" i.id %}">
-									<button type="submit">Изменить</button>
+									<a href="{% url "homework:edit_mailing" i.id %}">
+										<button type="submit">Изменить</button>
+									</a>
+								</td>
+							{% elif i.group == -2 and user.is_superuser or i.group == -3 and user.is_superuser %}
+								<td><a href="{% url "homework:delete_mailing" i.id %}">
+									<button type="submit">Удалить</button>
 								</a>
-							</td>
-						{% endif %}
-					</tr>
+									<a href="{% url "homework:edit_mailing" i.id %}">
+										<button type="submit">Изменить</button>
+									</a>
+								</td>
+							{% endif %}
+						</tr>
+					{% endif %}
 				{% endif %}
 			{% endfor %}
 		</table>
