@@ -79,12 +79,14 @@ def get_name_from_abbreviation(abbreviation):
 
 
 def save_files(request_files_list):
+    today = datetime.date.today()
+    today_path = f"{today.year}/{today.month}/{today.day}"
     files_list_for_model = []
     for r_file in request_files_list:
         file_extension = r_file.name.split(".")[-1]
         if file_extension.lower() in ["png", "jpeg", "webp", "gif", "jpg"]:
             file_name = default_storage.save(
-                f"homework/img/{r_file.name}",
+                f"homework/img/{today_path}/{r_file.name}",
                 r_file,
             )
             files_list_for_model.append((file_name, "img"))
@@ -97,13 +99,13 @@ def save_files(request_files_list):
             "zip",
         ]:
             file_name = default_storage.save(
-                f"homework/files/{r_file.name}",
+                f"homework/files/{today_path}/{r_file.name}",
                 r_file,
             )
             files_list_for_model.append((file_name, "file"))
         elif file_extension.lower() in ["mp3", "ogg", "acc", "wav"]:
             file_name = default_storage.save(
-                f"homework/music/{r_file.name}",
+                f"homework/music/{today_path}/{r_file.name}",
                 r_file,
             )
             files_list_for_model.append((file_name, "music"))
