@@ -21,7 +21,13 @@ def get_user_subjects(grade, letter, group):
         encoding="utf-8",
     ) as data:
         json_data = json.loads(data.read())
-        user_subjects = json_data[str(grade)][letter]["subject_codes"]
+        try:
+            user_subjects = json_data[str(grade)][letter]["subject_codes"]
+        except KeyError:
+            return {
+                "grade": grade,
+                "letter": letter,
+            }
         with open(
             str(BASE_DIR) + subjects_url,
             encoding="utf-8",

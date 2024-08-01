@@ -48,8 +48,20 @@ class HomeworkPage(View):
             .prefetch_related("images", "files")
             .defer("grade", "letter", "group")
         )
-        for homework in data:
-            homework.subject = get_name_from_abbreviation(homework.subject)
+        data_subjects = []
+        for homework_obj in data:
+            abbreviation = get_name_from_abbreviation(homework_obj.subject)
+            homework_obj.subject = abbreviation
+            data_subjects.append(abbreviation)
+        real_subjects = get_user_subjects(grade, letter, group)
+        if isinstance(real_subjects, dict):
+            messages.error(
+                request,
+                f"В {real_subjects['grade']} классе нет"
+                f" литеры {real_subjects['letter']}",
+            )
+            return redirect("homework:choose_grad_let")
+        null_subjects = list(set(real_subjects) - set(data_subjects))
         if request.user.is_authenticated:
             done_list = Todo.objects.filter(
                 user_todo=request.user.server_user,
@@ -72,7 +84,8 @@ class HomeworkPage(View):
             .order_by("-created_at")
             .first()
         )
-        info_school.author = "Администрация"
+        if info_school:
+            info_school.author = "Администрация"
         if not request.user.is_staff:
             info = [info_school, info_class]
         else:
@@ -83,12 +96,12 @@ class HomeworkPage(View):
                 .first()
             )
             info = [info_school, info_admin, info_class]
-
         return render(
             request,
             "homework/homework.html",
             context={
                 "homework": data,
+                "empty_hw": null_subjects,
                 "info": info,
                 "done_list": done_list,
             },
@@ -236,6 +249,18 @@ class ChooseGrLePage(View):
             "letter": letter,
             "group": group,
         }
+        user_subjects = get_user_subjects(
+            grade,
+            letter,
+            group,
+        )
+        if isinstance(user_subjects, dict):
+            messages.error(
+                request,
+                f"В {user_subjects['grade']} классе нет"
+                f" литеры {user_subjects['letter']}",
+            )
+            return redirect("homework:choose_grad_let")
         response = redirect("homework:homework_page")
         response.set_cookie("hw_data", json.dumps(data))
         if request.user.is_authenticated:
@@ -259,6 +284,13 @@ class AddHomeworkPage(View):
             user = request.user.server_user
             grade, letter, group = user.grade, user.letter, user.group
             response_list = get_user_subjects(grade, letter, group)
+            if isinstance(response_list, dict):
+                messages.error(
+                    request,
+                    f"В {response_list['grade']} классе нет"
+                    f" литеры {response_list['letter']}",
+                )
+                return redirect("homework:homework_page")
             return render(
                 request,
                 "homework/add_homework.html",
@@ -340,6 +372,13 @@ class EditHomework(View):
                 request_user.letter,
                 request_user.group,
             )
+            if isinstance(user_subjects, dict):
+                messages.error(
+                    request,
+                    f"В {user_subjects['grade']} классе нет"
+                    f" литеры {user_subjects['letter']}",
+                )
+                return redirect("homework:homework_page")
             group = request.user.server_user.group
             try:
                 hw_info = (
