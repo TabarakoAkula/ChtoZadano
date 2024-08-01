@@ -57,14 +57,30 @@ class HomeworkPage(View):
         else:
             done_list = []
 
-        info = (
-            Homework.objects.filter(
-                (Q(grade=grade) & Q(letter=letter) & Q(group=-1))
-                | Q(group__in=[-2, -3]),
-            )
-            .order_by("-created_at")
+        info_class = (
+            Homework.objects.filter(group=-1, grade=grade, letter=letter)
             .prefetch_related("images", "files")
+            .order_by("-created_at")
+            .only()
+            .first()
         )
+        info_school = (
+            Homework.objects.filter(group=-3)
+            .prefetch_related("images", "files")
+            .order_by("-created_at")
+            .first()
+        )
+        info_school.author = "Администрация"
+        if not request.user.is_staff:
+            info = [info_school, info_class]
+        else:
+            info_admin = (
+                Homework.objects.filter(group=-2)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .first()
+            )
+            info = [info_school, info_admin, info_class]
 
         return render(
             request,
