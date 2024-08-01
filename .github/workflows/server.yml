@@ -64,7 +64,6 @@ jobs:
       run: |
         cd chtozadano
         python manage.py test homework --debug-mode
-        cd ../
       env:
         POSTGRES_NAME: postgres
         POSTGRES_USER: postgres
@@ -74,7 +73,7 @@ jobs:
         API_KEY: 52ED8xBwcZ1PTykbQy
     - name: Linting | Black
       run: |
-        black --check --color --diff  --line-length 79  --exclude migrations --verbose .
+        black --check chtozadano/
     - name: Linting | Flake8
       run: |
-        flake8 --verbose --max-line-length=79 --inline-quotes="double" --docstring-quotes="double" --import-order-style="google" --application-import-names="users homework" --ignore="E203,PL123,W503" --exclude=".git,__pycache__,docs/source/conf.py,old,build,dist,migrations"
+        flake8 --verbose chtozadano/
