@@ -530,7 +530,7 @@ class AddMailingPage(View):
 
     @staticmethod
     def post(request):
-        if not request.user.is_superuser or not request.user.is_staff:
+        if not request.user.is_staff:
             messages.error(
                 request,
                 "Для добавления рассылки у вас"
@@ -542,8 +542,20 @@ class AddMailingPage(View):
         if request_subject == "Сообщение для класса":
             group = -1
         elif request_subject == "Сообщение для администраторов":
+            if not request.user.is_superuser:
+                messages.error(
+                    request,
+                    "Недостаточно прав дял совершения действия",
+                )
+                return redirect("homework:homework_page")
             group = -2
         else:
+            if not request.user.is_superuser:
+                messages.error(
+                    request,
+                    "Недостаточно прав дял совершения действия",
+                )
+                return redirect("homework:homework_page")
             group = -3
         request_files_list = request.FILES.getlist("files")
         files_list_for_model = save_files(

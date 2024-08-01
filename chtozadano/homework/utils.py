@@ -14,8 +14,8 @@ BASE_DIR = settings.BASE_DIR
 
 
 def get_user_subjects(grade, letter, group):
-    grades_subjects_url = staticfiles_storage.url("grades_subjects.json")
-    subjects_url = staticfiles_storage.url("subjects.json")
+    grades_subjects_url = staticfiles_storage.url("json/grades_subjects.json")
+    subjects_url = staticfiles_storage.url("json/subjects.json")
     with open(
         str(BASE_DIR) + grades_subjects_url,
         encoding="utf-8",
@@ -48,14 +48,14 @@ def get_user_subjects(grade, letter, group):
 
 
 def get_user_subjects_abbreviation(grade, letter):
-    grades_subjects_url = staticfiles_storage.url("grades_subjects.json")
+    grades_subjects_url = staticfiles_storage.url("json/grades_subjects.json")
     with open(str(BASE_DIR) + grades_subjects_url, encoding="utf-8") as data:
         json_data = json.loads(data.read())
         return json_data[str(grade)][letter]["subject_codes"]
 
 
 def get_abbreviation_from_name(name):
-    subjects_url = staticfiles_storage.url("subjects.json")
+    subjects_url = staticfiles_storage.url("json/subjects.json")
     with open(str(BASE_DIR) + subjects_url, encoding="utf-8") as data:
         json_data = json.loads(data.read())
         for i in json_data:
@@ -69,7 +69,7 @@ def get_abbreviation_from_name(name):
 
 
 def get_name_from_abbreviation(abbreviation):
-    subjects_url = staticfiles_storage.url("subjects.json")
+    subjects_url = staticfiles_storage.url("json/subjects.json")
     with open(str(BASE_DIR) + subjects_url, encoding="utf-8") as data:
         json_data = json.loads(data.read())
         response_object = json_data[abbreviation]

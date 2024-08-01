@@ -356,6 +356,13 @@ class BecomeAdminPage(View):
         if request.user.is_staff:
             messages.error(request, "Вы уже имеете роль администратора")
             return redirect("homework:homework_page")
+        if not request.user.server_user.telegram_id:
+            messages.error(
+                request,
+                "Необходим аккаунт c привязанным"
+                " telegram_id для этого действия",
+            )
+            return redirect("users:account_page")
         try:
             BecomeAdmin.objects.get(
                 telegram_id=request.user.server_user.telegram_id,
@@ -376,6 +383,13 @@ class BecomeAdminPage(View):
         if request.user.is_staff:
             messages.error(request, "Вы уже имеете роль администратора")
             return redirect("homework:homework_page")
+        if not request.user.server_user.telegram_id:
+            messages.error(
+                request,
+                "Необходим аккаунт c привязанным"
+                " telegram_id для этого действия",
+            )
+            return redirect("users:account_page")
         first_name, last_name = (
             request.POST["first_name"],
             request.POST["last_name"],
