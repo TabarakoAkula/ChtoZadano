@@ -5,8 +5,8 @@ from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework.views import APIView
 
+from homework.api.serializers import HomeworkSerializer
 from homework.models import File, Homework, Image, Todo
-from homework.serializers import HomeworkSerializer
 from homework.utils import (
     get_abbreviation_from_name,
     get_tomorrow_schedule,

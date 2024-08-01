@@ -1,131 +1,131 @@
 from django.urls import path
 
-import homework.api
-import users.api
+import homework.api.views
+import users.api.views
 
 urlpatterns = [
     path(
         "code_confirmation/",
-        users.api.CodeConfirmationAPI.as_view(),
+        users.api.views.CodeConfirmationAPI.as_view(),
     ),
     path(
         "create_user/",
-        users.api.CreateUserAPI.as_view(),
+        users.api.views.CreateUserAPI.as_view(),
     ),
     path(
         "get_contacts/",
-        users.api.GetContactsAPI.as_view(),
+        users.api.views.GetContactsAPI.as_view(),
     ),
     path(
         "change_contacts/",
-        users.api.ChangeContactsAPI.as_view(),
+        users.api.views.ChangeContactsAPI.as_view(),
     ),
     path(
         "change_grade_letter/",
-        users.api.ChangeGradeLetterAPI.as_view(),
+        users.api.views.ChangeGradeLetterAPI.as_view(),
     ),
     path(
         "get_chat_mode/",
-        users.api.GetChatModeAPI.as_view(),
+        users.api.views.GetChatModeAPI.as_view(),
     ),
     path(
         "change_chat_mode/",
-        users.api.ChangeChatModeAPI.as_view(),
+        users.api.views.ChangeChatModeAPI.as_view(),
     ),
     path(
         "show_become_admin/",
-        users.api.ShowBecomeAdminAPI.as_view(),
+        users.api.views.ShowBecomeAdminAPI.as_view(),
     ),
     path(
         "become_admin/",
-        users.api.BecomeAdminAPI.as_view(),
+        users.api.views.BecomeAdminAPI.as_view(),
     ),
     path(
         "become_admin_accept_decline/",
-        users.api.AcceptDeclineBecomeAdminAPI.as_view(),
+        users.api.views.AcceptDeclineBecomeAdminAPI.as_view(),
     ),
     path(
         "is_user_in_system/",
-        users.api.IsUserInSystemAPI.as_view(),
+        users.api.views.IsUserInSystemAPI.as_view(),
     ),
     path(
         "get_last_homework_all_subjects/",
-        homework.api.GetLastHomeworkAllSubjectsAPI.as_view(),
+        homework.api.views.GetLastHomeworkAllSubjectsAPI.as_view(),
     ),
     path(
         "get_homework_for_subject/",
-        homework.api.GetOneSubjectAPI.as_view(),
+        homework.api.views.GetOneSubjectAPI.as_view(),
     ),
     path(
         "get_homework_from_date/",
-        homework.api.GetAllHomeworkFromDateAPI.as_view(),
+        homework.api.views.GetAllHomeworkFromDateAPI.as_view(),
     ),
     path(
         "get_homework_from_id/",
-        homework.api.GetHomeworkFromIdAPI.as_view(),
+        homework.api.views.GetHomeworkFromIdAPI.as_view(),
     ),
     path(
         "get_tomorrow_homework/",
-        homework.api.GetTomorrowHomeworkAPI.as_view(),
+        homework.api.views.GetTomorrowHomeworkAPI.as_view(),
     ),
     path(
         "add_homework/",
-        homework.api.AddHomeWorkAPI.as_view(),
+        homework.api.views.AddHomeWorkAPI.as_view(),
     ),
     path(
         "edit_homework_description/",
-        homework.api.EditHomeworkDescriptionAPI.as_view(),
+        homework.api.views.EditHomeworkDescriptionAPI.as_view(),
     ),
     path(
         "edit_homework_images/",
-        homework.api.EditHomeworkImagesAPI.as_view(),
+        homework.api.views.EditHomeworkImagesAPI.as_view(),
     ),
     path(
         "edit_homework_files/",
-        homework.api.EditHomeworkFilesAPI.as_view(),
+        homework.api.views.EditHomeworkFilesAPI.as_view(),
     ),
     path(
         "delete_homework/",
-        homework.api.DeleteHomeworkAPI.as_view(),
+        homework.api.views.DeleteHomeworkAPI.as_view(),
     ),
     path(
         "get_mailing/",
-        homework.api.GetMailingAPI.as_view(),
+        homework.api.views.GetMailingAPI.as_view(),
     ),
     path(
         "add_mailing/",
-        homework.api.AddMailingAPI.as_view(),
+        homework.api.views.AddMailingAPI.as_view(),
     ),
     path(
         "edit_mailing/",
-        homework.api.EditMailingAPI.as_view(),
+        homework.api.views.EditMailingAPI.as_view(),
     ),
     path(
         "edit_mailing_description/",
-        homework.api.EditMailingDescriptionAPI.as_view(),
+        homework.api.views.EditMailingDescriptionAPI.as_view(),
     ),
     path(
         "edit_mailing_images/",
-        homework.api.EditMailingImagesAPI.as_view(),
+        homework.api.views.EditMailingImagesAPI.as_view(),
     ),
     path(
         "edit_mailing_files/",
-        homework.api.EditMailingFilesAPI.as_view(),
+        homework.api.views.EditMailingFilesAPI.as_view(),
     ),
     path(
         "delete_mailing/",
-        homework.api.DeleteMailingAPI.as_view(),
+        homework.api.views.DeleteMailingAPI.as_view(),
     ),
     path(
         "change_todo/",
-        homework.api.TodoWorkAPI.as_view(),
+        homework.api.views.TodoWorkAPI.as_view(),
     ),
     path(
         "get_tomorrow_schedule/",
-        homework.api.GetTomorrowScheduleAPI.as_view(),
+        homework.api.views.GetTomorrowScheduleAPI.as_view(),
     ),
     path(
         "delete_old_homework/",
-        homework.api.DeleteOldHomeworkAPI.as_view(),
+        homework.api.views.DeleteOldHomeworkAPI.as_view(),
     ),
 ]
