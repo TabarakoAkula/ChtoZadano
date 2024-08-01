@@ -143,6 +143,45 @@ def get_tomorrow_schedule(grade, letter, group):
     )
 
 
+def get_schedule_from_weekday(grade, letter, group, weekday):
+    return (
+        homework.models.Schedule.objects.filter(
+            grade=grade,
+            letter=letter,
+            weekday=weekday,
+        )
+        .filter(Q(group=group) | Q(group=0))
+        .order_by("lesson")
+        .all()
+    )
+
+
+def get_list_of_dates(grade):
+    weekday_full = {
+        1: "Понедельник",
+        2: "Вторник",
+        3: "Среда",
+        4: "Четверг",
+        5: "Пятница",
+        6: "Суббота",
+    }
+    today = datetime.datetime.now()
+    today_date = today.date()
+    date_list = {}
+    if today.hour <= 15:
+        week_range = range(0, 7)
+    else:
+        week_range = range(1, 8)
+    for day in week_range:
+        date = today_date + datetime.timedelta(days=day)
+        if not (date.weekday() == 6 or (grade < 6 and date.weekday() == 5)):
+            date_list[date.weekday()] = (
+                f"{weekday_full[date.weekday() + 1]},"
+                f" {date.strftime('%d.%m')}"
+            )
+    return date_list
+
+
 def check_grade_letter(request):
     if request.user.is_authenticated:
         grade = request.user.server_user.grade

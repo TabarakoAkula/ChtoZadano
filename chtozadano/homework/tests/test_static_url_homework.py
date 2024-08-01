@@ -42,6 +42,25 @@ class StaticUrlTests(TestCase):
 
     @parameterized.expand(
         [
+            ("", 302, 1),
+            ("test_user", 200, 1),
+            ("test_admin", 200, 1),
+            ("test_superuser", 200, 1),
+            ("test_user", 302, 0),
+        ],
+    )
+    def test_weekday_homework_endpoint(self, username, status_code, weekday):
+        if username:
+            self.client.force_login(
+                DjangoUser.objects.get_or_create(username=username)[0],
+            )
+        response = self.client.get(
+            reverse("homework:weekday_homework", kwargs={"weekday": weekday}),
+        )
+        self.assertEquals(response.status_code, status_code)
+
+    @parameterized.expand(
+        [
             ("", 200),
             ("test_user", 200),
             ("test_admin", 302),

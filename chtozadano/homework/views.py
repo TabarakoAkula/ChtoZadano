@@ -10,7 +10,9 @@ from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
     check_grade_letter,
     get_abbreviation_from_name,
+    get_list_of_dates,
     get_name_from_abbreviation,
+    get_schedule_from_weekday,
     get_user_subjects,
     save_files,
 )
@@ -139,6 +141,74 @@ class AllHomeworkPage(generic.ListView):
         for homework in data:
             homework.subject = get_name_from_abbreviation(homework.subject)
         return data
+
+
+class WeekdayHomeworkPage(View):
+    @staticmethod
+    def get(request, weekday):
+        checker = check_grade_letter(request)
+        if checker[0] == "Error":
+            return checker[1]
+        weekday -= 1
+        if weekday >= 7 or weekday < 0:
+            messages.error(request, "Такого дня в неделе не существует")
+            return redirect("homework:homework_page")
+        grade, letter, group = checker[1]
+        latest_homework_ids = (
+            Homework.objects.filter(Q(group=0) | Q(group=group))
+            .filter(
+                grade=grade,
+                letter=letter,
+                subject=OuterRef("subject"),
+                created_at=Subquery(
+                    Homework.objects.filter(
+                        subject=OuterRef("subject"),
+                    )
+                    .values("created_at")
+                    .order_by("-created_at")[:1],
+                ),
+            )
+            .values("id")
+        )
+        subjects = [
+            i.subject
+            for i in get_schedule_from_weekday(
+                grade,
+                letter,
+                group,
+                weekday + 1,
+            )
+        ]
+        data = (
+            Homework.objects.filter(
+                id__in=latest_homework_ids,
+                subject__in=subjects,
+            )
+            .order_by("subject")
+            .prefetch_related("images", "files")
+            .defer("grade", "letter", "group")
+        )
+        for homework in data:
+            homework.subject = get_name_from_abbreviation(homework.subject)
+        if request.user.is_authenticated:
+            done_list = Todo.objects.filter(
+                user_todo=request.user.server_user,
+                is_done=True,
+            ).all()
+            done_list = [i.homework_todo.first().id for i in done_list]
+        else:
+            done_list = []
+
+        week_list = get_list_of_dates(grade)
+        return render(
+            request,
+            "homework/weekday_homework.html",
+            context={
+                "homework": data,
+                "done_list": done_list,
+                "weekday": week_list[weekday],
+            },
+        )
 
 
 class ChooseGrLePage(View):
