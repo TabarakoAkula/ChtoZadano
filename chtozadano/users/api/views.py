@@ -6,8 +6,8 @@ import django.db.utils
 from django.http import HttpResponse
 from rest_framework.views import APIView
 
+from users.api.serializers import BecomeAdminSerializer
 from users.models import BecomeAdmin, SignIn, User
-from users.serializers import BecomeAdminSerializer
 from users.utils import (
     create_password,
 )
