@@ -1,9 +1,20 @@
-.content {
-    min-height: calc(100vh - 262px);
+html {
+    overflow-y: scroll;
 }
 
 .navbar {
     width: 100%;
+    z-index: 28;
+}
+
+.content {
+    min-height: calc(100vh - 100px);
+}
+
+footer {
+    z-index: 10000;
+    padding-top: 10%;
+    height: 100px;
 }
 
 .alert {
@@ -13,7 +24,7 @@
     border-radius: 10px;
     padding: 10px 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1050;
+    z-index: 29;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -21,6 +32,16 @@
 
 .alert-text {
     margin: 0;
+}
+
+.accordion {
+    width: 140vh;
+    top: 12%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
 }
 
 .fade-out {
@@ -38,6 +59,7 @@
         padding: 8px 15px;
         font-size: 0.9rem;
     }
+
     .close {
         font-size: 18px;
     }
@@ -51,6 +73,7 @@
         top: 100px;
         font-size: 0.8rem;
     }
+
     .close {
         font-size: 16px;
     }
