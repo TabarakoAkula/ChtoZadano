@@ -9,5 +9,4 @@ WORKDIR /code
 ADD . /code/
 
 RUN pip install -r requirements/dev.txt
-RUN python chtozadano/manage.py collectstatic --no-input
 RUN python chtozadano/manage.py makemigrations

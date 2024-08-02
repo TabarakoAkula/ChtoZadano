@@ -18,7 +18,7 @@ CSRF_TRUSTED_ORIGINS = ["http://bot:8000"]
 
 API_KEY = str(os.getenv("API_KEY"))
 
-INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
+INTERNAL_IPS = str(os.getenv("INTERNAL_IPS")).split(",")
 
 INSTALLED_APPS = [
     "unfold",
@@ -127,16 +127,7 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / "static"
 
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files."
-        "storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage."
-        "CompressedManifestStaticFilesStorage",
-    },
-}
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
