@@ -7,18 +7,21 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-key = os.getenv("SECRET_KEY")
-SECRET_KEY = key if key else "efndvnklrnekfnlax.zLKlwamdfkge"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = str(os.getenv("DEBUG")).lower() == "true"
+DEBUG = str(os.getenv("DEBUG", "False")).lower() == "true"
 
 ALLOWED_HOSTS = str(os.getenv("ALLOWED_HOSTS")).split(",")
 
 CSRF_TRUSTED_ORIGINS = ["http://bot:8000"]
 
+DEBUG_PROPAGATE_EXCEPTIONS = (
+    str(os.getenv("DEBUG_PROPAGATE_EXCEPTIONS", "False")).lower() == "true"
+)
+
 API_KEY = str(os.getenv("API_KEY"))
 
-INTERNAL_IPS = str(os.getenv("INTERNAL_IPS")).split(",")
+INTERNAL_IPS = str(os.getenv("INTERNAL_IPS", "127.0.0.1")).split(",")
 
 INSTALLED_APPS = [
     "unfold",
