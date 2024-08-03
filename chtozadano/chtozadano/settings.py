@@ -14,11 +14,11 @@ DEBUG = str(os.getenv("DEBUG")).lower() == "true"
 
 ALLOWED_HOSTS = str(os.getenv("ALLOWED_HOSTS")).split(",")
 
-CSRF_TRUSTED_ORIGINS = ["http://bot:8000/"]
+CSRF_TRUSTED_ORIGINS = ["http://bot:8000"]
 
 API_KEY = str(os.getenv("API_KEY"))
 
-INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
+INTERNAL_IPS = str(os.getenv("INTERNAL_IPS")).split(",")
 
 INSTALLED_APPS = [
     "unfold",
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -125,6 +126,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "static_dev",
 ]
 STATIC_ROOT = BASE_DIR / "static"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"

@@ -10,7 +10,9 @@ from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
     check_grade_letter,
     get_abbreviation_from_name,
+    get_list_of_dates,
     get_name_from_abbreviation,
+    get_schedule_from_weekday,
     get_user_subjects,
     save_files,
 )
@@ -46,8 +48,20 @@ class HomeworkPage(View):
             .prefetch_related("images", "files")
             .defer("grade", "letter", "group")
         )
-        for homework in data:
-            homework.subject = get_name_from_abbreviation(homework.subject)
+        data_subjects = []
+        for homework_obj in data:
+            abbreviation = get_name_from_abbreviation(homework_obj.subject)
+            homework_obj.subject = abbreviation
+            data_subjects.append(abbreviation)
+        real_subjects = get_user_subjects(grade, letter, group)
+        if isinstance(real_subjects, dict):
+            messages.error(
+                request,
+                f"В {real_subjects['grade']} классе нет"
+                f" литеры {real_subjects['letter']}",
+            )
+            return redirect("homework:choose_grad_let")
+        null_subjects = list(set(real_subjects) - set(data_subjects))
         if request.user.is_authenticated:
             done_list = Todo.objects.filter(
                 user_todo=request.user.server_user,
@@ -57,20 +71,37 @@ class HomeworkPage(View):
         else:
             done_list = []
 
-        info = (
-            Homework.objects.filter(
-                (Q(grade=grade) & Q(letter=letter) & Q(group=-1))
-                | Q(group__in=[-2, -3]),
-            )
-            .order_by("-created_at")
+        info_class = (
+            Homework.objects.filter(group=-1, grade=grade, letter=letter)
             .prefetch_related("images", "files")
+            .order_by("-created_at")
+            .only()
+            .first()
         )
-
+        info_school = (
+            Homework.objects.filter(group=-3)
+            .prefetch_related("images", "files")
+            .order_by("-created_at")
+            .first()
+        )
+        if info_school:
+            info_school.author = "Администрация"
+        if not request.user.is_staff:
+            info = [info_school, info_class]
+        else:
+            info_admin = (
+                Homework.objects.filter(group=-2)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .first()
+            )
+            info = [info_school, info_admin, info_class]
         return render(
             request,
             "homework/homework.html",
             context={
                 "homework": data,
+                "empty_hw": null_subjects,
                 "info": info,
                 "done_list": done_list,
             },
@@ -125,6 +156,74 @@ class AllHomeworkPage(generic.ListView):
         return data
 
 
+class WeekdayHomeworkPage(View):
+    @staticmethod
+    def get(request, weekday):
+        checker = check_grade_letter(request)
+        if checker[0] == "Error":
+            return checker[1]
+        weekday -= 1
+        if weekday >= 7 or weekday < 0:
+            messages.error(request, "Такого дня в неделе не существует")
+            return redirect("homework:homework_page")
+        grade, letter, group = checker[1]
+        latest_homework_ids = (
+            Homework.objects.filter(Q(group=0) | Q(group=group))
+            .filter(
+                grade=grade,
+                letter=letter,
+                subject=OuterRef("subject"),
+                created_at=Subquery(
+                    Homework.objects.filter(
+                        subject=OuterRef("subject"),
+                    )
+                    .values("created_at")
+                    .order_by("-created_at")[:1],
+                ),
+            )
+            .values("id")
+        )
+        subjects = [
+            i.subject
+            for i in get_schedule_from_weekday(
+                grade,
+                letter,
+                group,
+                weekday + 1,
+            )
+        ]
+        data = (
+            Homework.objects.filter(
+                id__in=latest_homework_ids,
+                subject__in=subjects,
+            )
+            .order_by("subject")
+            .prefetch_related("images", "files")
+            .defer("grade", "letter", "group")
+        )
+        for homework in data:
+            homework.subject = get_name_from_abbreviation(homework.subject)
+        if request.user.is_authenticated:
+            done_list = Todo.objects.filter(
+                user_todo=request.user.server_user,
+                is_done=True,
+            ).all()
+            done_list = [i.homework_todo.first().id for i in done_list]
+        else:
+            done_list = []
+
+        week_list = get_list_of_dates(grade)
+        return render(
+            request,
+            "homework/weekday_homework.html",
+            context={
+                "homework": data,
+                "done_list": done_list,
+                "weekday": week_list[weekday],
+            },
+        )
+
+
 class ChooseGrLePage(View):
     @staticmethod
     def get(request):
@@ -150,6 +249,18 @@ class ChooseGrLePage(View):
             "letter": letter,
             "group": group,
         }
+        user_subjects = get_user_subjects(
+            grade,
+            letter,
+            group,
+        )
+        if isinstance(user_subjects, dict):
+            messages.error(
+                request,
+                f"В {user_subjects['grade']} классе нет"
+                f" литеры {user_subjects['letter']}",
+            )
+            return redirect("homework:choose_grad_let")
         response = redirect("homework:homework_page")
         response.set_cookie("hw_data", json.dumps(data))
         if request.user.is_authenticated:
@@ -173,6 +284,13 @@ class AddHomeworkPage(View):
             user = request.user.server_user
             grade, letter, group = user.grade, user.letter, user.group
             response_list = get_user_subjects(grade, letter, group)
+            if isinstance(response_list, dict):
+                messages.error(
+                    request,
+                    f"В {response_list['grade']} классе нет"
+                    f" литеры {response_list['letter']}",
+                )
+                return redirect("homework:homework_page")
             return render(
                 request,
                 "homework/add_homework.html",
@@ -198,7 +316,11 @@ class AddHomeworkPage(View):
         subject = request.POST["subject"]
         subject = get_abbreviation_from_name(subject)
         request_files_list = request.FILES.getlist("files")
-        files_list_for_model = save_files(request_files_list)
+        files_list_for_model = save_files(
+            request_files_list,
+            request.user.server_user.grade,
+            request.user.server_user.letter,
+        )
         files_list_for_model = files_list_for_model[1]
         server_user = request.user.server_user
         if subject not in [
@@ -250,6 +372,13 @@ class EditHomework(View):
                 request_user.letter,
                 request_user.group,
             )
+            if isinstance(user_subjects, dict):
+                messages.error(
+                    request,
+                    f"В {user_subjects['grade']} классе нет"
+                    f" литеры {user_subjects['letter']}",
+                )
+                return redirect("homework:homework_page")
             group = request.user.server_user.group
             try:
                 hw_info = (
@@ -286,7 +415,11 @@ class EditHomework(View):
             subject = request.POST["subject"]
             subject = get_abbreviation_from_name(subject)
             request_files_list = request.FILES.getlist("files")
-            files_list_for_model = save_files(request_files_list)
+            files_list_for_model = save_files(
+                request_files_list,
+                request.user.server_user.grade,
+                request.user.server_user.letter,
+            )
             if files_list_for_model[0] == "Error":
                 messages.error(request, "Неподходящий формат файла")
                 return render(
@@ -436,7 +569,7 @@ class AddMailingPage(View):
 
     @staticmethod
     def post(request):
-        if not request.user.is_superuser or not request.user.is_staff:
+        if not request.user.is_staff:
             messages.error(
                 request,
                 "Для добавления рассылки у вас"
@@ -448,11 +581,27 @@ class AddMailingPage(View):
         if request_subject == "Сообщение для класса":
             group = -1
         elif request_subject == "Сообщение для администраторов":
+            if not request.user.is_superuser:
+                messages.error(
+                    request,
+                    "Недостаточно прав дял совершения действия",
+                )
+                return redirect("homework:homework_page")
             group = -2
         else:
+            if not request.user.is_superuser:
+                messages.error(
+                    request,
+                    "Недостаточно прав дял совершения действия",
+                )
+                return redirect("homework:homework_page")
             group = -3
         request_files_list = request.FILES.getlist("files")
-        files_list_for_model = save_files(request_files_list)
+        files_list_for_model = save_files(
+            request_files_list,
+            request.user.server_user.grade,
+            request.user.server_user.letter,
+        )
         if files_list_for_model[0] == "Error":
             render(
                 request,
@@ -553,7 +702,11 @@ class EditMailingPage(View):
             else:
                 group = -3
             request_files_list = request.FILES.getlist("files")
-            files_list_for_model = save_files(request_files_list)
+            files_list_for_model = save_files(
+                request_files_list,
+                request.user.server_user.grade,
+                request.user.server_user.letter,
+            )
             if files_list_for_model[0] == "Error":
                 messages.error(request, "Неподходящий формат файла")
                 return render(

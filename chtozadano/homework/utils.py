@@ -14,14 +14,20 @@ BASE_DIR = settings.BASE_DIR
 
 
 def get_user_subjects(grade, letter, group):
-    grades_subjects_url = staticfiles_storage.url("grades_subjects.json")
-    subjects_url = staticfiles_storage.url("subjects.json")
+    grades_subjects_url = staticfiles_storage.url("json/grades_subjects.json")
+    subjects_url = staticfiles_storage.url("json/subjects.json")
     with open(
         str(BASE_DIR) + grades_subjects_url,
         encoding="utf-8",
     ) as data:
         json_data = json.loads(data.read())
-        user_subjects = json_data[str(grade)][letter]["subject_codes"]
+        try:
+            user_subjects = json_data[str(grade)][letter]["subject_codes"]
+        except KeyError:
+            return {
+                "grade": grade,
+                "letter": letter,
+            }
         with open(
             str(BASE_DIR) + subjects_url,
             encoding="utf-8",
@@ -48,14 +54,14 @@ def get_user_subjects(grade, letter, group):
 
 
 def get_user_subjects_abbreviation(grade, letter):
-    grades_subjects_url = staticfiles_storage.url("grades_subjects.json")
+    grades_subjects_url = staticfiles_storage.url("json/grades_subjects.json")
     with open(str(BASE_DIR) + grades_subjects_url, encoding="utf-8") as data:
         json_data = json.loads(data.read())
         return json_data[str(grade)][letter]["subject_codes"]
 
 
 def get_abbreviation_from_name(name):
-    subjects_url = staticfiles_storage.url("subjects.json")
+    subjects_url = staticfiles_storage.url("json/subjects.json")
     with open(str(BASE_DIR) + subjects_url, encoding="utf-8") as data:
         json_data = json.loads(data.read())
         for i in json_data:
@@ -69,7 +75,7 @@ def get_abbreviation_from_name(name):
 
 
 def get_name_from_abbreviation(abbreviation):
-    subjects_url = staticfiles_storage.url("subjects.json")
+    subjects_url = staticfiles_storage.url("json/subjects.json")
     with open(str(BASE_DIR) + subjects_url, encoding="utf-8") as data:
         json_data = json.loads(data.read())
         response_object = json_data[abbreviation]
@@ -78,13 +84,18 @@ def get_name_from_abbreviation(abbreviation):
         return response_object
 
 
-def save_files(request_files_list):
+def save_files(request_files_list, grade, letter):
+    today = datetime.date.today()
+    month = today.month
+    if month < 10:
+        month = f"0{month}"
+    today_path = f"{today.year}/{month}/{grade}/{letter}/{today.day}/"
     files_list_for_model = []
     for r_file in request_files_list:
         file_extension = r_file.name.split(".")[-1]
         if file_extension.lower() in ["png", "jpeg", "webp", "gif", "jpg"]:
             file_name = default_storage.save(
-                f"homework/img/{r_file.name}",
+                f"homework/img/{today_path}/{r_file.name}",
                 r_file,
             )
             files_list_for_model.append((file_name, "img"))
@@ -97,13 +108,13 @@ def save_files(request_files_list):
             "zip",
         ]:
             file_name = default_storage.save(
-                f"homework/files/{r_file.name}",
+                f"homework/files/{today_path}/{r_file.name}",
                 r_file,
             )
             files_list_for_model.append((file_name, "file"))
         elif file_extension.lower() in ["mp3", "ogg", "acc", "wav"]:
             file_name = default_storage.save(
-                f"homework/music/{r_file.name}",
+                f"homework/music/{today_path}/{r_file.name}",
                 r_file,
             )
             files_list_for_model.append((file_name, "music"))
@@ -136,6 +147,45 @@ def get_tomorrow_schedule(grade, letter, group):
         .order_by("lesson")
         .all()
     )
+
+
+def get_schedule_from_weekday(grade, letter, group, weekday):
+    return (
+        homework.models.Schedule.objects.filter(
+            grade=grade,
+            letter=letter,
+            weekday=weekday,
+        )
+        .filter(Q(group=group) | Q(group=0))
+        .order_by("lesson")
+        .all()
+    )
+
+
+def get_list_of_dates(grade):
+    weekday_full = {
+        1: "Понедельник",
+        2: "Вторник",
+        3: "Среда",
+        4: "Четверг",
+        5: "Пятница",
+        6: "Суббота",
+    }
+    today = datetime.datetime.now()
+    today_date = today.date()
+    date_list = {}
+    if today.hour <= 15:
+        week_range = range(0, 7)
+    else:
+        week_range = range(1, 8)
+    for day in week_range:
+        date = today_date + datetime.timedelta(days=day)
+        if not (date.weekday() == 6 or (grade < 6 and date.weekday() == 5)):
+            date_list[date.weekday()] = (
+                f"{weekday_full[date.weekday() + 1]},"
+                f" {date.strftime('%d.%m')}"
+            )
+    return date_list
 
 
 def check_grade_letter(request):
