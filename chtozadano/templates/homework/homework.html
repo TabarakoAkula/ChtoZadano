@@ -30,8 +30,8 @@
 								     aria-labelledby="heading{{ i.id }}"
 								     data-bs-parent="#accordionExample1">
 									<div class="accordion-body">
-										<p style="white-space: nowrap">
-											{{ i.description }}<br><br>
+										<p style="white-space: pre-line">
+											{{ i.description }}</p>
 											{% if i.images.all %}
 												<div class="image-container gallery">
 													{% for j in i.images.all %}
@@ -96,8 +96,8 @@
 					     aria-labelledby="heading{{ i.id }}"
 					     data-bs-parent="#accordionExample1">
 						<div class="accordion-body">
-							<p style="white-space: nowrap">
-								{{ i.description }}<br><br>
+							<p style="white-space: pre-line">
+								{{ i.description }}</p>
 								{% if i.images.all %}
 									<div class="image-container gallery">
 										{% for j in i.images.all %}
@@ -124,7 +124,6 @@
 									<button type="submit" class="btn btn-danger">Удалить</button>
 								</a>
 							{% endif %}
-							</p>
 						</div>
 					</div>
 				</div>
