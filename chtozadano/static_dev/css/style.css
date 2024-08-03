@@ -4,7 +4,7 @@ html {
 
 .navbar {
     width: 100%;
-    z-index: 28;
+    z-index: 30;
 }
 
 .content {
@@ -19,7 +19,7 @@ footer {
 
 .alert {
     position: fixed;
-    top: 12%;
+    top: 10%;
     right: 20px;
     border-radius: 10px;
     padding: 10px 20px;
@@ -64,7 +64,8 @@ footer {
     .alert {
         left: 5px;
         max-width: 95vw;
-        padding: 8px 15px;
+        padding: 12px 15px;
+        margin-left: auto;
         font-size: 0.9rem;
     }
 
@@ -81,6 +82,10 @@ footer {
         margin-top: 10px;
     }
 
+    .click-button-two {
+        margin-top: 10px;
+    }
+
     .h1-inf-label {
         padding-bottom: 0;
     }
@@ -89,6 +94,11 @@ footer {
         margin-bottom: 10px;
         width: 100%;
     }
+
+    .pagination-button {
+        margin-left: -2px;
+        margin-right: -2px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -96,7 +106,7 @@ footer {
         left: 5px;
         max-width: 98vw;
         padding: 6px 10px;
-        top: 100px;
+        top: 90px;
         font-size: 0.8rem;
     }
 
