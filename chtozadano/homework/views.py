@@ -96,6 +96,7 @@ class HomeworkPage(View):
                 .first()
             )
             info = [info_school, info_admin, info_class]
+        dates = get_list_of_dates(grade)
         return render(
             request,
             "homework/homework.html",
@@ -104,6 +105,7 @@ class HomeworkPage(View):
                 "empty_hw": null_subjects,
                 "info": info,
                 "done_list": done_list,
+                "dates": dates,
             },
         )
 
@@ -212,14 +214,43 @@ class WeekdayHomeworkPage(View):
         else:
             done_list = []
 
+        info_class = (
+            Homework.objects.filter(group=-1, grade=grade, letter=letter)
+            .prefetch_related("images", "files")
+            .order_by("-created_at")
+            .only()
+            .first()
+        )
+        info_school = (
+            Homework.objects.filter(group=-3)
+            .prefetch_related("images", "files")
+            .order_by("-created_at")
+            .first()
+        )
+        if info_school:
+            info_school.author = "Администрация"
+        if not request.user.is_staff:
+            info = [info_school, info_class]
+        else:
+            info_admin = (
+                Homework.objects.filter(group=-2)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .first()
+            )
+            info = [info_school, info_admin, info_class]
+
         week_list = get_list_of_dates(grade)
+        current_weekday = week_list[weekday]
         return render(
             request,
             "homework/weekday_homework.html",
             context={
                 "homework": data,
                 "done_list": done_list,
-                "weekday": week_list[weekday],
+                "dates": week_list,
+                "info": info,
+                "current_weekday": current_weekday,
             },
         )
 
@@ -851,6 +882,7 @@ class MarkDone(View):
         except users.models.User.DoesNotExist and Homework.DoesNotExist:
             return redirect("homework:homework_page")
         request.session["open_id"] = homework_id
+        request.session["mark_done"] = True
         return redirect(reverse("homework:homework_page") + f"#{homework_id}")
 
 

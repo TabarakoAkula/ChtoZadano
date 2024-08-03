@@ -60,6 +60,16 @@ footer {
     padding-bottom: 30px;
 }
 
+.dropdown-item:hover {
+    background: darkgrey !important;
+    color: #000 !important;
+}
+
+.dropdown-item.active {
+    background: rgba(65, 61, 57, 0.63) !important;
+    color: #000 !important;
+}
+
 @media (max-width: 768px) {
     .alert {
         left: 5px;
