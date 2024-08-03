@@ -94,11 +94,6 @@ footer {
         margin-bottom: 10px;
         width: 100%;
     }
-
-    .pagination-button {
-        margin-left: -2px;
-        margin-right: -2px;
-    }
 }
 
 @media (max-width: 480px) {

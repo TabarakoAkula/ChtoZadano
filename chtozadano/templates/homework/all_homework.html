@@ -68,14 +68,24 @@
 				<nav aria-label="Page navigation example">
 					<ul class="pagination justify-content-center">
 						{% if page_obj.has_previous %}
-							<li class="page-item pagination-button"><a class="page-link" href="?page=1">Первая</a></li>
-							<li class="page-item pagination-button"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a>
+							<li class="page-item d-sm-none"><a class="page-link"
+							                                   href="?page={{ page_obj.number|add:'-1' }}">&laquo;</a>
+							</li>
+							<li class="page-item d-none d-sm-inline"><a class="page-link" href="?page=1">Первая</a></li>
+							{% if page_obj.number != 2 %}
+								<li class="page-item d-sm-none"><a class="page-link" href="?page=1">1</a></li>
+								{% if page_obj.number != 3 %}
+									<li class="page-item d-sm-none"><a class="page-link">...</a></li>
+								{% endif %}
+							{% endif %}
+							<li class="page-item d-none d-sm-inline"><a class="page-link"
+							                                            href="?page={{ page_obj.previous_page_number }}">Назад</a>
 								{% if page_obj.previous_page_number != 1 %}
 									{% if page_obj.previous_page_number != 2 %}
 										<li class="page-item d-none d-sm-inline"><a class="page-link">...</a></li>
 									{% endif %}
 									<li class="page-item d-none d-sm-inline"><a class="page-link"
-									                         href="?page={{ page_obj.previous_page_number|add:'-1' }}">{{ page_obj.previous_page_number|add:'-1' }}</a>
+									                                            href="?page={{ page_obj.previous_page_number|add:'-1' }}">{{ page_obj.previous_page_number|add:'-1' }}</a>
 									</li>
 								{% endif %}
 							<li class="page-item"><a class="page-link"
@@ -89,20 +99,29 @@
 							</li>
 							{% if page_obj.next_page_number != page_obj.paginator.num_pages %}
 								<li class="page-item  d-none d-sm-inline"><a class="page-link"
-								                         href="?page={{ page_obj.next_page_number|add:'1' }}">{{ page_obj.next_page_number|add:'1' }}</a>
+								                                             href="?page={{ page_obj.next_page_number|add:'1' }}">{{ page_obj.next_page_number|add:'1' }}</a>
 								</li>
 								{% if page_obj.next_page_number != page_obj.paginator.num_pages|add:'-1' %}
-									<li class="page-item d-none d-sm-inline"><a class="page-link">...</a>
+									<li class="page-item"><a class="page-link">...</a>
 									</li>
 								{% endif %}
+								<li class="page-item d-sm-none"><a class="page-link"
+								                                   href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+								</li>
 							{% endif %}
-							<li class="page-item pagination-button"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперед</a>
+							<li class="page-item d-none d-sm-inline"><a class="page-link"
+							                                            href="?page={{ page_obj.next_page_number }}">Вперед</a>
 							</li>
-							<li class="page-item pagination-button"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
+							<li class="page-item d-sm-none"><a class="page-link"
+							                                   href="?page={{ page_obj.number|add:'1' }}">&raquo;</a>
+							</li>
+							<li class="page-item d-none d-sm-inline"><a class="page-link"
+							                                            href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
 							</li>
 						{% endif %}
 					</ul>
 				</nav>
+				<p><br></p>
 			{% endif %}
 		</div>
 	</div>
