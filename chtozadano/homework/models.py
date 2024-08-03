@@ -70,7 +70,11 @@ class Homework(models.Model):
         auto_now_add=True,
         verbose_name="Дата создания",
     )
-    todo = models.ManyToManyField(Todo, related_name="homework_todo")
+    todo = models.ManyToManyField(
+        Todo,
+        related_name="homework_todo",
+        blank=True,
+    )
     author = models.CharField(default="Anonym", verbose_name="Автор")
 
     def __str__(self):
@@ -98,6 +102,9 @@ class Image(models.Model):
         verbose_name="Домашнее задание",
     )
 
+    def __str__(self):
+        return self.image.url
+
     class Meta:
         verbose_name = "Изображение"
         verbose_name_plural = "Изображения"
@@ -119,6 +126,9 @@ class File(models.Model):
     file_name = models.CharField(
         verbose_name="Название файлы",
     )
+
+    def __str__(self):
+        return self.file.url
 
     class Meta:
         verbose_name = "Файл"
