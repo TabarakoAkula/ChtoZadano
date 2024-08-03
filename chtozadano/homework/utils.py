@@ -180,7 +180,7 @@ def get_list_of_dates(grade):
         week_range = range(1, 8)
     for day in week_range:
         date = today_date + datetime.timedelta(days=day)
-        if not (date.weekday() == 6 or (grade < 6 and date.weekday() == 5)):
+        if not (date.weekday() == 6 or (int(grade) < 6 and date.weekday() == 5)):
             date_list[date.weekday()] = (
                 f"{weekday_full[date.weekday() + 1]},"
                 f" {date.strftime('%d.%m')}"
