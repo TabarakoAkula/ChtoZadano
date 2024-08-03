@@ -215,9 +215,9 @@ class StaticUrlTests(TestCase):
     @parameterized.expand(
         [
             ("", 302, "/user/sign_in/"),
-            ("test_user", 302, "/homework/"),
-            ("test_admin", 302, "/homework/"),
-            ("test_superuser", 302, "/homework/"),
+            ("test_user", 302, "/homework/#1"),
+            ("test_admin", 302, "/homework/#1"),
+            ("test_superuser", 302, "/homework/#1"),
         ],
     )
     def test_mark_done_endpoint(self, username, status_code, location):
