@@ -32,3 +32,4 @@
     docker exec -it chtozadano-web-1 bash
     cd chtozadano && python3 manage.py createsuperuser
     ```
+<h2>Документация по API назодится в файле <a href="https://github.com/TabarakoAkula/ChtoZadano/blob/814ed9a3d8940f272863eeaae8cc39a04b7fda7c/API.md">API.md</a></h2>
