@@ -35,7 +35,7 @@ footer {
 }
 
 .accordion {
-    width: 140vh;
+    width: 95%;
     top: 12%;
     position: absolute;
     bottom: 0;
@@ -52,6 +52,14 @@ footer {
     opacity: 1;
 }
 
+.click-button {
+    margin-top: -30px;
+}
+
+.h1-inf-label {
+    padding-bottom: 30px;
+}
+
 @media (max-width: 768px) {
     .alert {
         left: 5px;
@@ -62,6 +70,19 @@ footer {
 
     .close {
         font-size: 18px;
+    }
+
+    .accordion {
+        width: 95%;
+        overflow-wrap: break-word;
+    }
+
+    .click-button {
+        margin-top: 10px;
+    }
+
+    .h1-inf-label {
+        padding-bottom: 0;
     }
 }
 
@@ -76,5 +97,11 @@ footer {
 
     .close {
         font-size: 16px;
+    }
+
+    .accordion {
+        top: 15%;
+        width: 95%;
+        overflow-wrap: break-word;
     }
 }

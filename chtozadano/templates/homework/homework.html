@@ -48,7 +48,7 @@
 											{% endfor %}
 										{% endif %}
 										{% if i.group != -3 %}
-											Опубликовал(а) <strong>{{ i.author }}</strong>, {{ i.created_at }}<p></p>
+											Опубликовал(а) <strong>{{ i.author }}</strong>,<wbr> {{ i.created_at }}<p></p>
 										{% endif %}
 										{% if i.group == -1 and user.is_staff  or i.group == -1 and user.is_superuser %}
 											<a href="{% url "homework:edit_mailing" i.id %}">
@@ -73,14 +73,13 @@
 				{% endfor %}
 			{% endif %}
 			<p><br></p>
-			<h1>ДЗ для {{ grade }}{{ letter }} класса</h1>
-			<br>
+			<h1 class="h1-inf-label">ДЗ для {{ grade }}{{ letter }} класса</h1>
 			<a href="{% url "homework:all_homework_page" %}">
-				<button class="btn btn-info" style="margin-top: -30px">Посмотреть все дз за последние 2 недели</button>
+				<button class="btn btn-info click-button">Посмотреть все дз за последние 2 недели</button>
 			</a>
 			{% if not user.is_staff or user.is_superuser %}
 				<a href="{% url "homework:choose_grad_let" %}">
-					<button class="btn btn-info" style="margin-top: -30px">Сменить класс или литеру</button>
+					<button class="btn btn-info click-button">Сменить класс или литеру</button>
 				</a>
 			{% endif %}
 			<p><br></p>
@@ -115,7 +114,7 @@
 									{{ j.file_name }}</a><p></p>
 								{% endfor %}
 							{% endif %}
-							Опубликовал(а) <strong>{{ i.author }}</strong>, {{ i.created_at }}<br>
+							Опубликовал(а) <strong>{{ i.author }}</strong>,<wbr> {{ i.created_at }}<br>
 							{% if user.is_staff %}
 								<p></p>
 								<a href="{% url "homework:edit_homework" i.id %}">
