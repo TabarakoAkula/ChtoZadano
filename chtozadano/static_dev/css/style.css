@@ -84,6 +84,11 @@ footer {
     .h1-inf-label {
         padding-bottom: 0;
     }
+
+    .nav-button {
+        margin-bottom: 10px;
+        width: 100%;
+    }
 }
 
 @media (max-width: 480px) {
@@ -100,7 +105,7 @@ footer {
     }
 
     .accordion {
-        top: 15%;
+        top: 13%;
         width: 95%;
         overflow-wrap: break-word;
     }
