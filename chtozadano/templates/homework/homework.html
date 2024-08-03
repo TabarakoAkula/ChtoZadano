@@ -32,15 +32,15 @@
 									<div class="accordion-body">
 										<p style="white-space: pre-line">
 											{{ i.description }}</p>
-											{% if i.images.all %}
-												<div class="image-container gallery">
-													{% for j in i.images.all %}
-														<img src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
-														     height="200px"
-														     style="margin-right: 20px; margin-bottom: 20px">
-													{% endfor %}
-												</div>
-											{% endif %}
+										{% if i.images.all %}
+											<div class="image-container gallery">
+												{% for j in i.images.all %}
+													<img src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
+													     height="200px"
+													     style="margin-right: 20px; margin-bottom: 20px">
+												{% endfor %}
+											</div>
+										{% endif %}
 										{% if i.files.all %}
 											{% for j in i.files.all %}
 												Файл №{{ forloop.counter }}: <a href="{{ j.file.url }}">
@@ -48,7 +48,8 @@
 											{% endfor %}
 										{% endif %}
 										{% if i.group != -3 %}
-											Опубликовал(а) <strong>{{ i.author }}</strong>,<wbr> {{ i.created_at }}<p></p>
+											Опубликовал(а) <strong>{{ i.author }}</strong>,
+											<wbr> {{ i.created_at }}<p></p>
 										{% endif %}
 										{% if i.group == -1 and user.is_staff  or i.group == -1 and user.is_superuser %}
 											<a href="{% url "homework:edit_mailing" i.id %}">
@@ -84,49 +85,69 @@
 			{% endif %}
 			<p><br></p>
 			{% for i in homework %}
-				<div class="accordion-item">
-					<h2 class="accordion-header" id="heading{{ i.id }}">
-						<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-						        data-bs-target="#collapse{{ i.id }}" aria-expanded="false"
-						        aria-controls="collapse{{ i.id }}">
-							{{ i.subject }}
-						</button>
-					</h2>
+				{% if i.id in done_list %}
+					<div class="accordion-item" style="opacity: 0.8;">
+				{% else %}
+					<div class="accordion-item">
+				{% endif %}
+				<h2 class="accordion-header" id="heading{{ i.id }}"><a id="{{ i.id }}"></a>
+					<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+					        data-bs-target="#collapse{{ i.id }}" aria-expanded="false"
+					        aria-controls="collapse{{ i.id }}">
+						{{ i.subject }}
+					</button>
+				</h2>
+				{% if i.id == request.session.open_id %}
+					<div id="collapse{{ i.id }}" class="accordion-collapse collapse show"
+					     aria-labelledby="heading{{ i.id }}"
+					     data-bs-parent="#accordionExample1">
+				{% else %}
 					<div id="collapse{{ i.id }}" class="accordion-collapse collapse"
 					     aria-labelledby="heading{{ i.id }}"
 					     data-bs-parent="#accordionExample1">
-						<div class="accordion-body">
-							<p style="white-space: pre-line">
-								{{ i.description }}</p>
-								{% if i.images.all %}
-									<div class="image-container gallery">
-										{% for j in i.images.all %}
-											<img src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
-											     height="200px"
-											     style="margin-right: 20px; margin-bottom: 20px">
-										{% endfor %}
-									</div>
-								{% endif %}
-							{% if i.files.all %}
-								<br>
-								{% for j in i.files.all %}
-									Файл №{{ forloop.counter }}: <a href="{{ j.file.url }}">
-									{{ j.file_name }}</a><p></p>
-								{% endfor %}
-							{% endif %}
-							Опубликовал(а) <strong>{{ i.author }}</strong>,<wbr> {{ i.created_at }}<br>
-							{% if user.is_staff %}
-								<p></p>
-								<a href="{% url "homework:edit_homework" i.id %}">
-									<button type="submit" class="btn btn-success">Изменить</button>
-								</a>
-								<a href="{% url "homework:delete_homework" i.id %}">
-									<button type="submit" class="btn btn-danger">Удалить</button>
-								</a>
-							{% endif %}
-						</div>
+				{% endif %}
+			<div class="accordion-body">
+				<p style="white-space: pre-line">{{ i.description }}</p>
+				{% if i.images.all %}
+					<div class="image-container gallery">
+						{% for j in i.images.all %}
+							<img src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
+							     height="200px"
+							     style="margin-right: 20px; margin-bottom: 20px">
+						{% endfor %}
 					</div>
-				</div>
+				{% endif %}
+				{% if i.files.all %}
+					<br>
+					{% for j in i.files.all %}
+						Файл №{{ forloop.counter }}: <a href="{{ j.file.url }}">
+						{{ j.file_name }}</a><p></p>
+					{% endfor %}
+				{% endif %}
+				Опубликовал(а) <strong>{{ i.author }}</strong>,
+				<wbr>
+				{{ i.created_at }}
+				{% if done_list and user.is_authenticated and i.id in done_list %}
+					<a style="text-decoration: none;"
+					   href="{% url "homework:mark_done" i.id %}"><p
+						style="opacity: 0.9; color: grey;"><i>Пометить не сделанным</i></p></a>
+				{% elif user.is_authenticated %}
+					<a style="text-decoration: none;"
+					   href="{% url "homework:mark_done" i.id %}"><p
+						style="opacity: 0.9; color: black;"><i>Пометить сделанным</i></p></a>
+				{% endif %}
+				{% if user.is_staff %}
+					<p></p>
+					<a href="{% url "homework:edit_homework" i.id %}">
+						<button type="submit" class="btn btn-success">Изменить</button>
+					</a>
+					<a href="{% url "homework:delete_homework" i.id %}">
+						<button type="submit" class="btn btn-danger">Удалить</button>
+					</a>
+				{% endif %}
+			</div>
+			</div>
+			</div>
 			{% endfor %}
 			{% for i in empty_hw %}
 				<div class="accordion-item" style="opacity: 0.6">
@@ -147,64 +168,8 @@
 					</div>
 				</div>
 			{% endfor %}
+			</div>
+			</div>
 		</div>
 	</div>
-	{##}
-	{#		<table border="1">#}
-	{#			<tr>#}
-	{#				<td>Предмет</td>#}
-	{#				<td>Автор</td>#}
-	{#				<td>Описание</td>#}
-	{#				<td>Дата создания</td>#}
-	{#				<td>Изображения</td>#}
-	{#				<td>Файлы</td>#}
-	{#				{% if user.is_superuser or user.is_staff %}#}
-	{#					<td>Редактирование</td>#}
-	{#				{% endif %}#}
-	{#				{% if request.user.is_authenticated %}#}
-	{#					<td>Выполненность</td>#}
-	{#				{% endif %}#}
-	{#			</tr>#}
-	{#			{% for i in homework %}#}
-	{#				{% if user.is_authenticated and i.id in done_list %}#}
-	{#					<tr style="background-color: rgba(135,145,148,0.22)">#}
-	{#						{% else %}#}
-	{#					<tr>#}
-	{#				{% endif %}#}
-	{#			<td>{{ i.subject }}</td>#}
-	{#			<td>{{ i.author }}</td>#}
-	{#			<td>{{ i.description }}</td>#}
-	{#			<td>{{ i.created_at }}</td>#}
-	{#			<td>#}
-	{#				{% for j in i.images.all %}#}
-	{#					<img src="{{ j.image.url }}" width="500" height="500">#}
-	{#				{% endfor %}</td>#}
-	{#			<td>{% for j in i.files.all %}#}
-	{#				<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>#}
-	{#			{% endfor %}</td>#}
-	{#			{% if user.is_superuser or user.is_staff %}#}
-	{#				<td><a href="{% url "homework:delete_homework" i.id %}">#}
-	{#					<button type="submit">Удалить</button>#}
-	{#				</a>#}
-	{#					<a href="{% url "homework:edit_homework" i.id %}">#}
-	{#						<button type="submit">Изменить</button>#}
-	{#					</a>#}
-	{#				</td>#}
-	{#			{% endif %}#}
-	{#			{% if done_list and user.is_authenticated and i.id in done_list %}#}
-	{#				<td>#}
-	{#					<a href="{% url "homework:mark_done" i.id %}">#}
-	{#						<button>Пометить как невыполненное</button>#}
-	{#					</a>#}
-	{#				</td>#}
-	{#			{% elif user.is_authenticated %}#}
-	{#				<td>#}
-	{#					<a href="{% url "homework:mark_done" i.id %}">#}
-	{#						<button>Пометить как выполненное</button>#}
-	{#					</a>#}
-	{#				</td>#}
-	{#			{% endif %}#}
-	{#			</tr>#}
-	{#			{% endfor %}#}
-	{#		</table>#}
 {% endblock %}

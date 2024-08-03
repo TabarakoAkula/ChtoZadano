@@ -2,7 +2,7 @@ import json
 
 from django.contrib import messages
 from django.db.models import OuterRef, Q, Subquery
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, reverse
 from django.views import generic, View
 
 from homework.forms import ChooseGradLetForm
@@ -850,7 +850,8 @@ class MarkDone(View):
                 todo_obj.save()
         except users.models.User.DoesNotExist and Homework.DoesNotExist:
             return redirect("homework:homework_page")
-        return redirect("homework:homework_page")
+        request.session["open_id"] = homework_id
+        return redirect(reverse("homework:homework_page") + f"#{homework_id}")
 
 
 class SchedulePage(generic.ListView):
