@@ -54,7 +54,6 @@ class SignUpPage(View):
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("code",),
                 },
             )
 
@@ -65,7 +64,6 @@ class SignUpPage(View):
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("code",),
                 },
             )
         telegram_id = my_sign_in.telegram_id
@@ -80,7 +78,6 @@ class SignUpPage(View):
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("login",),
                 },
             )
         name = my_sign_in.name
@@ -129,7 +126,6 @@ class SignUpPasswordPage(View):
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": ("password",),
                 },
             )
         if password != form["repeat_password"]:
@@ -139,7 +135,6 @@ class SignUpPasswordPage(View):
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": ("password",),
                 },
             )
         try:
@@ -168,7 +163,6 @@ class SignUpPasswordPage(View):
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": ("login",),
                 },
             )
 
@@ -204,7 +198,6 @@ class SignInPage(View):
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("code",),
                 },
             )
         if confirmation_code_expired(database_datetime):
@@ -214,7 +207,6 @@ class SignInPage(View):
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("code",),
                 },
             )
         telegram_id = my_sign_in.telegram_id
@@ -231,7 +223,6 @@ class SignInPage(View):
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("code,",),
                 },
             )
         django.contrib.auth.login(request, django_user)
@@ -269,7 +260,6 @@ class SignInPasswordPage(View):
                 "users/sign_in_password.html",
                 context={
                     "form": SignInPasswordForm(request.POST),
-                    "errors": ("password",),
                 },
             )
         if check_password(form["password"], django_user.password):
@@ -282,7 +272,6 @@ class SignInPasswordPage(View):
             "users/sign_in_password.html",
             context={
                 "form": SignInPasswordForm(request.POST),
-                "errors": ("password",),
             },
         )
 

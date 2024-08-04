@@ -3,14 +3,11 @@
 {% block content %}
 	{% load static %}
 	<div class="container">
-		{% for error in errors %}
-			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
-		{% endfor %}
 		<form method="POST" enctype="multipart/form-data" class="chtozadano-form">
 			{% csrf_token %}
 			<div class="mb-3">
 				<label for="exampleInputEmail1" class="form-label">Код подтверждения</label>
-				<input type="email" name="confirmation_code" class="form-control" id="exampleInputEmail1"
+				<input type="text" name="confirmation_code" class="form-control" id="exampleInputEmail1"
 				       aria-describedby="emailHelp">
 				<div id="emailHelp" class="form-text">Отправьте сообщение "код" в наш <a
 					style="text-decoration: none;"
@@ -22,8 +19,12 @@
 			</button>
 		</form>
 		<div class="under-form">
-			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a style="text-decoration: none; color: white;" href="{% url "users:signin_password_page" %}">Войти с паролем</a></button>
-			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a style="text-decoration: none; color: white" href="{% url "users:signup_page" %}">Зарегистрироваться</a></button>
+			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
+				style="text-decoration: none; color: white;" href="{% url "users:signin_password_page" %}">Войти с
+				паролем</a></button>
+			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
+				style="text-decoration: none; color: white" href="{% url "users:signup_page" %}">Зарегистрироваться</a>
+			</button>
 		</div>
 	</div>
 {% endblock %}
