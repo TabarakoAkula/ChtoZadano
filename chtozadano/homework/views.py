@@ -272,9 +272,9 @@ class ChooseGrLePage(View):
     def post(request):
         if request.user.is_staff and not request.user.is_superuser:
             return redirect("homework:homework_page")
-        grade = request.POST.get("grade")
+        grade = int(request.POST.get("grade"))
         letter = request.POST.get("letter")
-        group = request.POST.get("group")
+        group = int(request.POST.get("group"))
         data = {
             "grade": grade,
             "letter": letter,
@@ -882,7 +882,7 @@ class MarkDone(View):
         except users.models.User.DoesNotExist and Homework.DoesNotExist:
             return redirect("homework:homework_page")
         request.session["open_id"] = homework_id
-        request.session["mark_done"] = True
+        request.session["mark_done"] = not todo_obj.is_done
         return redirect(reverse("homework:homework_page") + f"#{homework_id}")
 
 

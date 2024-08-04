@@ -48,33 +48,39 @@ class SignUpPage(View):
                 tzinfo=None,
             ) + datetime.timedelta(hours=3)
         except AttributeError:
+            messages.error(request, "Неправильный код")
             return render(
                 request,
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("Неправильный код",),
+                    "errors": ("code",),
                 },
             )
 
         if confirmation_code_expired(database_datetime):
+            messages.error(request, "Время действия кода истекло")
             return render(
                 request,
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("Время действия кода истекло",),
+                    "errors": ("code",),
                 },
             )
         telegram_id = my_sign_in.telegram_id
         all_users = User.objects.filter(telegram_id=telegram_id).all()
         if all_users:
+            messages.error(
+                request,
+                "Пользователь с таким логином уже существует",
+            )
             return render(
                 request,
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("Пользователь уже существует",),
+                    "errors": ("login",),
                 },
             )
         name = my_sign_in.name
@@ -117,21 +123,23 @@ class SignUpPasswordPage(View):
         password = form["password"]
         password_checker = validate_password(password)
         if not password_checker[0]:
+            messages.error(request, password_checker[1])
             return render(
                 request,
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": (password_checker[1],),
+                    "errors": ("password",),
                 },
             )
         if password != form["repeat_password"]:
+            messages.error(request, "Введенные пароли не совпадают")
             return render(
                 request,
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": ("Введенные пароли не совпадают",),
+                    "errors": ("password",),
                 },
             )
         try:
@@ -154,12 +162,13 @@ class SignUpPasswordPage(View):
             messages.success(request, "Аккаунт успешно создан")
             return redirect("users:account_page")
         else:
+            messages.error(request, "Выберите другой логин")
             return render(
                 request,
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": ("Выберите другой логин",),
+                    "errors": ("login",),
                 },
             )
 
@@ -189,21 +198,23 @@ class SignInPage(View):
                 tzinfo=None,
             ) + datetime.timedelta(hours=3)
         except AttributeError:
+            messages.error(request, "Неправильный код")
             return render(
                 request,
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("Неправильный код",),
+                    "errors": ("code",),
                 },
             )
         if confirmation_code_expired(database_datetime):
+            messages.error(request, "Время действия кода истекло")
             return render(
                 request,
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("Время действия кода истекло",),
+                    "errors": ("code",),
                 },
             )
         telegram_id = my_sign_in.telegram_id
@@ -211,14 +222,16 @@ class SignInPage(View):
         if all_users:
             django_user = User.objects.get(telegram_id=telegram_id).user
         else:
+            messages.error(
+                request,
+                "Аккаунт с таким telegram аккаунтом уже существует",
+            )
             return render(
                 request,
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": (
-                        "Аккаунт с таким telegram аккаунтов уже существует",
-                    ),
+                    "errors": ("code,",),
                 },
             )
         django.contrib.auth.login(request, django_user)
@@ -250,24 +263,26 @@ class SignInPasswordPage(View):
                 username=form["username"],
             )
         except django.contrib.auth.models.User.DoesNotExist:
+            messages.error(request, "Неправильный логин или пароль")
             return render(
                 request,
                 "users/sign_in_password.html",
                 context={
                     "form": SignInPasswordForm(request.POST),
-                    "errors": ("Неправильный логин или пароль",),
+                    "errors": ("password",),
                 },
             )
         if check_password(form["password"], django_user.password):
             django.contrib.auth.login(request, django_user)
             messages.success(request, "Вы успешно вошли в аккаунт")
             return redirect("users:account_page")
+        messages.error(request, "Неправильный логин или пароль")
         return render(
             request,
             "users/sign_in_password.html",
             context={
                 "form": SignInPasswordForm(request.POST),
-                "errors": ("Неправильный логин или пароль",),
+                "errors": ("password",),
             },
         )
 

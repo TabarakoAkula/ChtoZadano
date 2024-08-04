@@ -77,7 +77,7 @@
 			<div style="display: flex;justify-content: space-between;">
 				<h1 class="h1-inf-label">ДЗ для {{ grade }}{{ letter }} класса </h1>
 				<div class="dropdown" style="margin-top: 2px">
-					<button class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown"
+					<button style="background-color: #272727" class="btn btn-dark dropdown-toggle" type="button" data-bs-toggle="dropdown"
 					        aria-expanded="false">
 						Всё
 					</button>
@@ -117,7 +117,7 @@
 						{{ i.subject }}
 					</button>
 				</h2>
-				{% if i.id == request.session.open_id and request.session.mark_down %}
+				{% if i.id == request.session.open_id and request.session.mark_done %}
 					<div id="collapse{{ i.id }}" class="accordion-collapse collapse show"
 					     aria-labelledby="heading{{ i.id }}"
 					     data-bs-parent="#accordionExample1">
@@ -192,4 +192,12 @@
 			</div>
 		</div>
 	</div>
+	<script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({behavior: 'smooth'});
+            });
+        });
+	</script>
 {% endblock %}

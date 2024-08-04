@@ -3,6 +3,7 @@ html {
 }
 
 .navbar {
+    position: fixed;
     width: 100%;
     z-index: 30;
 }
@@ -70,6 +71,21 @@ footer {
     color: #000 !important;
 }
 
+.chtozadano-form {
+    display: block;
+    margin-top: 20%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+}
+
+.form-button {
+    width: 100%;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+}
+
 @media (max-width: 768px) {
     .alert {
         left: 5px;
@@ -104,6 +120,12 @@ footer {
         margin-bottom: 10px;
         width: 100%;
     }
+
+    .chtozadano-form {
+        width: 80%;
+        margin-top: 45%;
+    }
+
 }
 
 @media (max-width: 480px) {
