@@ -71,7 +71,7 @@ class SignUpPage(View):
         if all_users:
             messages.error(
                 request,
-                "Пользователь с таким логином уже существует",
+                "Пользователь с таким telegram аккаунтом уже существует",
             )
             return render(
                 request,

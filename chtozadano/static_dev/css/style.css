@@ -81,6 +81,16 @@ footer {
     box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
 }
 
+.chtozadano-signup-form {
+    display: block;
+    margin-top: 10%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+}
+
 .form-button {
     width: 100%;
     box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
@@ -142,6 +152,11 @@ footer {
 
     .under-form {
         width: 87%;
+    }
+
+    .chtozadano-signup-form {
+        width: 88%;
+        margin-top: 25%;
     }
 }
 
