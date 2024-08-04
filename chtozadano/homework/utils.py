@@ -1,5 +1,6 @@
 import datetime
 import json
+import random
 
 from django.conf import settings
 from django.contrib import messages
@@ -98,6 +99,10 @@ def save_files(request_files_list, grade, letter):
                 f"homework/img/{today_path}/{r_file.name}",
                 r_file,
             )
+            if len(file_name) >= 100:
+                file_name = (
+                    file_name[:50] + "_" + str(random.getrandbits(128))[:40]
+                )
             files_list_for_model.append((file_name, "img"))
         elif file_extension.lower() in [
             "pdf",
@@ -111,12 +116,20 @@ def save_files(request_files_list, grade, letter):
                 f"homework/files/{today_path}/{r_file.name}",
                 r_file,
             )
+            if len(file_name) >= 100:
+                file_name = (
+                    file_name[:50] + "_" + str(random.getrandbits(128))[:40]
+                )
             files_list_for_model.append((file_name, "file"))
         elif file_extension.lower() in ["mp3", "ogg", "acc", "wav"]:
             file_name = default_storage.save(
                 f"homework/music/{today_path}/{r_file.name}",
                 r_file,
             )
+            if len(file_name) >= 100:
+                file_name = (
+                    file_name[:50] + "_" + str(random.getrandbits(128))[:40]
+                )
             files_list_for_model.append((file_name, "music"))
         else:
             return "Error", file_extension
