@@ -2,98 +2,116 @@
 
 {% block content %}
 	{% load static %}
-	<br>
-	<table border="1">
-		<tr>
-			<td>Класс</td>
-			<td>Литера</td>
-			<td>Описание</td>
-			<td>Предмет</td>
-			<td>Дата создания</td>
-			<td>Изображения</td>
-			<td>Файлы</td>
-		</tr>
-		<tr>
-			<td>{{ hw_info.grade }}</td>
-			<td>{{ hw_info.letter }}</td>
-			<form method="POST" enctype="multipart/form-data">
-				{% csrf_token %}
-				<td><textarea name="description">{{ hw_info.description }}</textarea></td>
-				<td>
-					<label for="subject">Выберите предмет:</label>
-					<select name="subject">
-						{% for subject in subjects %}
-							{% if subject == subject_now %}
-								<option selected="selected" value="{{ subject }}">{{ subject }}</option>
-							{% else %}
-								<option value="{{ subject }}">{{ subject }}</option>
-							{% endif %}
-						{% endfor %}
-					</select>
-				</td>
-				<td>{{ hw_info.created_at }}</td>
-				<td>
-					{% for j in hw_info.images.all %}
-						<img src="{{ j.image.url }}" width="500" height="500">
-						<a href="{% url "homework:edit_files_homework" hw_info.id "img" j.id %}">
-							<button type="button">Удалить</button>
-						</a>
-					{% endfor %}
-				</td>
-				<td>
-					{% for j in hw_info.files.all %}
-						<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
-						<a href="{% url "homework:edit_files_homework" hw_info.id "file" j.id %}">
-							<button type="button">Удалить</button>
-						</a>
-					{% endfor %}
-				</td>
-		</tr>
-	</table>
 	<div class="container">
-		<input type="file" id="file-input" onchange="preview()" multiple name="files">
-		<label for="file-input">
-			<i class="fas fa-upload"></i> &nbsp; Выберите файлы
-		</label>
-		<p id="num-of-files">Файлы не выбраны</p>
-		<div id="images"></div>
-	</div>
-	<script>
-        let fileInput = document.getElementById("file-input");
-        let imageContainer = document.getElementById("images");
-        let numOfFiles = document.getElementById("num-of-files");
+		<form method="POST" enctype="multipart/form-data" class="chtozadano-form-crud">
+			{% csrf_token %}
+			<div class="mb-3">
+				<label for="subject" class="form-label">Выберите предмет</label>
+				<select id="subject" class="form-select chtozadano-object" name="subject">
+					{% for subject in subjects %}
+						{% if subject == subject_now %}
+							<option value="{{ subject }}" selected>{{ subject }}</option>
+						{% else %}
+							<option value="{{ subject }}">{{ subject }}</option>
+						{% endif %}
+					{% endfor %}
+				</select>
+			</div>
+			<div class="mb-3">
+				<label for="exampleInputEmail1" class="form-label">Описание</label>
+				<textarea type="text" name="description" class="form-control chtozadano-object" id="exampleInputEmail1"
+				          style="min-height: 150px" required>{{ hw_info.description }}</textarea>
+			</div>
+			{% if hw_info.images.all %}
+				<hr class="hr hr-blurry"/>
+				<label for="exampleInputEmail1" class="form-label">Изображения:</label>
+				<div class="image-container gallery" style="">
+					{% for j in hw_info.images.all %}
+						<img src="{{ j.image.url }}" width="180" height="180" style="margin-top: 20px">
+						<a href="{% url "homework:edit_files_homework" hw_info.id "img" j.id %}">
+							<button type="button" class="btn btn-danger">Удалить</button>
+						</a>
+					{% endfor %}
+				</div>
+				<hr class="hr"/>
+			{% endif %}
+			{% if hw_info.files.all %}
+				<label for="exampleInputEmail1" class="form-label">Файлы:</label><p></p>
+				<div class="container-img-crud">
+					{% for j in hw_info.files.all %}
+						<div style="justify-content: space-between; display: flex">
+							{% if j.file_name|length > 19 %}
+								<p>№{{ forloop.counter }}: <a
+									href="{{ j.file.url }}">{{ j.file_name|slice:"0:8" }}...{{ j.file_name|slice:"-8:" }}</a>
+								</p>
+							{% else %}
+								<p>№{{ forloop.counter }}: <a href="{{ j.file.url }}">{{ j.file_name }}</a></p>
+							{% endif %}
+							<a href="{% url "homework:edit_files_homework" hw_info.id "file" j.id %}"
+							   style="margin-left: 10px">
+								<button type="button">Удалить</button>
+							</a>
+						</div>
+						<hr class="hr"/>
+					{% endfor %}
+				</div>
+			{% endif %}
+			<div class="container-img-crud">
+				<input type="file" id="file-input" onchange="preview()" multiple name="files" class="chtozadano-input">
+				<p id="num-of-files" hidden="">Файлы не выбраны</p>
+				<div id="images" class="container-crud"></div>
+			</div>
+			<script>
+                let fileInput = document.getElementById("file-input");
+                let imageContainer = document.getElementById("images");
+                let numOfFiles = document.getElementById("num-of-files");
 
-        function preview() {
-            imageContainer.innerHTML = "";
-            numOfFiles.textContent = `${fileInput.files.length} Files Selected`;
+                function preview() {
+                    imageContainer.innerHTML = "";
+                    numOfFiles.textContent = `${fileInput.files.length} Files Selected`;
 
-            for (i of fileInput.files) {
-                let reader = new FileReader();
-                let figure = document.createElement("figure");
-                let figCap = document.createElement("figcaption");
-                figCap.innerText = i.name;
-                figure.appendChild(figCap);
-                reader.onload = () => {
-                    if (reader.result.split(":")[1].startsWith("image")) {
-                        let img = document.createElement("img");
-                        img.setAttribute("src", reader.result);
-                        img.setAttribute("width", 500);
-                        figure.insertBefore(img, figCap);
-                    } else {
-                        let img = document.createElement("img");
-                        img.setAttribute("src", "{% static "img/file_image.png" %}");
-                        img.setAttribute("width", 100);
-                        figure.insertBefore(img, figCap);
+                    for (i of fileInput.files) {
+                        let reader = new FileReader();
+                        let figure = document.createElement("figure");
+                        let figCap = document.createElement("figcaption");
+                        let name = i.name;
+                        if (name.length > 13) {
+                            name = name.slice(0, 6) + "..." + name.slice(-6)
+                        }
+                        figCap.innerText = name;
+                        figCap.setAttribute("align", "center")
+                        figure.appendChild(figCap);
+                        reader.onload = () => {
+                            if (reader.result.split(":")[1].startsWith("image")) {
+                                let img = document.createElement("img");
+                                img.setAttribute("src", reader.result);
+                                img.setAttribute("height", 180);
+                                img.setAttribute("width", 180);
+                                img.setAttribute("style", "padding: 20px;")
+                                figure.insertBefore(img, figCap);
+                            } else {
+                                let img = document.createElement("img");
+                                img.setAttribute("src", "{% static "img/file_image.png" %}");
+                                img.setAttribute("height", 180);
+                                img.setAttribute("width", 180);
+                                img.setAttribute("style", "padding: 20px;")
+                                figure.insertBefore(img, figCap);
+                            }
+                        }
+                        imageContainer.appendChild(figure);
+                        reader.readAsDataURL(i);
                     }
                 }
-                imageContainer.appendChild(figure);
-                reader.readAsDataURL(i);
-            }
-        }
-	</script>
-	<button type="submit">Сохранить</button>
-	</form>
-	<a href="{% url "homework:homework_page" %}">
-		<button>Вернуться</button>
-	</a>
+			</script>
+			<p></p>
+			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-chtozadano-button"
+			        style="background-color: #272727">Сохранить
+			</button>
+		</form>
+		<div class="under-form-crud">
+			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
+				style="text-decoration: none; color: white;" href="{% url "homework:homework_page" %}">Вернуться</a>
+			</button>
+		</div>
+	</div>
 {% endblock %}
