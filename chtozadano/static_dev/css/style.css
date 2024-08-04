@@ -110,6 +110,20 @@ footer {
     margin-top: 10px
 }
 
+.schedule {
+    flex: 0 32%;
+    min-width: 250px;
+    margin-bottom: 2%;
+}
+
+.schedule-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 20px;
+    margin-top: 150px;
+}
+
 @media (max-width: 768px) {
     .alert {
         left: 5px;
@@ -157,6 +171,11 @@ footer {
     .chtozadano-signup-form {
         width: 88%;
         margin-top: 25%;
+    }
+
+    .schedule-container {
+        margin-top: 110px;
+        margin-left: 30px;
     }
 }
 

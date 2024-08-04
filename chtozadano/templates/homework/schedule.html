@@ -2,37 +2,35 @@
 
 {% block content %}
 	{% load static %}
-	<h1>Расписание на неделю</h1>
-	{% with day_temp=1 %}
-		<table>
-		{% for day in object_list %}
-			{% if day.lesson == 1 %}
-				</table>
-				{% if day.weekday == 1 %}
-					<h3>Понедельник</h3>
-				{% elif day.weekday == 2 %}
-					<h3>Вторник</h3>
-				{% elif day.weekday == 3 %}
-					<h3>Среда</h3>
-				{% elif day.weekday == 4 %}
-					<h3>Четверг</h3>
-				{% elif day.weekday == 5 %}
-					<h3>Пятница</h3>
-				{% elif day.weekday == 6 %}
-					<h3>Суббота</h3>
-				{% endif %}
-				<table border="1">
-				<tr>
-					<td>{{ day.lesson }}</td>
-					<td>{{ day.subject }}</td>
-				</tr>
-
-			{% else %}
-				<tr>
-					<td>{{ day.lesson }}</td>
-					<td>{{ day.subject }}</td>
-				</tr>
-			{% endif %}
-		{% endfor %}
-	{% endwith %}
+	<div class="container">
+		<div class="schedule-container">
+			<div class="schedule"><h4>Понедельник</h4>
+				{% for day in schedule_list %}
+					{% if day.lesson == 1 %}
+						{% if day.weekday != 1 %}
+							</ol></div>
+						{% endif %}
+						{% if day.weekday == 4 %}
+						{% endif %}
+						{% if day.weekday != 1 %}
+							<div class="schedule">
+							{% if day.weekday == 2 %}
+								<h4>Вторник</h4>
+							{% elif day.weekday == 3 %}
+								<h4>Среда</h4>
+							{% elif day.weekday == 4 %}
+								<h4>Четверг</h4>
+							{% elif day.weekday == 5 %}
+								<h4>Пятница</h4>
+							{% elif day.weekday == 6 %}
+								<h4>Суббота</h4>
+							{% endif %}
+						{% endif %}
+						<ol class="list-group list-group-numbered">
+					{% endif %}
+					<li class="list-group-item">{{ day.subject }}</li>
+				{% endfor %}
+				</ol></div>
+		</div>
+	</div>
 {% endblock %}
