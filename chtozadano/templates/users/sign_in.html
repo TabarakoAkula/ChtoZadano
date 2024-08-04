@@ -2,15 +2,28 @@
 
 {% block content %}
 	{% load static %}
-	<p><br></p>
-	<a href="{% url "users:signin_password_page" %}"><button>Войти без Telegram</button></a>
-	<form method="POST" enctype="multipart/form-data" style="margin-left: 30em; margin-right: 30em; margin-bottom: 5em">
+	<div class="container">
 		{% for error in errors %}
 			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
 		{% endfor %}
-		{% csrf_token %}
-		<p>Код идентификации: {{ form.confirmation_code }}</p>
-	 <p>Отправь <a href="https://t.me/ChtoZadano_bot">боту</a> слово "код"</p>
-		<button type="submit">Войти</button>
-	</form>
+		<form method="POST" enctype="multipart/form-data" class="chtozadano-form">
+			{% csrf_token %}
+			<div class="mb-3">
+				<label for="exampleInputEmail1" class="form-label">Код подтверждения</label>
+				<input type="email" name="confirmation_code" class="form-control" id="exampleInputEmail1"
+				       aria-describedby="emailHelp">
+				<div id="emailHelp" class="form-text">Отправьте сообщение "код" в наш <a
+					style="text-decoration: none;"
+					href="https://t.me/ChtoZadano_bot">бот</a>
+				</div>
+			</div>
+			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-button"
+			        style="background-color: #272727">Войти
+			</button>
+		</form>
+		<div class="under-form">
+			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a style="text-decoration: none; color: white;" href="{% url "users:signin_password_page" %}">Войти с паролем</a></button>
+			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a style="text-decoration: none; color: white" href="{% url "users:signup_page" %}">Зарегистрироваться</a></button>
+		</div>
+	</div>
 {% endblock %}
