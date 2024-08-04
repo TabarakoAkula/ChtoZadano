@@ -456,9 +456,6 @@ class EditHomework(View):
                 return render(
                     request,
                     "homework/add_homework.html",
-                    context={
-                        "errors": ("Unsupported file format",),
-                    },
                 )
             files_list_for_model = files_list_for_model[1]
             server_user = request.user.server_user
@@ -634,12 +631,10 @@ class AddMailingPage(View):
             request.user.server_user.letter,
         )
         if files_list_for_model[0] == "Error":
-            render(
+            messages.error(request, "Неподходящий формат файла")
+            return render(
                 request,
                 "homework/add_homework.html",
-                context={
-                    "errors": "Unsupported file format",
-                },
             )
         files_list_for_model = files_list_for_model[1]
         if group != -1:
@@ -743,9 +738,6 @@ class EditMailingPage(View):
                 return render(
                     request,
                     "homework/add_homework.html",
-                    context={
-                        "errors": ("Unsupported file format"),
-                    },
                 )
             files_list_for_model = files_list_for_model[1]
             try:
