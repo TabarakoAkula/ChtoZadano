@@ -540,6 +540,7 @@ class DeleteHomework(View):
             except Homework.DoesNotExist:
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
+            hw_info.subject = get_name_from_abbreviation(hw_info.subject)
             return render(
                 request,
                 "homework/delete_homework.html",

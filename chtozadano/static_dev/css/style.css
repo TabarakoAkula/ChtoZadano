@@ -152,6 +152,12 @@ footer {
     margin-top: 20px;
 }
 
+.chtozadano-delete {
+    width: 100px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
 @media (max-width: 768px) {
     .alert {
         left: 5px;
