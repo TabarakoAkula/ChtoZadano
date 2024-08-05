@@ -81,6 +81,16 @@ footer {
     box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
 }
 
+.chtozadano-account {
+    display: grid;
+    margin-top: 15%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+}
+
 .chtozadano-form-crud {
     display: grid;
     margin-top: 15%;
@@ -111,6 +121,16 @@ footer {
     margin-left: auto;
     margin-right: auto;
     width: 29%;
+    margin-top: 5px;
+    padding: 10px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+}
+
+.under-form-account {
+    display: grid;
+    margin-left: auto;
+    margin-right: auto;
+    width: 49%;
     margin-top: 5px;
     padding: 10px;
     box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
@@ -196,6 +216,15 @@ footer {
     .chtozadano-form {
         width: 88%;
         margin-top: 45%;
+    }
+
+    .chtozadano-account {
+        width: 90%;
+        margin-top: 40%;
+    }
+
+    .under-form-account {
+        width: 87%;
     }
 
     .under-form {
