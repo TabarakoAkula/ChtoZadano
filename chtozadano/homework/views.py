@@ -517,6 +517,11 @@ class EditHomeworkData(View):
             elif r_type == "file":
                 File.objects.get(id=file_id, homework=hw_object).delete()
             messages.success(request, "Успешно обновлено")
+            if hw_object.group in [-3, -2, -1]:
+                return redirect(
+                    "homework:edit_mailing",
+                    homework_id=homework_id,
+                )
             return redirect("homework:edit_homework", homework_id=homework_id)
         messages.error(
             request,
