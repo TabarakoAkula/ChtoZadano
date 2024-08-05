@@ -5,7 +5,8 @@
 	<div class="container">
 		<form method="POST" enctype="multipart/form-data" class="chtozadano-form">
 			{% csrf_token %}
-			<h4>Укажите новые данные</h4><p></p>
+			<h4>Укажите новые данные</h4>
+			<p></p>
 			<div class="mb-3">
 				<label for="exampleInputEmail1" class="form-label">Имя</label>
 				<input type="text" name="first_name" class="form-control" id="exampleInputEmail1"
@@ -20,9 +21,10 @@
 			        style="background-color: #272727">Сохранить
 			</button>
 		</form>
-	<div class="under-form">
-			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
-				style="text-decoration: none; color: white;" href="{% url "users:account_page" %}">Вернуться</a></button>
+		<div class="under-form">
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:account_page" %}">Вернуться</a>
 		</div>
 	</div>
 {% endblock %}

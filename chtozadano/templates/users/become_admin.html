@@ -14,16 +14,18 @@
 				<label for="exampleInputEmail1" class="form-label">Фамилия</label>
 				<input type="text" name="last_name" class="form-control" id="exampleInputEmail1"
 				       aria-describedby="emailHelp" required>
-				<div id="emailHelp" class="form-text">Ваша заявка будет обработана в течении 48 часов. Вы получите уведомление</div>
+				<div id="emailHelp" class="form-text">Ваша заявка будет обработана в течении 48 часов. Вы получите
+					уведомление
+				</div>
 			</div>
 			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-button"
 			        style="background-color: #272727">Отправить заявку
 			</button>
 		</form>
 		<div class="under-form">
-			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
-				style="text-decoration: none; color: white;" href="{% url "users:account_page" %}">Вернуться</a>
-			</button>
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:account_page" %}">Вернуться</a>
 		</div>
 	</div>
 {% endblock %}

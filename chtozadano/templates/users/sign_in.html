@@ -8,7 +8,7 @@
 			<div class="mb-3">
 				<label for="exampleInputEmail1" class="form-label">Код подтверждения</label>
 				<input type="text" name="confirmation_code" class="form-control" id="exampleInputEmail1"
-				       aria-describedby="emailHelp">
+				       aria-describedby="emailHelp" required>
 				<div id="emailHelp" class="form-text">Отправьте сообщение "код" в наш <a
 					style="text-decoration: none;"
 					href="https://t.me/ChtoZadano_bot">бот</a>
@@ -19,12 +19,12 @@
 			</button>
 		</form>
 		<div class="under-form">
-			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
-				style="text-decoration: none; color: white;" href="{% url "users:signin_password_page" %}">Войти с
-				паролем</a></button>
-			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
-				style="text-decoration: none; color: white" href="{% url "users:signup_page" %}">Зарегистрироваться</a>
-			</button>
+			<a class="btn btn-dark under-button"
+				style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)" href="{% url "users:signin_password_page" %}">Войти с
+				паролем</a>
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:signup_page" %}">Зарегистрироваться</a>
 		</div>
 	</div>
 {% endblock %}

@@ -16,7 +16,7 @@
 				<textarea type="text" name="description" class="form-control chtozadano-object" id="exampleInputEmail1"
 				          style="min-height: 150px" disabled>{{ hw_info.description }}</textarea>
 			</div>
-				{% if hw_info.images.all %}
+			{% if hw_info.images.all %}
 				<hr class="hr hr-blurry"/>
 				<label for="exampleInputEmail1" class="form-label">Изображения:</label>
 				<div class="image-container gallery" style="">
@@ -49,9 +49,9 @@
 			</button>
 		</form>
 		<div class="under-form-crud">
-			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
-				style="text-decoration: none; color: white;" href="{% url "homework:homework_page" %}">Вернуться</a>
-			</button>
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "homework:homework_page" %}">Вернуться</a>
 		</div>
 	</div>
 {% endblock %}

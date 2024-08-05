@@ -34,22 +34,26 @@
 			</div>
 		</form>
 		<div class="under-form-account">
-			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
-				style="text-decoration: none; color: white;" href="{% url "users:change_contacts" %}">Сменить
-				имя/фамилию</a></button>
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:change_contacts" %}">Сменить
+				имя/фамилию</a>
 			{% if user.user.is_staff or user.user.is_superuser %}
 			{% else %}
 				{% if show_admin %}
 					<a href="{% url "users:become_admin" %}">
-						<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
-							style="text-decoration: none; color: white;" href="{% url "users:become_admin" %}">Стать
-							админом</a></button>
+						<a style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+						   href="{% url "users:become_admin" %}" class="btn btn-dark under-button">
+							Стать админом
+						</a>
 					</a>
 				{% endif %}
 			{% endif %}
-			<button class="btn btn-dark under-button" style="background-color: rgba(39,39,39,0.9)"><a
-				style="text-decoration: none; color: white;" href="{% url "users:logout" %}">Выйти из аккаунта</a>
-			</button>
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:logout" %}">
+				Выйти из аккаунта
+			</a>
 		</div>
 	</div>
 {% endblock %}
