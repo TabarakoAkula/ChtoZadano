@@ -78,7 +78,21 @@ footer {
     margin-right: auto;
     width: 30%;
     padding: 40px;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+}
+
+chtozadano-requests-form {
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.chtozadano-empty-p {
+    height: 7vh;
 }
 
 .chtozadano-account {
@@ -88,7 +102,8 @@ footer {
     margin-right: auto;
     width: 50%;
     padding: 40px;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .chtozadano-form-crud {
@@ -98,7 +113,8 @@ footer {
     margin-right: auto;
     width: 60%;
     padding: 40px;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .chtozadano-signup-form {
@@ -108,12 +124,14 @@ footer {
     margin-right: auto;
     width: 40%;
     padding: 40px;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .form-button {
     width: 100%;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .under-form {
@@ -123,7 +141,8 @@ footer {
     width: 29%;
     margin-top: 5px;
     padding: 10px;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .under-form-account {
@@ -133,7 +152,8 @@ footer {
     width: 49%;
     margin-top: 5px;
     padding: 10px;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .under-form-crud {
@@ -143,11 +163,13 @@ footer {
     width: 50%;
     margin-top: 5px;
     padding: 10px;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3)
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .under-button {
-    margin-top: 10px
+    margin-top: 10px;
+    border-radius: 5px;
 }
 
 .schedule {
@@ -218,6 +240,12 @@ footer {
         margin-top: 45%;
     }
 
+    .chtozadano-requests-form {
+        width: 88%;
+        margin-top: 35%;
+        margin-left: 5%;
+    }
+
     .chtozadano-account {
         width: 90%;
         margin-top: 40%;
@@ -250,6 +278,10 @@ footer {
         justify-content: center;
     }
 
+    .chtozadano-empty-p {
+        height: 0vh;
+    }
+
     .container-img-crud {
         display: flex;
         flex-wrap: wrap;
@@ -280,6 +312,19 @@ footer {
     .chtozadano-object {
         width: 85%;
     }
+
+    .chtozadano-table-hide {
+        display: none;
+    }
+
+    .chtozadano-table-little {
+        max-width: 40px;
+    }
+
+    .chtozadano-table-short {
+        max-width: 50px;
+    }
+
 }
 
 @media (max-width: 480px) {

@@ -5,11 +5,11 @@
 	<div class="container mt-5">
 		<div class="accordion accordion-all-hw" id="accordionExample1">
 			<h1>ВСЕ ДЗ</h1><a href="{% url "homework:homework_page" %}">
-			<button class="btn btn-info click-button-two">Посмотреть последнее дз</button>
+			<button class="btn btn-dark click-button-two">Посмотреть последнее дз</button>
 		</a>
 			{% if not user.is_staff or user.is_superuser %}
 				<a href="{% url "homework:choose_grad_let" %}">
-					<button class="btn btn-info click-button-two">Сменить класс или литеру</button>
+					<button class="btn btn-dark click-button-two">Сменить класс или литеру</button>
 				</a>
 			{% endif %}
 			<p><br></p>
@@ -30,15 +30,15 @@
 						<div class="accordion-body">
 							<p style="white-space: pre-line;">
 								{{ i.description }}</p>
-								{% if i.images.all %}
-									<div class="image-container gallery">
-										{% for j in i.images.all %}
-											<img src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
-											     height="200px"
-											     style="margin-right: 20px; margin-bottom: 20px">
-										{% endfor %}
-									</div>
-								{% endif %}
+							{% if i.images.all %}
+								<div class="image-container gallery">
+									{% for j in i.images.all %}
+										<img src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
+										     height="200px"
+										     style="margin-right: 20px; margin-bottom: 20px">
+									{% endfor %}
+								</div>
+							{% endif %}
 							{% if i.files.all %}
 								<br>
 								{% for j in i.files.all %}
