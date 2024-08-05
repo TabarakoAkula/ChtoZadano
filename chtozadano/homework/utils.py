@@ -85,12 +85,14 @@ def get_name_from_abbreviation(abbreviation):
         return response_object
 
 
-def save_files(request_files_list, grade, letter):
+def save_files(request_files_list, grade, letter, subject):
     today = datetime.date.today()
     month = today.month
     if month < 10:
         month = f"0{month}"
-    today_path = f"{today.year}/{month}/{grade}/{letter}/{today.day}/"
+    today_path = (
+        f"{today.year}/{month}/{grade}/{letter}/{today.day}/{subject}/"
+    )
     files_list_for_model = []
     for r_file in request_files_list:
         file_extension = r_file.name.split(".")[-1]

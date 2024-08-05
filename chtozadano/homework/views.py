@@ -351,6 +351,7 @@ class AddHomeworkPage(View):
             request_files_list,
             request.user.server_user.grade,
             request.user.server_user.letter,
+            subject,
         )
         files_list_for_model = files_list_for_model[1]
         server_user = request.user.server_user
@@ -450,6 +451,7 @@ class EditHomework(View):
                 request_files_list,
                 request.user.server_user.grade,
                 request.user.server_user.letter,
+                subject,
             )
             if files_list_for_model[0] == "Error":
                 messages.error(request, "Неподходящий формат файла")
@@ -635,6 +637,7 @@ class AddMailingPage(View):
             request_files_list,
             request.user.server_user.grade,
             request.user.server_user.letter,
+            "info",
         )
         if files_list_for_model[0] == "Error":
             messages.error(request, "Неподходящий формат файла")
@@ -738,6 +741,7 @@ class EditMailingPage(View):
                 request_files_list,
                 request.user.server_user.grade,
                 request.user.server_user.letter,
+                "info",
             )
             if files_list_for_model[0] == "Error":
                 messages.error(request, "Неподходящий формат файла")

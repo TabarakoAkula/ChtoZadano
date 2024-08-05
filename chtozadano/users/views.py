@@ -1,5 +1,6 @@
 import datetime
 import os
+from random import random
 
 from django.contrib import messages
 import django.contrib.auth
@@ -81,11 +82,18 @@ class SignUpPage(View):
                 },
             )
         name = my_sign_in.name
-        django_user = django.contrib.auth.models.User.objects.create_user(
-            username=name,
-            first_name=name,
-            password=create_password(telegram_id, os.getenv("SECRET_KEY")),
-        )
+        try:
+            django_user = django.contrib.auth.models.User.objects.create_user(
+                username=name,
+                first_name=name,
+                password=create_password(telegram_id, os.getenv("SECRET_KEY")),
+            )
+        except django.db.utils.IntegrityError:
+            django_user = django.contrib.auth.models.User.objects.create_user(
+                username=name + str(random.getrandbits(128))[:15],
+                first_name=name,
+                password=create_password(telegram_id, os.getenv("SECRET_KEY")),
+            )
         User.objects.create(
             user=django_user,
             grade=request.POST["grade"],
