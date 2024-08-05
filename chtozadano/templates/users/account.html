@@ -49,6 +49,19 @@
 					</a>
 				{% endif %}
 			{% endif %}
+			{% if user.user.is_staff and user.user.is_superuser %}
+				<a class="btn btn-dark under-button"
+				   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+				   href="{% url "homework:choose_grad_let" %}">
+					Сменить класс/литеру/группу
+				</a>
+			{% elif not user.user.is_staff %}
+				<a class="btn btn-dark under-button"
+				   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+				   href="{% url "homework:choose_grad_let" %}">
+					Сменить класс/литеру/группу
+				</a>
+			{% endif %}
 			<a class="btn btn-dark under-button"
 			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
 			   href="{% url "users:logout" %}">
