@@ -336,7 +336,9 @@ class AddHomeworkPage(View):
 
     @staticmethod
     def post(request):
-        if not request.user.is_staff or not request.user.is_superuser:
+        if request.user.is_staff or request.user.is_superuser:
+            pass
+        else:
             messages.error(
                 request,
                 "Для добавления домашнего задания у вас"
