@@ -62,6 +62,16 @@
 					Сменить класс/литеру/группу
 				</a>
 			{% endif %}
+			{% if user.user.is_superuser %}
+				<a class="btn btn-danger under-button"
+				   href="{% url "users:show_become_admin" %}">
+					Заявки на администратора
+				</a>
+				<a class="btn btn-danger under-button"
+				   href="/admin/">
+					Админ панель
+				</a>
+			{% endif %}
 			<a class="btn btn-dark under-button"
 			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
 			   href="{% url "users:logout" %}">
