@@ -2,55 +2,71 @@
 
 {% block content %}
 	{% load static %}
-	<table border="1">
-		<tr>
-			<td>Id</td>
-			<td>{{ user.user.id }}</td>
-		</tr>
-		<tr>
-			<td>Класс</td>
-			<td>{{ user.grade }}</td>
-		</tr>
-		<tr>
-			<td>Литера</td>
-			<td>{{ user.letter }}</td>
-		</tr>
-		<tr>
-			<td>Группа</td>
-			<td>{{ user.group }}</td>
-		</tr>
-		<tr>
-			<td>Телеграм id</td>
-			<td>{{ user.telegram_id }}</td>
-		</tr>
-		<tr>
-			<td>Записки</td>
-			<td>{{ user.notebook }}</td>
-		</tr>
-		<tr>
-			<td>Имя</td>
-			<td>{{ user.user.first_name }}</td>
-		</tr>
-		<tr>
-			<td>Фамилия</td>
-			<td>{{ user.user.last_name }}</td>
-		</tr>
-	</table><br>
-	{% if user.user.is_staff or user.user.is_superuser %}
-	{% else %}
-		{% if show_admin %}
-			<a href="{% url "users:become_admin" %}">
-				<button>Стать админом</button>
+
+	<div class="container">
+		<form method="POST" enctype="multipart/form-data" class="chtozadano-account">
+			{% csrf_token %}
+			<h4>Ваш аккаунт</h4>
+			<p></p>
+			<div class="row">
+				<div class="col">
+					<label for="exampleInputEmail1" class="form-label">Имя</label>
+					<input type="text" class="form-control" placeholder="{{ user.user.first_name }}" disabled>
+				</div>
+				<div class="col">
+					<label for="exampleInputEmail1" class="form-label">Фамилия</label>
+					<input type="text" class="form-control" placeholder="{{ user.user.last_name }}" disabled>
+				</div>
+			</div>
+			<div class="row" style="margin-top: 10px">
+				<div class="col">
+					<label for="exampleInputEmail1" class="form-label">Класс</label>
+					<input type="text" class="form-control" placeholder="{{ user.grade }}" disabled>
+				</div>
+				<div class="col">
+					<label for="exampleInputEmail1" class="form-label">Литера</label>
+					<input type="text" class="form-control" placeholder="{{ user.letter }}" disabled>
+				</div>
+				<div class="col">
+					<label for="exampleInputEmail1" class="form-label">Группа</label>
+					<input type="text" class="form-control" placeholder="{{ user.group }}" disabled>
+				</div>
+			</div>
+		</form>
+		<div class="under-form-account">
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:change_contacts" %}">Сменить
+				имя/фамилию</a>
+			{% if user.user.is_staff or user.user.is_superuser %}
+			{% else %}
+				{% if show_admin %}
+					<a href="{% url "users:become_admin" %}">
+						<a style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+						   href="{% url "users:become_admin" %}" class="btn btn-dark under-button">
+							Стать админом
+						</a>
+					</a>
+				{% endif %}
+			{% endif %}
+			{% if user.user.is_staff and user.user.is_superuser %}
+				<a class="btn btn-dark under-button"
+				   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+				   href="{% url "homework:choose_grad_let" %}">
+					Сменить класс/литеру/группу
+				</a>
+			{% elif not user.user.is_staff %}
+				<a class="btn btn-dark under-button"
+				   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+				   href="{% url "homework:choose_grad_let" %}">
+					Сменить класс/литеру/группу
+				</a>
+			{% endif %}
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:logout" %}">
+				Выйти из аккаунта
 			</a>
-		{% endif %}
-	{% endif %}
-	<a href="{% url "users:change_contacts" %}">
-		<button>Сменить имя / фамилию</button>
-	</a>
-	<a href="{% url "users:edit_notebook" %}">
-		<button>Изменить заметки</button>
-	</a>
-	<a href="{% url "users:logout" %}">
-		<button>Выйти из аккаунта</button>
-	</a>
+		</div>
+	</div>
 {% endblock %}

@@ -2,7 +2,7 @@ import json
 
 from django.contrib import messages
 from django.db.models import OuterRef, Q, Subquery
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, reverse
 from django.views import generic, View
 
 from homework.forms import ChooseGradLetForm
@@ -96,6 +96,7 @@ class HomeworkPage(View):
                 .first()
             )
             info = [info_school, info_admin, info_class]
+        dates = get_list_of_dates(grade)
         return render(
             request,
             "homework/homework.html",
@@ -104,6 +105,7 @@ class HomeworkPage(View):
                 "empty_hw": null_subjects,
                 "info": info,
                 "done_list": done_list,
+                "dates": dates,
             },
         )
 
@@ -212,14 +214,43 @@ class WeekdayHomeworkPage(View):
         else:
             done_list = []
 
+        info_class = (
+            Homework.objects.filter(group=-1, grade=grade, letter=letter)
+            .prefetch_related("images", "files")
+            .order_by("-created_at")
+            .only()
+            .first()
+        )
+        info_school = (
+            Homework.objects.filter(group=-3)
+            .prefetch_related("images", "files")
+            .order_by("-created_at")
+            .first()
+        )
+        if info_school:
+            info_school.author = "Администрация"
+        if not request.user.is_staff:
+            info = [info_school, info_class]
+        else:
+            info_admin = (
+                Homework.objects.filter(group=-2)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .first()
+            )
+            info = [info_school, info_admin, info_class]
+
         week_list = get_list_of_dates(grade)
+        current_weekday = week_list[weekday]
         return render(
             request,
             "homework/weekday_homework.html",
             context={
                 "homework": data,
                 "done_list": done_list,
-                "weekday": week_list[weekday],
+                "dates": week_list,
+                "info": info,
+                "current_weekday": current_weekday,
             },
         )
 
@@ -241,9 +272,9 @@ class ChooseGrLePage(View):
     def post(request):
         if request.user.is_staff and not request.user.is_superuser:
             return redirect("homework:homework_page")
-        grade = request.POST.get("grade")
+        grade = int(request.POST.get("grade"))
         letter = request.POST.get("letter")
-        group = request.POST.get("group")
+        group = int(request.POST.get("group"))
         data = {
             "grade": grade,
             "letter": letter,
@@ -305,7 +336,9 @@ class AddHomeworkPage(View):
 
     @staticmethod
     def post(request):
-        if not request.user.is_staff or not request.user.is_superuser:
+        if request.user.is_staff or request.user.is_superuser:
+            pass
+        else:
             messages.error(
                 request,
                 "Для добавления домашнего задания у вас"
@@ -320,6 +353,7 @@ class AddHomeworkPage(View):
             request_files_list,
             request.user.server_user.grade,
             request.user.server_user.letter,
+            subject,
         )
         files_list_for_model = files_list_for_model[1]
         server_user = request.user.server_user
@@ -419,15 +453,13 @@ class EditHomework(View):
                 request_files_list,
                 request.user.server_user.grade,
                 request.user.server_user.letter,
+                subject,
             )
             if files_list_for_model[0] == "Error":
                 messages.error(request, "Неподходящий формат файла")
                 return render(
                     request,
                     "homework/add_homework.html",
-                    context={
-                        "errors": ("Unsupported file format",),
-                    },
                 )
             files_list_for_model = files_list_for_model[1]
             server_user = request.user.server_user
@@ -489,6 +521,11 @@ class EditHomeworkData(View):
             elif r_type == "file":
                 File.objects.get(id=file_id, homework=hw_object).delete()
             messages.success(request, "Успешно обновлено")
+            if hw_object.group in [-3, -2, -1]:
+                return redirect(
+                    "homework:edit_mailing",
+                    homework_id=homework_id,
+                )
             return redirect("homework:edit_homework", homework_id=homework_id)
         messages.error(
             request,
@@ -512,6 +549,7 @@ class DeleteHomework(View):
             except Homework.DoesNotExist:
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
+            hw_info.subject = get_name_from_abbreviation(hw_info.subject)
             return render(
                 request,
                 "homework/delete_homework.html",
@@ -601,14 +639,13 @@ class AddMailingPage(View):
             request_files_list,
             request.user.server_user.grade,
             request.user.server_user.letter,
+            "info",
         )
         if files_list_for_model[0] == "Error":
-            render(
+            messages.error(request, "Неподходящий формат файла")
+            return render(
                 request,
                 "homework/add_homework.html",
-                context={
-                    "errors": "Unsupported file format",
-                },
             )
         files_list_for_model = files_list_for_model[1]
         if group != -1:
@@ -706,15 +743,13 @@ class EditMailingPage(View):
                 request_files_list,
                 request.user.server_user.grade,
                 request.user.server_user.letter,
+                "info",
             )
             if files_list_for_model[0] == "Error":
                 messages.error(request, "Неподходящий формат файла")
                 return render(
                     request,
                     "homework/add_homework.html",
-                    context={
-                        "errors": ("Unsupported file format"),
-                    },
                 )
             files_list_for_model = files_list_for_model[1]
             try:
@@ -850,7 +885,9 @@ class MarkDone(View):
                 todo_obj.save()
         except users.models.User.DoesNotExist and Homework.DoesNotExist:
             return redirect("homework:homework_page")
-        return redirect("homework:homework_page")
+        request.session["open_id"] = homework_id
+        request.session["mark_done"] = not todo_obj.is_done
+        return redirect(reverse("homework:homework_page") + f"#{homework_id}")
 
 
 class SchedulePage(generic.ListView):

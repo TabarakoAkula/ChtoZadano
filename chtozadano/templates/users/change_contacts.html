@@ -2,14 +2,29 @@
 
 {% block content %}
 	{% load static %}
-	<form method="POST" enctype="multipart/form-data" style="margin-left: 30em; margin-right: 30em; margin-bottom: 5em">
-		{% for error in errors %}
-			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
-		{% endfor %}
-		{% csrf_token %}
-		{{ form.as_p }}
-		<a href="{% url "users:signin_password_page" %}">
-			<button>Сменить</button>
-		</a>
-	</form>
+	<div class="container">
+		<form method="POST" enctype="multipart/form-data" class="chtozadano-form">
+			{% csrf_token %}
+			<h4>Укажите новые данные</h4>
+			<p></p>
+			<div class="mb-3">
+				<label for="exampleInputEmail1" class="form-label">Имя</label>
+				<input type="text" name="first_name" class="form-control" id="exampleInputEmail1"
+				       aria-describedby="emailHelp" required>
+			</div>
+			<div class="mb-3">
+				<label for="exampleInputEmail1" class="form-label">Фамилия</label>
+				<input type="text" name="last_name" class="form-control" id="exampleInputEmail1"
+				       aria-describedby="emailHelp">
+			</div>
+			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-button"
+			        style="background-color: #272727">Сохранить
+			</button>
+		</form>
+		<div class="under-form">
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:account_page" %}">Вернуться</a>
+		</div>
+	</div>
 {% endblock %}

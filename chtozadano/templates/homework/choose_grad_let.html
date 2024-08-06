@@ -2,12 +2,39 @@
 
 {% block content %}
 	{% load static %}
-	{% for error in errors %}
-		<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
-	{% endfor %}
-	<form method="POST" enctype="multipart/form-data">
-		{% csrf_token %}
-		{{ form }}
-		<button title="Enter your code">Сохранить</button>
-	</form>
+	<div class="container">
+		<form method="POST" enctype="multipart/form-data" class="chtozadano-form">
+			{% csrf_token %}
+			<div class="mb-3">
+				<label for="grade" class="form-label">Выберите класс</label>
+				<select id="grade" class="form-select" name="grade">
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+					<option value="8">8</option>
+					<option value="9">9</option>
+					<option value="10">10</option>
+					<option value="11">11</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label for="letter" class="form-label">Выберите литеру</label>
+				<select id="letter" class="form-select" name="letter">
+					<option value="А">А</option>
+					<option value="Б">Б</option>
+					<option value="В">В</option>
+					<option value="Г">Г</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label for="group" class="form-label">Выберите группу</label>
+				<select id="group" class="form-select" name="group">
+					<option value="1">1</option>
+					<option value="2">2</option>
+				</select>
+			</div>
+			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-button" style="background-color: #272727">Сохранить</button>
+		</form>
+	</div>
 {% endblock %}

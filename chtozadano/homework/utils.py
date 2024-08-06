@@ -1,5 +1,6 @@
 import datetime
 import json
+import random
 
 from django.conf import settings
 from django.contrib import messages
@@ -84,12 +85,14 @@ def get_name_from_abbreviation(abbreviation):
         return response_object
 
 
-def save_files(request_files_list, grade, letter):
+def save_files(request_files_list, grade, letter, subject):
     today = datetime.date.today()
     month = today.month
     if month < 10:
         month = f"0{month}"
-    today_path = f"{today.year}/{month}/{grade}/{letter}/{today.day}/"
+    today_path = (
+        f"{today.year}/{month}/{grade}/{letter}/{today.day}/{subject}/"
+    )
     files_list_for_model = []
     for r_file in request_files_list:
         file_extension = r_file.name.split(".")[-1]
@@ -98,6 +101,10 @@ def save_files(request_files_list, grade, letter):
                 f"homework/img/{today_path}/{r_file.name}",
                 r_file,
             )
+            if len(file_name) >= 100:
+                file_name = (
+                    file_name[:50] + "_" + str(random.getrandbits(128))[:40]
+                )
             files_list_for_model.append((file_name, "img"))
         elif file_extension.lower() in [
             "pdf",
@@ -111,12 +118,20 @@ def save_files(request_files_list, grade, letter):
                 f"homework/files/{today_path}/{r_file.name}",
                 r_file,
             )
+            if len(file_name) >= 100:
+                file_name = (
+                    file_name[:50] + "_" + str(random.getrandbits(128))[:40]
+                )
             files_list_for_model.append((file_name, "file"))
         elif file_extension.lower() in ["mp3", "ogg", "acc", "wav"]:
             file_name = default_storage.save(
                 f"homework/music/{today_path}/{r_file.name}",
                 r_file,
             )
+            if len(file_name) >= 100:
+                file_name = (
+                    file_name[:50] + "_" + str(random.getrandbits(128))[:40]
+                )
             files_list_for_model.append((file_name, "music"))
         else:
             return "Error", file_extension
@@ -180,7 +195,9 @@ def get_list_of_dates(grade):
         week_range = range(1, 8)
     for day in week_range:
         date = today_date + datetime.timedelta(days=day)
-        if not (date.weekday() == 6 or (grade < 6 and date.weekday() == 5)):
+        if not (
+            date.weekday() == 6 or (int(grade) < 6 and date.weekday() == 5)
+        ):
             date_list[date.weekday()] = (
                 f"{weekday_full[date.weekday() + 1]},"
                 f" {date.strftime('%d.%m')}"

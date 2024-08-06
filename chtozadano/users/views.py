@@ -1,5 +1,6 @@
 import datetime
 import os
+from random import random
 
 from django.contrib import messages
 import django.contrib.auth
@@ -48,41 +49,51 @@ class SignUpPage(View):
                 tzinfo=None,
             ) + datetime.timedelta(hours=3)
         except AttributeError:
+            messages.error(request, "Неправильный код")
             return render(
                 request,
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("Неправильный код",),
                 },
             )
 
         if confirmation_code_expired(database_datetime):
+            messages.error(request, "Время действия кода истекло")
             return render(
                 request,
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("Время действия кода истекло",),
                 },
             )
         telegram_id = my_sign_in.telegram_id
         all_users = User.objects.filter(telegram_id=telegram_id).all()
         if all_users:
+            messages.error(
+                request,
+                "Пользователь с таким telegram аккаунтом уже существует",
+            )
             return render(
                 request,
                 "users/sign_up.html",
                 context={
                     "form": SignUpForm(request.POST),
-                    "errors": ("Пользователь уже существует",),
                 },
             )
         name = my_sign_in.name
-        django_user = django.contrib.auth.models.User.objects.create_user(
-            username=name,
-            first_name=name,
-            password=create_password(telegram_id, os.getenv("SECRET_KEY")),
-        )
+        try:
+            django_user = django.contrib.auth.models.User.objects.create_user(
+                username=name,
+                first_name=name,
+                password=create_password(telegram_id, os.getenv("SECRET_KEY")),
+            )
+        except django.db.utils.IntegrityError:
+            django_user = django.contrib.auth.models.User.objects.create_user(
+                username=name + str(random.getrandbits(128))[:15],
+                first_name=name,
+                password=create_password(telegram_id, os.getenv("SECRET_KEY")),
+            )
         User.objects.create(
             user=django_user,
             grade=request.POST["grade"],
@@ -117,21 +128,21 @@ class SignUpPasswordPage(View):
         password = form["password"]
         password_checker = validate_password(password)
         if not password_checker[0]:
+            messages.error(request, password_checker[1])
             return render(
                 request,
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": (password_checker[1],),
                 },
             )
         if password != form["repeat_password"]:
+            messages.error(request, "Введенные пароли не совпадают")
             return render(
                 request,
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": ("Введенные пароли не совпадают",),
                 },
             )
         try:
@@ -154,12 +165,12 @@ class SignUpPasswordPage(View):
             messages.success(request, "Аккаунт успешно создан")
             return redirect("users:account_page")
         else:
+            messages.error(request, "Выберите другой логин")
             return render(
                 request,
                 "users/sign_up_password.html",
                 context={
                     "form": SignUpPasswordForm(request.POST),
-                    "errors": ("Выберите другой логин",),
                 },
             )
 
@@ -189,21 +200,21 @@ class SignInPage(View):
                 tzinfo=None,
             ) + datetime.timedelta(hours=3)
         except AttributeError:
+            messages.error(request, "Неправильный код")
             return render(
                 request,
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("Неправильный код",),
                 },
             )
         if confirmation_code_expired(database_datetime):
+            messages.error(request, "Время действия кода истекло")
             return render(
                 request,
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": ("Время действия кода истекло",),
                 },
             )
         telegram_id = my_sign_in.telegram_id
@@ -211,14 +222,15 @@ class SignInPage(View):
         if all_users:
             django_user = User.objects.get(telegram_id=telegram_id).user
         else:
+            messages.error(
+                request,
+                "Аккаунт с таким telegram аккаунтом уже существует",
+            )
             return render(
                 request,
                 "users/sign_in.html",
                 context={
                     "form": SignInForm(request.POST),
-                    "errors": (
-                        "Аккаунт с таким telegram аккаунтов уже существует",
-                    ),
                 },
             )
         django.contrib.auth.login(request, django_user)
@@ -250,24 +262,24 @@ class SignInPasswordPage(View):
                 username=form["username"],
             )
         except django.contrib.auth.models.User.DoesNotExist:
+            messages.error(request, "Неправильный логин или пароль")
             return render(
                 request,
                 "users/sign_in_password.html",
                 context={
                     "form": SignInPasswordForm(request.POST),
-                    "errors": ("Неправильный логин или пароль",),
                 },
             )
         if check_password(form["password"], django_user.password):
             django.contrib.auth.login(request, django_user)
             messages.success(request, "Вы успешно вошли в аккаунт")
             return redirect("users:account_page")
+        messages.error(request, "Неправильный логин или пароль")
         return render(
             request,
             "users/sign_in_password.html",
             context={
                 "form": SignInPasswordForm(request.POST),
-                "errors": ("Неправильный логин или пароль",),
             },
         )
 
