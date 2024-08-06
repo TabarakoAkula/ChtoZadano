@@ -1,3 +1,4 @@
+/* Copied from Lightbox2 v.11.4 under MIT License */
 /*!
  * jQuery JavaScript Library v3.6.3
  * https://jquery.com/
