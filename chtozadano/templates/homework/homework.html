@@ -43,9 +43,10 @@
 										{% if i.images.all %}
 											<div class="image-container gallery">
 												{% for j in i.images.all %}
-													<img src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
-													     height="200px"
-													     style="margin-right: 20px; margin-bottom: 20px">
+													<a href="{{ j.image.url }}" data-lightbox="image-{{ i.id }}"><img
+														src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
+														height="200px"
+														style="margin-right: 20px; margin-bottom: 20px"></a>
 												{% endfor %}
 											</div>
 										{% endif %}
@@ -154,9 +155,11 @@
 				{% if i.images.all %}
 					<div class="image-container gallery">
 						{% for j in i.images.all %}
-							<img src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
-							     height="200px"
-							     style="margin-right: 20px; margin-bottom: 20px">
+							<a href="{{ j.image.url }}" data-lightbox="image-{{ i.id }}">
+								<img src="{{ j.image.url }}"
+								     alt="photo №{{ forloop.counter }}"
+								     height="200px"
+								     style="margin-right: 20px; margin-bottom: 20px"></a>
 						{% endfor %}
 					</div>
 				{% endif %}
