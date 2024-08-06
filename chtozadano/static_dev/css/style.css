@@ -376,6 +376,7 @@ nav a:hover::before {
 
     .chtozadano-nav {
         margin-top: 5px;
+        margin-left: 0;
     }
 
     nav a::before {
@@ -392,7 +393,7 @@ nav a:hover::before {
 
     nav li {
         display: inline-block;
-        margin-left: 10vw;
+        margin-left: 5vw;
         margin-right: 5vw;
         padding-top: 10px;
 
