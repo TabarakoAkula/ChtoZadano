@@ -128,4 +128,8 @@ urlpatterns = [
         "delete_old_homework/",
         homework.api.views.DeleteOldHomeworkAPI.as_view(),
     ),
+    path(
+        "add_schedule/",
+        homework.api.views.AddScheduleAPI.as_view(),
+    ),
 ]

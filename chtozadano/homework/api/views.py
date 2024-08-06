@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from rest_framework.views import APIView
 
 from homework.api.serializers import HomeworkSerializer
-from homework.models import File, Homework, Image, Todo
+from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
     get_abbreviation_from_name,
     get_tomorrow_schedule,
@@ -668,3 +668,31 @@ class DeleteOldHomeworkAPI(APIView):
         todo_objects.delete()
         hw_objects.delete()
         return HttpResponse(response_message)
+
+
+class AddScheduleAPI(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            user_obj = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+            if not user_obj.user.is_superuser:
+                return HttpResponse("Not allowed", status=403)
+            grade = request.data["grade"]
+            letter = request.data["letter"]
+            weekday = request.data["weekday"]
+            lesson = request.data["lesson"]
+            subject = request.data["subject"]
+            group = request.data["group"]
+        except (KeyError, users.models.User.DoesNotExist):
+            return HttpResponse("Bad request data", status=400)
+        Schedule.objects.create(
+            grade=grade,
+            letter=letter,
+            group=group,
+            weekday=weekday,
+            subject=subject,
+            lesson=lesson,
+        )
+        return HttpResponse("Successful")

@@ -533,4 +533,22 @@
   + Возвращает:
       + ``HttpResponse``
         + ``Successful delete {todo_d_counter:int} Todo and {homework_d_counter:int} Homework rows``
++ AddScheduleAPI:
+  + Путь: ``api/v1/add_schedule/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``superuser``
+  + Суть: добавить расписание
+  + Действие: добавляет в таблицу ``Schedule`` новую запись 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``grade`` - ``int`` класс
+    + ``letter`` - ``str`` литера
+    + ``group`` - ``int`` группа
+    + ``weekday`` - ``int`` день недели
+    + ``lesson`` - ``int`` номер урока
+    + ``subject`` - ``str`` аббревиатура предмета
+  + Возвращает:
+      + ``HttpResponse``
+        + ``Successful``
 </details>
