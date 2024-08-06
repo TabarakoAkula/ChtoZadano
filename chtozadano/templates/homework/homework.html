@@ -7,6 +7,14 @@
 		<div class="accordion" id="accordionExample1">
 			{% if info.0 or info.1 or info.2 %}
 				<h2>Объявления</h2>
+				{% if user.is_staff %}
+					<br>
+					<a href="{% url "homework:add_mailing_page" %}">
+						<button style="background-color: #2e3944; margin-top: -20px; margin-bottom: 10px"
+						        class="btn btn-dark click-button">Добавить объявление
+						</button>
+					</a>
+				{% endif %}
 				{% for i in info %}
 					{% if i %}
 						{% if i.group != -2 or user.is_staff %}
@@ -75,9 +83,11 @@
 			{% endif %}
 			<p><br></p>
 			<div style="display: flex;justify-content: space-between;">
-				<h1 class="h1-inf-label">ДЗ для {{ grade }}{{ letter }} класса </h1>
+				<h1 class="h1-inf-label">Домашние задания для
+					{{ request.user.server_user.grade }}{{ request.user.server_user.letter }} класса </h1>
 				<div class="dropdown" style="margin-top: 2px">
-					<button style="background-color: #272727" class="btn btn-dark dropdown-toggle" type="button"
+					<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark dropdown-toggle"
+					        type="button"
 					        data-bs-toggle="dropdown"
 					        aria-expanded="false">
 						Всё
@@ -97,11 +107,23 @@
 				</div>
 			</div>
 			<a href="{% url "homework:all_homework_page" %}">
-				<button class="btn btn-dark click-button">Посмотреть все дз за последние 2 недели</button>
+				<button style="background-color: rgba(39,39,39,0.94)"
+				        class="btn btn-dark click-button">Посмотреть все дз за последние 2 недели
+				</button>
 			</a>
 			{% if not user.is_staff or user.is_superuser %}
 				<a href="{% url "homework:choose_grad_let" %}">
-					<button class="btn btn-dark click-button">Сменить класс или литеру</button>
+					<button style="background-color: rgba(39,39,39,0.94)"
+					        class="btn btn-dark click-button">Сменить класс или литеру
+					</button>
+				</a>
+			{% endif %}
+			{% if user.is_staff %}
+				<br>
+				<a href="{% url "homework:add_homework_page" %}">
+					<button style="background-color: #2e3944; margin-top: 9px"
+					        class="btn btn-dark click-button">Добавить домашнее задание
+					</button>
 				</a>
 			{% endif %}
 			<p><br></p>

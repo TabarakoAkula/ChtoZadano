@@ -200,6 +200,55 @@ chtozadano-requests-form {
     margin-left: auto;
 }
 
+nav {
+    float: right;
+}
+
+nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+nav li {
+    display: inline-block;
+    margin-left: 70px;
+    padding-top: 3px;
+
+    position: relative;
+}
+
+nav a {
+    color: #444;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+nav a:hover {
+    color: #000;
+}
+
+nav a::before {
+    content: '';
+    display: block;
+    height: 5px;
+    margin-top: -25px;
+    background-color: #e5e5e5;
+    position: absolute;
+    top: 0;
+    width: 0;
+    transition: all ease-in-out 250ms;
+}
+
+nav a:hover::before {
+    width: 100%;
+}
+
+.chtozadano-nav {
+    margin-left: -15%;
+}
+
 @media (max-width: 768px) {
     .alert {
         left: 5px;
@@ -325,6 +374,30 @@ chtozadano-requests-form {
         max-width: 50px;
     }
 
+    .chtozadano-nav {
+        margin-top: 5px;
+    }
+
+    nav a::before {
+        content: '';
+        display: block;
+        height: 5px;
+        margin-top: 5px;
+        background-color: #e5e5e5;
+        position: absolute;
+        top: 0;
+        width: 0;
+        transition: all ease-in-out 250ms;
+    }
+
+    nav li {
+        display: inline-block;
+        margin-left: 10vw;
+        margin-right: 5vw;
+        padding-top: 10px;
+
+        position: relative;
+    }
 }
 
 @media (max-width: 480px) {

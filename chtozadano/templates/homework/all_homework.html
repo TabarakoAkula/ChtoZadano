@@ -4,12 +4,13 @@
 	{% load static %}
 	<div class="container mt-5">
 		<div class="accordion accordion-all-hw" id="accordionExample1">
-			<h1>ВСЕ ДЗ</h1><a href="{% url "homework:homework_page" %}">
-			<button class="btn btn-dark click-button-two">Посмотреть последнее дз</button>
+			<h1>Домашние задания для {{ request.user.server_user.grade }}{{ request.user.server_user.letter }} за
+				последние 2 недели</h1><a href="{% url "homework:homework_page" %}">
+			<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark click-button-two">Посмотреть последнее дз</button>
 		</a>
 			{% if not user.is_staff or user.is_superuser %}
 				<a href="{% url "homework:choose_grad_let" %}">
-					<button class="btn btn-dark click-button-two">Сменить класс или литеру</button>
+					<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark click-button-two">Сменить класс или литеру</button>
 				</a>
 			{% endif %}
 			<p><br></p>
@@ -64,8 +65,8 @@
 			{% endfor %}
 			{% if is_paginated %}
 				<br>
-				<nav aria-label="Page navigation example">
-					<ul class="pagination justify-content-center">
+				<div aria-label="Page navigation example">
+					<ul class="pagination" style="display: flex; justify-content: center">
 						{% if page_obj.has_previous %}
 							<li class="page-item d-sm-none"><a class="page-link"
 							                                   href="?page={{ page_obj.number|add:'-1' }}">&laquo;</a>
@@ -119,7 +120,7 @@
 							</li>
 						{% endif %}
 					</ul>
-				</nav>
+				</div>
 				<p><br></p>
 			{% endif %}
 		</div>
