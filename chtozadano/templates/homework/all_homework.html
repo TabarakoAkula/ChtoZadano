@@ -6,11 +6,15 @@
 		<div class="accordion accordion-all-hw" id="accordionExample1">
 			<h1>Домашние задания для {{ request.user.server_user.grade }}{{ request.user.server_user.letter }} за
 				последние 2 недели</h1><a href="{% url "homework:homework_page" %}">
-			<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark click-button-two">Посмотреть последнее дз</button>
+			<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark click-button-two">Посмотреть
+				последнее дз
+			</button>
 		</a>
 			{% if not user.is_staff or user.is_superuser %}
 				<a href="{% url "homework:choose_grad_let" %}">
-					<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark click-button-two">Сменить класс или литеру</button>
+					<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark click-button-two">Сменить
+						класс или литеру
+					</button>
 				</a>
 			{% endif %}
 			<p><br></p>
@@ -34,9 +38,10 @@
 							{% if i.images.all %}
 								<div class="image-container gallery">
 									{% for j in i.images.all %}
-										<img src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
-										     height="200px"
-										     style="margin-right: 20px; margin-bottom: 20px">
+										<a href="{{ j.image.url }}" data-lightbox="image-{{ i.id }}"><img
+											src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
+											height="200px"
+											style="margin-right: 20px; margin-bottom: 20px"></a>
 									{% endfor %}
 								</div>
 							{% endif %}
