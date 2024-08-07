@@ -12,7 +12,6 @@ from homework.utils import (
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
-    get_user_subjects_abbreviation,
 )
 import users.models
 
@@ -90,45 +89,47 @@ class GetOneSubjectAPI(viewsets.ModelViewSet):
         return response.Response(serialized.data)
 
 
-class GetAllHomeworkFromDateAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetAllHomeworkFromDateAPI(viewsets.ModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
             )
             date = request.data["date"].split(".")
-            grade = user_obj.grade
-            letter = user_obj.letter
-            group = user_obj.group
             year, month, day = list(map(int, date))
         except (KeyError, ValueError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
-        subjects = get_user_subjects_abbreviation(grade, letter)
-        data = {}
-        for subject in subjects:
-            try:
-                hw_object = (
+        latest_homework_ids = (
+            Homework.objects.filter(Q(group=0) | Q(group=user_obj.group))
+            .filter(
+                grade=user_obj.grade,
+                letter=user_obj.letter,
+                subject=OuterRef("subject"),
+                created_at=Subquery(
                     Homework.objects.filter(
-                        grade=grade,
-                        letter=letter,
-                        subject=subject,
+                        subject=OuterRef("subject"),
                     )
-                    .filter(Q(group=0) | Q(group=group))
-                    .filter(created_at__date=datetime(year, month, day))
-                    .order_by("-created_at")
-                    .first()
-                )
-            except Homework.DoesNotExist:
-                pass
-            if hw_object:
-                images = [i.image.url for i in hw_object.images.all()]
-                files = [i.file.url for i in hw_object.files.all()]
-                serializer_data = HomeworkSerializer(hw_object).data
-                serializer_data["images"] = images
-                serializer_data["files"] = files
-                data[subject] = serializer_data
-        return HttpResponse(json.dumps(data))
+                    .values("created_at")
+                    .order_by("-created_at")[:1],
+                ),
+            )
+            .values("id")
+        )
+        data = (
+            Homework.objects.filter(id__in=latest_homework_ids)
+            .filter(created_at__date=datetime(year, month, day))
+            .order_by("subject")
+            .prefetch_related("images", "files")
+            .defer("grade", "letter", "group")
+        )
+        for homework_obj in data:
+            homework_obj.subject = get_name_from_abbreviation(
+                homework_obj.subject,
+            )
+        homework = self.get_serializer(data, many=True)
+        return response.Response(homework.data)
 
 
 class GetHomeworkFromIdAPI(APIView):

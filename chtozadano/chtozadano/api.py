@@ -64,7 +64,9 @@ urlpatterns = [
     ),
     path(
         "get_homework_from_date/",
-        homework.api.views.GetAllHomeworkFromDateAPI.as_view(),
+        homework.api.views.GetAllHomeworkFromDateAPI.as_view(
+            {"post": "get_homework"},
+        ),
     ),
     path(
         "get_homework_from_id/",

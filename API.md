@@ -242,15 +242,11 @@
       + ``HttpResponse``:
         + ``Does not exist``
       + ``JSON``:  
-      ``subject``: {  
-        ``id``: ``int``,  
-        ``grade``: ``int``,  
-        ``letter``: ``"str"``,  
+      ``subject``: {
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
         ``group``: ``"int"``,  
-        ``created_at``: ``datetime``,  
-        ``todo``: ``list``,  
+        ``created_at``: ``datetime``,
         ``author``: ``str``,  
         ``images``: ``list``,   
         ``files``: ``list``,  
