@@ -14,7 +14,7 @@ urlpatterns = [
     ),
     path(
         "get_contacts/",
-        users.api.views.GetContactsAPI.as_view(),
+        users.api.views.GetContactsAPI.as_view({"post": "get_contacts"}),
     ),
     path(
         "change_contacts/",
@@ -145,5 +145,11 @@ urlpatterns = [
     path(
         "add_schedule/",
         homework.api.views.AddScheduleAPI.as_view(),
+    ),
+    path(
+        "get_week_schedule/",
+        homework.api.views.GetWeekScheduleAPI.as_view(
+            {"post": "get_schedule"},
+        ),
     ),
 ]

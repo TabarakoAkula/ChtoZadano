@@ -700,3 +700,33 @@ class AddScheduleAPI(APIView):
             lesson=lesson,
         )
         return HttpResponse("Successful")
+
+
+class GetWeekScheduleAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ScheduleSerializer
+
+    def get_schedule(self, request):
+        try:
+            user = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+        except (KeyError, users.models.User.DoesNotExist):
+            return HttpResponse("Bad request data", status=400)
+        latest_schedule_ids = (
+            Schedule.objects.filter(Q(group=0) | Q(group=user.group))
+            .filter(
+                grade=user.grade,
+                letter=user.letter,
+                weekday=OuterRef("weekday"),
+            )
+            .values("id")
+        )
+        data = Schedule.objects.filter(id__in=latest_schedule_ids).order_by(
+            "weekday",
+            "lesson",
+        )
+        for schedule_obj in data:
+            schedule_obj.subject = get_name_from_abbreviation(
+                schedule_obj.subject,
+            )
+        return response.Response(self.get_serializer(data, many=True).data)

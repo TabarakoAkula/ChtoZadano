@@ -7,7 +7,11 @@ from django.http import HttpResponse
 from rest_framework import response, viewsets
 from rest_framework.views import APIView
 
-from users.api.serializers import BecomeAdminSerializer, UserSerializer
+from users.api.serializers import (
+    BecomeAdminSerializer,
+    DefaultUserNameSerializer,
+    UserSerializer,
+)
 from users.models import BecomeAdmin, SignIn, User
 from users.utils import (
     create_password,
@@ -53,20 +57,14 @@ class CreateUserAPI(APIView):
         return HttpResponse("Successful")
 
 
-class GetContactsAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetContactsAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = DefaultUserNameSerializer
+
+    def get_contacts(self, request):
         telegram_id = request.data["telegram_id"]
         user_obj = User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
-        return HttpResponse(
-            json.dumps(
-                {
-                    "first_name": django_user.first_name,
-                    "last_name": django_user.last_name,
-                },
-            ),
-        )
+        return response.Response(self.get_serializer(django_user).data)
 
 
 class ChangeContactsAPI(APIView):
@@ -197,7 +195,7 @@ class IsUserInSystemAPI(APIView):
         return HttpResponse(False)
 
 
-class GetAdminsAPI(viewsets.ModelViewSet):
+class GetAdminsAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
 
     def get_admins(self, request):
