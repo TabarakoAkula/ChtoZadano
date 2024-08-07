@@ -15,21 +15,26 @@
   [![Issues](https://img.shields.io/github/license/mashape/apistatus.svg)](https://)
 </div>
 
-## Launch
-+ #### First launch
-  + ```bash
-    docker compose up --build -d
-    ```
-+ #### Base launch:
-  + ```bash
-    docker compose up -d
-    ```
+## Make scripts
++ ``update``
+  + git pull + restart docker a daemon
++ ``docker-rebuildup``
+  + docker stop + build + up as daemon
++ ``docker-bash-web``
+  + open bash in ``web`` container
++ ``docker-psql``
+  + open psql in ``db`` container as user ``posgresql`` 
++ ``docker-clean-all``
+  + prune **all** containers
++ ``docker-clean-old``
+  + prune ``non-active`` containers
++ ``sort-req``
+  + sort all requirements in ``requirements/`` :)
+ 
+## Create superuser  
++ Open ``bash`` in ``web`` contsiner
++ ```bash
+  cd chtozadano && python3 manage.py createsuperuser
+  ```
 
-### Install initial data fixture:
-+ #### Launch docker
-+ #### Exec in terminal:
-  + ```bash
-    docker exec -it chtozadano-web-1 bash
-    cd chtozadano && python3 manage.py createsuperuser
-    ```
 <h2>Документация по API находится в файле <a href="https://github.com/TabarakoAkula/ChtoZadano/blob/814ed9a3d8940f272863eeaae8cc39a04b7fda7c/API.md">API.md</a></h2>
