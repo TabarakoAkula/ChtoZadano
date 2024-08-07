@@ -198,15 +198,10 @@
     + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
   + Возвращает:
       + ``JSON``:  
-      ``subject``: {  
-        ``id``: ``int``,  
-        ``grade``: ``int``,  
-        ``letter``: ``"str"``,  
+      ``subject``: {
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
-        ``group``: ``"int"``,  
         ``created_at``: ``datetime``,  
-        ``todo``: ``list``,  
         ``author``: ``str``,  
         ``images``: ``list``,   
         ``files``: ``list``,  

@@ -188,6 +188,7 @@ class AcceptDeclineBecomeAdminAPI(APIView):
 
 
 class IsUserInSystemAPI(APIView):
+    @staticmethod
     def post(self, request):
         if User.objects.filter(
             telegram_id=request.data["telegram_id"],

@@ -1,57 +1,60 @@
 from datetime import datetime, timedelta
 import json
 
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 from django.http import HttpResponse
+from rest_framework import response, viewsets
 from rest_framework.views import APIView
 
 from homework.api.serializers import HomeworkSerializer
 from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
     get_abbreviation_from_name,
+    get_name_from_abbreviation,
     get_tomorrow_schedule,
     get_user_subjects_abbreviation,
 )
 import users.models
 
 
-class GetLastHomeworkAllSubjectsAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetLastHomeworkAllSubjectsAPI(viewsets.ModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
             )
         except (KeyError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
-        grade = user.grade
-        letter = user.letter
-        group = user.group
-        subjects = get_user_subjects_abbreviation(grade, letter)
-        data = {}
-        for subject in subjects:
-            try:
-                hw_object = (
+        latest_homework_ids = (
+            Homework.objects.filter(Q(group=0) | Q(group=user.group))
+            .filter(
+                grade=user.grade,
+                letter=user.letter,
+                subject=OuterRef("subject"),
+                created_at=Subquery(
                     Homework.objects.filter(
-                        grade=grade,
-                        letter=letter,
-                        subject=subject,
+                        subject=OuterRef("subject"),
                     )
-                    .filter(Q(group=0) | Q(group=group))
-                    .order_by("-created_at")
-                    .prefetch_related("images", "files")
-                    .first()
-                )
-            except Homework.DoesNotExist:
-                pass
-            if hw_object:
-                images = [i.image.url for i in hw_object.images.all()]
-                files = [i.file.url for i in hw_object.files.all()]
-                serializer_data = HomeworkSerializer(hw_object).data
-                serializer_data["images"] = images
-                serializer_data["files"] = files
-                data[subject] = serializer_data
-        return HttpResponse(json.dumps(data))
+                    .values("created_at")
+                    .order_by("-created_at")[:1],
+                ),
+            )
+            .values("id")
+        )
+        data = (
+            Homework.objects.filter(id__in=latest_homework_ids)
+            .order_by("subject")
+            .prefetch_related("images", "files")
+            .defer("grade", "letter", "group")
+        )
+        for homework_obj in data:
+            homework_obj.subject = get_name_from_abbreviation(
+                homework_obj.subject,
+            )
+        homework = self.get_serializer(data, many=True).data
+        return response.Response(homework)
 
 
 class GetOneSubjectAPI(APIView):

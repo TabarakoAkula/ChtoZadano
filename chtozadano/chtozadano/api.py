@@ -50,11 +50,13 @@ urlpatterns = [
     ),
     path(
         "get_admins/",
-        users.api.views.GetAdminsAPI.as_view({"get": "get_admins"}),
+        users.api.views.GetAdminsAPI.as_view({"post": "get_admins"}),
     ),
     path(
         "get_last_homework_all_subjects/",
-        homework.api.views.GetLastHomeworkAllSubjectsAPI.as_view(),
+        homework.api.views.GetLastHomeworkAllSubjectsAPI.as_view(
+            {"post": "get_homework"},
+        ),
     ),
     path(
         "get_homework_for_subject/",
