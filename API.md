@@ -201,6 +201,7 @@
       ``subject``: {
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
+        ``group``: ``int``,  
         ``created_at``: ``datetime``,  
         ``author``: ``str``,  
         ``images``: ``list``,   
@@ -219,18 +220,14 @@
   + Возвращает:
       + ``HttpResponse``:
         + ``Does not exist``
-      + ``JSON``:    
-        ``id``: ``int``,  
-        ``grade``: ``int``,  
-        ``letter``: ``"str"``,  
+      + ``JSON``:
         ``description``: ``str``,  
-        ``subject``: ``"str"``,  
-        ``group``: ``"int"``,  
-        ``created_at``: ``datetime``,  
-        ``todo``: ``list``,  
+        ``subject``: ``"str"``,
+        ``group``: ``int``,  
+        ``created_at``: ``datetime``,
+        ``author``: ``str``,  
         ``images``: ``list``,   
         ``files``: ``list``,  
-        ``author``: ``str``,  
 + GetAllHomeworkFromDateAPI:
   + Путь: ``api/v1/get_homework_from_date/`` 
   + Метод: ``POST``

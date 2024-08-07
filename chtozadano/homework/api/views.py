@@ -57,9 +57,10 @@ class GetLastHomeworkAllSubjectsAPI(viewsets.ModelViewSet):
         return response.Response(homework)
 
 
-class GetOneSubjectAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetOneSubjectAPI(viewsets.ModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -85,12 +86,8 @@ class GetOneSubjectAPI(APIView):
             return HttpResponse("Bad request data", status=400)
         if not hw_object:
             return HttpResponse("Does not exist", status=404)
-        images = [i.image.url for i in hw_object.images.all()]
-        files = [i.file.url for i in hw_object.files.all()]
-        serialized_data = HomeworkSerializer(hw_object).data
-        serialized_data["images"] = images
-        serialized_data["files"] = files
-        return HttpResponse(json.dumps(serialized_data))
+        serialized = self.get_serializer(hw_object)
+        return response.Response(serialized.data)
 
 
 class GetAllHomeworkFromDateAPI(APIView):

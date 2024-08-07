@@ -24,6 +24,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
         fields = (
             "description",
             "subject",
+            "group",
             "created_at",
             "author",
             "images",

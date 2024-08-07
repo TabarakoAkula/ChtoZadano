@@ -60,7 +60,7 @@ urlpatterns = [
     ),
     path(
         "get_homework_for_subject/",
-        homework.api.views.GetOneSubjectAPI.as_view(),
+        homework.api.views.GetOneSubjectAPI.as_view({"post": "get_homework"}),
     ),
     path(
         "get_homework_from_date/",
