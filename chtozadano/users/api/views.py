@@ -4,9 +4,10 @@ import os
 import django.contrib.auth
 import django.db.utils
 from django.http import HttpResponse
+from rest_framework import response, viewsets
 from rest_framework.views import APIView
 
-from users.api.serializers import BecomeAdminSerializer
+from users.api.serializers import BecomeAdminSerializer, UserSerializer
 from users.models import BecomeAdmin, SignIn, User
 from users.utils import (
     create_password,
@@ -193,3 +194,21 @@ class IsUserInSystemAPI(APIView):
         ).first():
             return HttpResponse(True)
         return HttpResponse(False)
+
+
+class GetAdminsAPI(viewsets.ModelViewSet):
+    serializer_class = UserSerializer
+
+    def get_admins(self, request):
+        try:
+            telegram_id = request.data["telegram_id"]
+            user_obj = User.objects.get(telegram_id=telegram_id)
+        except (KeyError, User.DoesNotExist):
+            return HttpResponse("Bad request data", 400)
+        admins = User.objects.filter(
+            grade=user_obj.grade,
+            letter=user_obj.letter,
+            user__is_staff=True,
+        ).all()
+        serialized = self.get_serializer(admins, many=True)
+        return response.Response(serialized.data)

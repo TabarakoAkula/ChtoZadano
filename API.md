@@ -166,6 +166,24 @@
   + Возвращает:  
       + ``HttpResponse``:  
         + ``True``/``False``  
++ GetAdminsAPI:
+  + Путь: ``api/v1/get_admins/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: узнать кто в твоём классе админ
+  + Действие: получает из ``Users`` данные о пользователях-администраторах
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ  
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм 
+  + Возвращает:  
+      + ``JSON``:  
+        + ``list`` of dictionaries with:  
+      ``telegram_id`` - ``int``  
+      ``group`` - ``int``  
+      ``user``: {  
+        ``first_name`` - ``str``  
+        ``last_name`` - ``str``  
+        }
 </details>
 <details><summary><h2>Homework:</h2></summary>
 
