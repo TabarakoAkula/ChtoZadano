@@ -76,7 +76,9 @@ urlpatterns = [
     ),
     path(
         "get_tomorrow_homework/",
-        homework.api.views.GetTomorrowHomeworkAPI.as_view(),
+        homework.api.views.GetTomorrowHomeworkAPI.as_view(
+            {"post": "get_homework"},
+        ),
     ),
     path(
         "add_homework/",

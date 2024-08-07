@@ -16,7 +16,7 @@ from homework.utils import (
 import users.models
 
 
-class GetLastHomeworkAllSubjectsAPI(viewsets.ModelViewSet):
+class GetLastHomeworkAllSubjectsAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = HomeworkSerializer
 
     def get_homework(self, request):
@@ -56,7 +56,7 @@ class GetLastHomeworkAllSubjectsAPI(viewsets.ModelViewSet):
         return response.Response(homework)
 
 
-class GetOneSubjectAPI(viewsets.ModelViewSet):
+class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = HomeworkSerializer
 
     def get_homework(self, request):
@@ -89,7 +89,7 @@ class GetOneSubjectAPI(viewsets.ModelViewSet):
         return response.Response(serialized.data)
 
 
-class GetAllHomeworkFromDateAPI(viewsets.ModelViewSet):
+class GetAllHomeworkFromDateAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = HomeworkSerializer
 
     def get_homework(self, request):
@@ -132,7 +132,7 @@ class GetAllHomeworkFromDateAPI(viewsets.ModelViewSet):
         return response.Response(homework.data)
 
 
-class GetHomeworkFromIdAPI(viewsets.ModelViewSet):
+class GetHomeworkFromIdAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = HomeworkSerializer
 
     def get_homework(self, request):
@@ -164,9 +164,10 @@ class GetHomeworkFromIdAPI(viewsets.ModelViewSet):
         return HttpResponse("Undefined")
 
 
-class GetTomorrowHomeworkAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetTomorrowHomeworkAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -196,9 +197,15 @@ class GetTomorrowHomeworkAPI(APIView):
             except Homework.DoesNotExist:
                 data[lesson.lesson] = None
             else:
-                serialized_obj = HomeworkSerializer(homework_obj).data
-                data[lesson.lesson] = serialized_obj
-        return HttpResponse(json.dumps(data))
+                if homework_obj:
+                    serialized_obj = self.get_serializer(homework_obj).data
+                    data[lesson.lesson] = serialized_obj
+                    data[lesson.lesson]["data"] = True
+                else:
+                    data[lesson.lesson] = {}
+                    data[lesson.lesson]["subject"] = lesson.subject
+                    data[lesson.lesson]["data"] = False
+        return response.Response(data)
 
 
 class AddHomeWorkAPI(APIView):

@@ -289,18 +289,16 @@
     + ``homework_id`` - ``int`` id домашки
   + Возвращает:
       + ``JSON``:  
-        ``subject``: {  
-          ``id``: ``int``,  
-          ``grade``: ``int``,  
-          ``letter``: ``"str"``,  
+        ``lesson``: {  
+          ``id``: ``int``,
           ``description``: ``str``,  
           ``subject``: ``"str"``,  
           ``group``: ``"int"``,  
-          ``created_at``: ``datetime``,  
-          ``todo``: ``list``,  
+          ``created_at``: ``datetime``,
+          ``author``: ``str``,  
           ``images``: ``list``,   
           ``files``: ``list``,  
-          ``author``: ``str``,  
+          ``data``: ``boolean``,  
         }  
 + AddHomeWorkAPI:
   + Путь: ``api/v1/add_homework/`` 
