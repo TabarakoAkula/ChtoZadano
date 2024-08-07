@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from homework.models import File, Homework, Image
+from homework.models import File, Homework, Image, Schedule
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -37,3 +37,13 @@ class HomeworkSerializer(serializers.ModelSerializer):
         representation["images"] = [i.image.url for i in instance.images.all()]
         representation["files"] = [i.file.url for i in instance.files.all()]
         return representation
+
+
+class ScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Schedule
+        fields = (
+            "weekday",
+            "lesson",
+            "subject",
+        )

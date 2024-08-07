@@ -134,7 +134,9 @@ urlpatterns = [
     ),
     path(
         "get_tomorrow_schedule/",
-        homework.api.views.GetTomorrowScheduleAPI.as_view(),
+        homework.api.views.GetTomorrowScheduleAPI.as_view(
+            {"post": "get_schedule"},
+        ),
     ),
     path(
         "delete_old_homework/",

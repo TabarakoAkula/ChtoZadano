@@ -521,7 +521,10 @@
     + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
   + Возвращает:
       + ``JSON``:
-        + ``lesson``: ``subject``
+        + ``list`` if ``dict`` with:  
+          ``weekday`` - ``int``  
+          ``lesson`` - ``int``  
+          ``subject`` - ``str``  
 + DeleteOldHomeworkAPI:
   + Путь: ``api/v1/delete_old_homework/`` 
   + Метод: ``POST``

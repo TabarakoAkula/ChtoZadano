@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from rest_framework import response, viewsets
 from rest_framework.views import APIView
 
-from homework.api.serializers import HomeworkSerializer
+from homework.api.serializers import HomeworkSerializer, ScheduleSerializer
 from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
     get_abbreviation_from_name,
@@ -630,9 +630,10 @@ class TodoWorkAPI(APIView):
         return HttpResponse("Successful")
 
 
-class GetTomorrowScheduleAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetTomorrowScheduleAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ScheduleSerializer
+
+    def get_schedule(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -644,10 +645,7 @@ class GetTomorrowScheduleAPI(APIView):
             )
         except (KeyError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
-        date = {}
-        for lesson in schedule:
-            date[lesson.lesson] = lesson.subject
-        return HttpResponse(json.dumps(date))
+        return response.Response(self.get_serializer(schedule, many=True).data)
 
 
 class DeleteOldHomeworkAPI(APIView):
