@@ -102,7 +102,7 @@ urlpatterns = [
     ),
     path(
         "get_mailing/",
-        homework.api.views.GetMailingAPI.as_view(),
+        homework.api.views.GetMailingAPI.as_view({"post": "get_mailing"}),
     ),
     path(
         "add_mailing/",

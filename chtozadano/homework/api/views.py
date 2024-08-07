@@ -359,9 +359,10 @@ class DeleteHomeworkAPI(APIView):
         return HttpResponse("Successful")
 
 
-class GetMailingAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetMailingAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_mailing(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -378,8 +379,8 @@ class GetMailingAPI(APIView):
                 .order_by("-created_at")
                 .first()
             )
-            data["class"] = HomeworkSerializer(info_obj_one).data
-            data["school"] = HomeworkSerializer(info_obj_two).data
+            data["class"] = self.get_serializer(info_obj_one).data
+            data["school"] = self.get_serializer(info_obj_two).data
             if django_user.is_staff or django_user.is_superuser:
                 info_obj_three = (
                     Homework.objects.filter(group=-2)
@@ -389,7 +390,7 @@ class GetMailingAPI(APIView):
                 data["admins"] = HomeworkSerializer(info_obj_three).data
         except (KeyError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
-        return HttpResponse(json.dumps(data))
+        return response.Response(data)
 
 
 class AddMailingAPI(APIView):
