@@ -199,6 +199,7 @@
   + Возвращает:
       + ``JSON``:  
       ``subject``: {
+        ``id``: ``int``,  
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
         ``group``: ``int``,  
@@ -221,6 +222,7 @@
       + ``HttpResponse``:
         + ``Does not exist``
       + ``JSON``:
+        ``id``: ``int``,  
         ``description``: ``str``,  
         ``subject``: ``"str"``,
         ``group``: ``int``,  
@@ -243,6 +245,7 @@
         + ``Does not exist``
       + ``JSON``:  
       ``subject``: {
+        ``id``: ``int``,  
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
         ``group``: ``"int"``,  
@@ -266,17 +269,14 @@
         + ``Undefined``
         + ``Does not exist``
       + ``JSON``:    
-        ``id``: ``int``,  
-        ``grade``: ``int``,  
-        ``letter``: ``"str"``,  
+        ``id``: ``int``,
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
         ``group``: ``"int"``,  
         ``created_at``: ``datetime``,  
-        ``todo``: ``list``,  
+        ``author``: ``str``,  
         ``images``: ``list``,   
         ``files``: ``list``,  
-        ``author``: ``str``, 
 + GetTomorrowHomeworkAPI:
   + Путь: ``api/v1/get_tomorrow_homework/`` 
   + Метод: ``POST``

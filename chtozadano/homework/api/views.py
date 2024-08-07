@@ -132,9 +132,10 @@ class GetAllHomeworkFromDateAPI(viewsets.ModelViewSet):
         return response.Response(homework.data)
 
 
-class GetHomeworkFromIdAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetHomeworkFromIdAPI(viewsets.ModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -158,12 +159,8 @@ class GetHomeworkFromIdAPI(APIView):
         except (KeyError, ValueError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
         if hw_object:
-            images = [i.image.url for i in hw_object.images.all()]
-            files = [i.file.url for i in hw_object.files.all()]
-            serializer_data = HomeworkSerializer(hw_object).data
-            serializer_data["images"] = images
-            serializer_data["files"] = files
-            return HttpResponse(json.dumps(serializer_data))
+            homework = self.get_serializer(hw_object)
+            return response.Response(homework.data)
         return HttpResponse("Undefined")
 
 

@@ -22,6 +22,7 @@ class HomeworkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Homework
         fields = (
+            "id",
             "description",
             "subject",
             "group",

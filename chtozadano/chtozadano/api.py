@@ -70,7 +70,9 @@ urlpatterns = [
     ),
     path(
         "get_homework_from_id/",
-        homework.api.views.GetHomeworkFromIdAPI.as_view(),
+        homework.api.views.GetHomeworkFromIdAPI.as_view(
+            {"post": "get_homework"},
+        ),
     ),
     path(
         "get_tomorrow_homework/",
