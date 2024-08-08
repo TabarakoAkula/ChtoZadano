@@ -15,6 +15,8 @@ ALLOWED_HOSTS = str(os.getenv("ALLOWED_HOSTS")).split(",")
 
 CSRF_TRUSTED_ORIGINS = ["http://bot:8000"]
 
+TECHNICAL_WORKS = str(os.getenv("TECHNICAL_WORKS", "False")).lower() == "true"
+
 DEBUG_PROPAGATE_EXCEPTIONS = (
     str(os.getenv("DEBUG_PROPAGATE_EXCEPTIONS", "False")).lower() == "true"
 )
@@ -115,6 +117,9 @@ if DEBUG:
         "INTERCEPT_REDIRECTS": False,
         "IS_RUNNING_TESTS": False,
     }
+
+if TECHNICAL_WORKS:
+    MIDDLEWARE.append("chtozadano.middleware.TechnicalWorksMiddleware")
 
 LANGUAGE_CODE = "ru-RU"
 

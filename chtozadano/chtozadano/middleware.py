@@ -2,6 +2,7 @@ import json
 import os
 
 from django.http import HttpResponse
+from django.shortcuts import render
 
 
 class APIKeyMiddleware:
@@ -20,3 +21,17 @@ class APIKeyMiddleware:
                 except KeyError:
                     return HttpResponse("Empty api key", status=403)
         return self.get_response(request)
+
+
+class TechnicalWorksMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return render(
+            request,
+            "technical_works.html",
+            context={
+                "messages": ("Пожалуйста, дождитесь окончания работ ❤️",),
+            },
+        )
