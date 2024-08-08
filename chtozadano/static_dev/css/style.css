@@ -5,7 +5,7 @@ html {
 .navbar {
     position: fixed;
     width: 100%;
-    z-index: 30;
+    z-index: 30000;
 }
 
 .content {
