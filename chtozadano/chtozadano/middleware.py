@@ -23,15 +23,29 @@ class APIKeyMiddleware:
         return self.get_response(request)
 
 
-class TechnicalWorksMiddleware:
+class SiteTechnicalWorksMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        return render(
-            request,
-            "technical_works.html",
-            context={
-                "messages": ("Пожалуйста, дождитесь окончания работ ❤️",),
-            },
-        )
+        path = request.path.split("/")[1]
+        if path != "api":
+            return render(
+                request,
+                "technical_works.html",
+                context={
+                    "messages": ("Пожалуйста, дождитесь окончания работ ❤️",),
+                },
+            )
+        return self.get_response(request)
+
+
+class APITechnicalWorksMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        path = request.path.split("/")[1]
+        if path == "api":
+            return HttpResponse("API now not available", status=503)
+        return self.get_response(request)
