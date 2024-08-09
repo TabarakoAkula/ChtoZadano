@@ -57,6 +57,15 @@ services:
     networks:
       - django-network
 
+  cron:
+    build: cron/
+    volumes:
+      - .:/code/crone
+    depends_on:
+      - web
+    networks:
+      - django-network
+
 volumes:
   postgres_data:
 
