@@ -1,0 +1,3 @@
+0 0 * * * root /cron/delete_old_hw_script.sh >> /cron/cron_task.log 2>&1
+
+
