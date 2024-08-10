@@ -1,0 +1,163 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "test_password",
+      "is_superuser": false,
+      "username": "test_user",
+      "is_staff": false
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "password": "test_password",
+      "is_superuser": false,
+      "username": "test_admin",
+      "is_staff": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "password": "test_password",
+      "is_superuser": true,
+      "username": "test_superuser",
+      "is_staff": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+      "password": "test_password",
+      "is_superuser": false,
+      "username": "test_admin_becomeadmin",
+      "is_staff": true
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "user_id": 1,
+      "grade": 11,
+      "letter": "Б",
+      "group": 1,
+      "telegram_id": 1
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "user_id": 2,
+      "grade": 11,
+      "letter": "Б",
+      "group": 1,
+      "telegram_id": 2
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "user_id": 3,
+      "grade": 11,
+      "letter": "Б",
+      "group": 1,
+      "telegram_id": 3
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 4,
+    "fields": {
+      "user_id": 4,
+      "grade": 11,
+      "letter": "Б",
+      "group": 1,
+      "telegram_id": 4
+    }
+  },
+  {
+    "model": "users.becomeadmin",
+    "pk": 1,
+    "fields": {
+      "grade": 11,
+      "letter": "Б",
+      "group": 1,
+      "telegram_id": 4,
+      "first_name": "test_name",
+      "last_name": "test_surname"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 1,
+    "fields": {
+      "grade": 11,
+      "letter": "Б",
+      "group": 0,
+      "description": "test_description",
+      "created_at": "2024-07-28 03:38:59.433000",
+      "subject": "rus"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 2,
+    "fields": {
+      "grade": 11,
+      "letter": "Б",
+      "group": -1,
+      "description": "test_description",
+      "created_at": "2024-07-28 03:38:59.433000",
+      "subject": "info"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 3,
+    "fields": {
+      "grade": 11,
+      "letter": "Б",
+      "group": -2,
+      "description": "test_description",
+      "created_at": "2024-07-28 03:38:59.433000",
+      "subject": "info"
+    }
+  },
+  {
+    "model": "homework.homework",
+    "pk": 4,
+    "fields": {
+      "grade": 11,
+      "letter": "Б",
+      "group": -3,
+      "description": "test_description",
+      "created_at": "2024-07-28 03:38:59.433000",
+      "subject": "info"
+    }
+  },
+  {
+    "model": "homework.image",
+    "pk": 1,
+    "fields": {
+      "homework_id": 1,
+      "image": "path"
+    }
+  },
+  {
+    "model": "homework.file",
+    "pk": 1,
+    "fields": {
+      "homework_id": 1,
+      "file_name": "test_file_name",
+      "file": "path"
+    }
+  }
+]

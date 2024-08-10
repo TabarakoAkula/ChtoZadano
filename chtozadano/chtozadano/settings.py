@@ -7,39 +7,54 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-key = os.getenv("SECRET_KEY")
-SECRET_KEY = key if key else "efndvnklrnekfnlax.zLKlwamdfkge"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = str(os.getenv("DEBUG")).lower() == "true"
+DEBUG = str(os.getenv("DEBUG", "False")).lower() == "true"
 
 ALLOWED_HOSTS = str(os.getenv("ALLOWED_HOSTS")).split(",")
 
+CSRF_TRUSTED_ORIGINS = ["http://bot:8000"]
+
+SITE_TECHNICAL_WORKS = (
+    str(os.getenv("SITE_TECHNICAL_WORKS", "False")).lower() == "true"
+)
+API_TECHNICAL_WORKS = (
+    str(os.getenv("API_TECHNICAL_WORKS", "False")).lower() == "true"
+)
+
+DEBUG_PROPAGATE_EXCEPTIONS = (
+    str(os.getenv("DEBUG_PROPAGATE_EXCEPTIONS", "False")).lower() == "true"
+)
+
 API_KEY = str(os.getenv("API_KEY"))
 
-INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
+INTERNAL_IPS = str(os.getenv("INTERNAL_IPS", "127.0.0.1")).split(",")
 
 INSTALLED_APPS = [
+    "unfold",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "debug_toolbar",
+    "django_cleanup.apps.CleanupConfig",
     "rest_framework",
+    "colorfield",
     "homework.apps.HomeworkConfig",
     "users.apps.UsersConfig",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "chtozadano.middleware.APIKeyMiddleware",
 ]
 
 REST_FRAMEWORK = {
@@ -53,7 +68,7 @@ ROOT_URLCONF = "chtozadano.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["templates"],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -98,25 +113,38 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": lambda request: True,
-    "INTERCEPT_REDIRECTS": False,
-    "IS_RUNNING_TESTS": False,
-}
+if DEBUG:
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
 
-LANGUAGE_CODE = "en-us"
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TOOLBAR_CALLBACK": lambda request: True,
+        "INTERCEPT_REDIRECTS": False,
+        "IS_RUNNING_TESTS": False,
+    }
+
+if API_TECHNICAL_WORKS:
+    MIDDLEWARE.append("chtozadano.middleware.APITechnicalWorksMiddleware")
+
+
+if SITE_TECHNICAL_WORKS:
+    MIDDLEWARE.append("chtozadano.middleware.SiteTechnicalWorksMiddleware")
+
+LANGUAGE_CODE = "ru-RU"
 
 TIME_ZONE = "Europe/Moscow"
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static_dev",
 ]
 STATIC_ROOT = BASE_DIR / "static"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -125,3 +153,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False

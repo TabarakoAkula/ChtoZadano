@@ -2,32 +2,38 @@
 
 {% block content %}
 	{% load static %}
-	<br>
-	<table border="1">
-	<tr>
-		<td>Id</td>
-		<td>Grade</td>
-		<td>Letter</td>
-		<td>Group</td>
-		<td>First name</td>
-		<td>Last name</td>
-		<td>Tg account</td>
-		<td>Decision</td>
-	</tr>
-		{% for i in data %}
-			<tr>
-				<td>{{ i.id }}</td>
-				<td>{{ i.grade }}</td>
-				<td>{{ i.letter }}</td>
-				<td>{{ i.group }}</td>
-				<td>{{ i.first_name }}</td>
-				<td>{{ i.last_name }}</td>
-				<td><a href="tg://user?id={{ i.telegram_id }}">Link</a></td>
-				<td>
-					<a href="{% url "users:decline_become_admin" i.telegram_id %}"><button>Decline</button></a>
-					<a href="{% url "users:accept_become_admin" i.telegram_id %}"><button>Accept</button></a>
-				</td>
-			</tr>
-		{% endfor %}
-	</table>
+	<div class="container mt-5">
+		<form class="chtozadano-requests-form">
+			{% if data %}
+				<p class="chtozadano-empty-p"></p>
+				<h3>Всего заявок: {{ data|length }}</h3>
+				{% for candidate in data %}
+					<ul class="list-group" style="margin-bottom: 30px">
+						<li class="list-group-item"><strong>Класс:</strong> {{ candidate.grade }}</li>
+						<li class="list-group-item"><strong>Литера:</strong> {{ candidate.letter }}</li>
+						<li class="list-group-item"><strong>Группа:</strong> {{ candidate.group }}</li>
+						<li class="list-group-item"><strong>Имя:</strong> {{ candidate.first_name }}</li>
+						<li class="list-group-item"><strong>Фамилия:</strong> {{ candidate.last_name }}</li>
+						<li class="list-group-item"><strong>Телеграм id:</strong>
+							<a style="text-decoration: none;"
+							   href="tg://openmessage?user_id={{ candidate.telegram_id }}">{{ candidate.telegram_id }}</a>
+						</li>
+						<li class="list-group-item" style="display: flex; justify-content: space-around">
+							<a href="{% url "users:accept_become_admin" candidate.telegram_id %}">
+								<button class="btn btn-success btn-sm" type="button">Принять</button>
+							</a>
+							<a href="{% url "users:decline_become_admin" candidate.telegram_id %}">
+								<button class="btn btn-danger btn-sm" type="button">Отклонить</button>
+							</a>
+						</li>
+					</ul>
+				{% endfor %}
+			{% else %}
+				<p class="chtozadano-empty-p"></p>
+				<div style="box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3); padding: 20px">
+					<h3>Пока что заявок нет :(</h3>
+				</div>
+			{% endif %}
+		</form>
+	</div>
 {% endblock %}

@@ -1,0 +1,14 @@
+[tool.flake8]
+ignore = ["E203", "PL123", "W503"]
+inline-quotes = '"'
+docstring-quotes = '"'
+exclude = ".git,__pycache__,docs/source/conf.py,old,build,dist,migrations"
+import-order-style = "google"
+application-import-names = ["users", "homework"]
+max-line-length = 79
+
+[tool.black]
+line-length = 79
+exclude = "migrations"
+diff = true
+color = true

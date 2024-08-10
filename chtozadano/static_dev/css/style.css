@@ -1,0 +1,440 @@
+html {
+    overflow-y: scroll;
+}
+
+.navbar {
+    position: fixed;
+    width: 100%;
+    z-index: 30000;
+}
+
+.content {
+    min-height: calc(100vh - 100px);
+}
+
+footer {
+    z-index: 10000;
+    padding-top: 10%;
+    height: 100px;
+}
+
+.alert {
+    position: fixed;
+    top: 10%;
+    right: 20px;
+    border-radius: 10px;
+    padding: 10px 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 29;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.alert-text {
+    margin: 0;
+}
+
+.accordion {
+    width: 95%;
+    top: 12%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+}
+
+.fade-out {
+    opacity: 0;
+}
+
+.fade-in {
+    opacity: 1;
+}
+
+.click-button {
+    margin-top: -30px;
+}
+
+.h1-inf-label {
+    padding-bottom: 30px;
+}
+
+.dropdown-item:hover {
+    background: darkgrey !important;
+    color: #000 !important;
+}
+
+.dropdown-item.active {
+    background: rgba(65, 61, 57, 0.63) !important;
+    color: #000 !important;
+}
+
+.chtozadano-form {
+    display: grid;
+    margin-top: 20%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 30%;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+}
+
+chtozadano-requests-form {
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.chtozadano-empty-p {
+    height: 7vh;
+}
+
+.chtozadano-account {
+    display: grid;
+    margin-top: 15%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.chtozadano-information {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 32%;
+    padding: 40px;
+    overflow: hidden;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.chtozadano-form-crud {
+    display: grid;
+    margin-top: 15%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 60%;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.chtozadano-signup-form {
+    display: block;
+    margin-top: 10%;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%;
+    padding: 40px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.form-button {
+    width: 100%;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.under-form {
+    display: grid;
+    margin-left: auto;
+    margin-right: auto;
+    width: 29%;
+    margin-top: 5px;
+    padding: 10px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.under-form-account {
+    display: grid;
+    margin-left: auto;
+    margin-right: auto;
+    width: 49%;
+    margin-top: 5px;
+    padding: 10px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.under-form-crud {
+    display: grid;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    margin-top: 5px;
+    padding: 10px;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.under-button {
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+.schedule {
+    flex: 0 32%;
+    min-width: 250px;
+    margin-bottom: 2%;
+}
+
+.schedule-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 20px;
+    margin-top: 150px;
+}
+
+.container-crud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.chtozadano-delete {
+    width: 100px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+nav {
+    float: right;
+}
+
+nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+nav li {
+    display: inline-block;
+    margin-left: 70px;
+    padding-top: 3px;
+
+    position: relative;
+}
+
+nav a {
+    color: #444;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+nav a:hover {
+    color: #000;
+}
+
+nav a::before {
+    content: '';
+    display: block;
+    height: 5px;
+    margin-top: -25px;
+    background-color: #e5e5e5;
+    position: absolute;
+    top: 0;
+    width: 0;
+    transition: all ease-in-out 250ms;
+}
+
+nav a:hover::before {
+    width: 100%;
+}
+
+.chtozadano-nav {
+    margin-left: -19%;
+}
+
+@media (max-width: 768px) {
+    .alert {
+        left: 5px;
+        max-width: 95vw;
+        padding: 15px 15px;
+        margin-left: auto;
+        font-size: 0.9rem;
+    }
+
+    .close {
+        font-size: 18px;
+    }
+
+    .accordion {
+        width: 95%;
+        overflow-wrap: break-word;
+    }
+
+    .click-button {
+        margin-top: 10px;
+    }
+
+    .click-button-two {
+        margin-top: 10px;
+    }
+
+    .h1-inf-label {
+        padding-bottom: 0;
+    }
+
+    .nav-button {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    .chtozadano-form {
+        width: 88%;
+        margin-top: 45%;
+    }
+
+    .chtozadano-requests-form {
+        width: 88%;
+        margin-top: 35%;
+        margin-left: 5%;
+    }
+
+    .chtozadano-account {
+        width: 90%;
+        margin-top: 40%;
+    }
+
+    .under-form-account {
+        width: 87%;
+    }
+
+    .under-form {
+        width: 87%;
+    }
+
+    .chtozadano-signup-form {
+        width: 88%;
+        margin-top: 25%;
+    }
+
+    .schedule-container {
+        margin-top: 110px;
+        margin-left: 30px;
+    }
+
+    .chtozadano-form-crud {
+        margin-top: 120px;
+        width: 85%;
+    }
+
+    .container-crud {
+        justify-content: center;
+    }
+
+    .chtozadano-empty-p {
+        height: 0vh;
+    }
+
+    .container-img-crud {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        gap: 20px;
+        margin-top: 20px;
+        margin-left: -20px;
+    }
+
+    .chtozadano-input {
+        margin-left: 20px;
+        color: transparent;
+    }
+
+    .form-chtozadano-button {
+        width: 85%;
+        margin-top: -20px;
+    }
+
+    .under-form-crud {
+        width: 65%;
+    }
+
+    .container {
+        --bs-gutter-x: 0;
+    }
+
+    .chtozadano-object {
+        width: 85%;
+    }
+
+    .chtozadano-table-hide {
+        display: none;
+    }
+
+    .chtozadano-table-little {
+        max-width: 40px;
+    }
+
+    .chtozadano-table-short {
+        max-width: 50px;
+    }
+
+    .chtozadano-nav {
+        margin-top: 5px;
+        margin-left: 0;
+    }
+
+    nav a::before {
+        content: '';
+        display: block;
+        height: 5px;
+        margin-top: 5px;
+        background-color: #e5e5e5;
+        position: absolute;
+        top: 0;
+        width: 0;
+        transition: all ease-in-out 250ms;
+    }
+
+    nav li {
+        display: inline-block;
+        margin-left: 5vw;
+        margin-right: 5vw;
+        padding-top: 10px;
+
+        position: relative;
+    }
+
+    .chtozadano-information {
+        margin-top: 40%;
+        width: 85%
+    }
+}
+
+@media (max-width: 480px) {
+    .alert {
+        left: 5px;
+        max-width: 98vw;
+        padding: 10px 10px;
+        top: 90px;
+        font-size: 0.8rem;
+    }
+
+    .close {
+        font-size: 16px;
+    }
+
+    .accordion {
+        top: 13%;
+        width: 95%;
+        overflow-wrap: break-word;
+    }
+}

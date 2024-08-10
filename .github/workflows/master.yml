@@ -14,25 +14,65 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: ["3.10"]
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+    - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements/dev.txt
-    - name: Django tests
+        cache: 'pip'
+    - run: pip install -r requirements/dev.txt
+    - name: Django setup
       run: |
         cd chtozadano
-        python manage.py test
-        cd ../
+        python manage.py makemigrations
+        python manage.py migrate
+        python manage.py collectstatic --noinput
+      env:
+        POSTGRES_NAME: postgres
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+    - name: Django tests users
+      run: |
+        cd chtozadano
+        python manage.py test users --debug-mode
+      env:
+          POSTGRES_NAME: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          API_KEY: 52ED8xBwcZ1PTykbQy
+          SECRET_KEY: secret_key
+    - name: Django tests homework
+      run: |
+        cd chtozadano
+        python manage.py test homework --debug-mode
+      env:
+        POSTGRES_NAME: postgres
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_HOST: localhost
+        POSTGRES_PORT: 5432
+        API_KEY: 52ED8xBwcZ1PTykbQy
+        SECRET_KEY: secret_key
     - name: Linting | Black
       run: |
-        black --check --color --diff  --line-length 79  --exclude migrations --verbose .
+        black --check chtozadano/
     - name: Linting | Flake8
       run: |
-        flake8 --verbose --max-line-length=79 --inline-quotes="double" --docstring-quotes="double" --import-order-style="google" --application-import-names="users homework" --ignore="E203,PL123" --exclude=".git,__pycache__,docs/source/conf.py,old,build,dist,migrations"
+        flake8 --verbose chtozadano/

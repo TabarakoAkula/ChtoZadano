@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% load static %}
+	<div class="container">
+		<div class="schedule-container">
+			<div class="schedule"><h4>Понедельник</h4>
+				{% for day in schedule_list %}
+					{% if day.lesson == 1 %}
+						{% if day.weekday != 1 %}
+							</ol></div>
+						{% endif %}
+						{% if day.weekday == 4 %}
+						{% endif %}
+						{% if day.weekday != 1 %}
+							<div class="schedule">
+							{% if day.weekday == 2 %}
+								<h4>Вторник</h4>
+							{% elif day.weekday == 3 %}
+								<h4>Среда</h4>
+							{% elif day.weekday == 4 %}
+								<h4>Четверг</h4>
+							{% elif day.weekday == 5 %}
+								<h4>Пятница</h4>
+							{% elif day.weekday == 6 %}
+								<h4>Суббота</h4>
+							{% endif %}
+						{% endif %}
+						<ol class="list-group list-group-numbered">
+					{% endif %}
+					<li class="list-group-item">{{ day.subject }}</li>
+				{% endfor %}
+				</ol></div>
+		</div>
+	</div>
+{% endblock %}

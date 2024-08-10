@@ -2,36 +2,132 @@
 
 {% block content %}
 	{% load static %}
-	<br><br><br><h1>ДЗ НА ЗАВТРА</h1><a href="{% url "homework:homework_page" %}">
-	<button>Посмотреть последнее дз</button>
-</a><br>
-	{% if not user.is_staff %}
-		<a href="{% url "homework:choose_grad_let" %}">
-			<button>Change grade or letter</button>
+	<div class="container mt-5">
+		<div class="accordion accordion-all-hw" id="accordionExample1">
+			<h1>Домашние задания для {{ request.user.server_user.grade }}{{ request.user.server_user.letter }} за
+				последние 2 недели</h1><a href="{% url "homework:homework_page" %}">
+			<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark click-button-two">Посмотреть
+				последнее дз
+			</button>
 		</a>
-	{% endif %}
-	<table border="1">
-		{% for i in homework %}
-			<tr>
-				<td>{{ i.grade }}</td>
-				<td>{{ i.letter }}</td>
-				<td>{{ i.subject }}</td>
-				<td>{{ i.description }}</td>
-				<td>{{ i.created_at }}</td>
-				<td>{% for j in i.images.all %}
-					<img src="{{ j.image.url }}" width="500" height="500">
-				{% endfor %}</td>
-				<td>{% for j in i.files.all %}
-					<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
-				{% endfor %}</td>
-				<td><a href="{% url "homework:delete_homework" i.id %}">
-					<button type="submit">Delete</button>
+			{% if not user.is_staff or user.is_superuser %}
+				<a href="{% url "homework:choose_grad_let" %}">
+					<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark click-button-two">Сменить
+						класс или литеру
+					</button>
 				</a>
-					<a href="{% url "homework:edit_homework" i.id %}">
-						<button type="submit">Edit</button>
-					</a>
-				</td>
-			</tr>
-		{% endfor %}
-	</table>
+			{% endif %}
+			<p><br></p>
+			{% for i in object_list %}
+				<div class="accordion-item">
+					<h2 class="accordion-header" id="heading{{ i.id }}">
+						<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+						        data-bs-target="#collapse{{ i.id }}" aria-expanded="false"
+						        aria-controls="collapse{{ i.id }}">
+							{{ i.subject }}
+							<pre> </pre>
+							<i>{{ i.created_at }}</i>
+						</button>
+					</h2>
+					<div id="collapse{{ i.id }}" class="accordion-collapse collapse"
+					     aria-labelledby="heading{{ i.id }}"
+					     data-bs-parent="#accordionExample1">
+						<div class="accordion-body">
+							<p style="white-space: pre-line;">
+								{{ i.description }}</p>
+							{% if i.images.all %}
+								<div class="image-container gallery">
+									{% for j in i.images.all %}
+										<a href="{{ j.image.url }}" data-lightbox="image-{{ i.id }}"><img
+											src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
+											height="200px"
+											style="margin-right: 20px; margin-bottom: 20px"></a>
+									{% endfor %}
+								</div>
+							{% endif %}
+							{% if i.files.all %}
+								<br>
+								{% for j in i.files.all %}
+									Файл №{{ forloop.counter }}: <a href="{{ j.file.url }}">
+									{{ j.file_name }}</a><p></p>
+								{% endfor %}
+							{% endif %}
+							Опубликовал(а) <strong>{{ i.author }}</strong>,
+							<wbr>
+							{{ i.created_at }}<br>
+							{% if user.is_staff %}
+								<p></p>
+								<a href="{% url "homework:edit_homework" i.id %}">
+									<button type="submit" class="btn btn-success">Изменить</button>
+								</a>
+								<a href="{% url "homework:delete_homework" i.id %}">
+									<button type="submit" class="btn btn-danger">Удалить</button>
+								</a>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+			{% if is_paginated %}
+				<br>
+				<div aria-label="Page navigation example">
+					<ul class="pagination" style="display: flex; justify-content: center">
+						{% if page_obj.has_previous %}
+							<li class="page-item d-sm-none"><a class="page-link"
+							                                   href="?page={{ page_obj.number|add:'-1' }}">&laquo;</a>
+							</li>
+							<li class="page-item d-none d-sm-inline"><a class="page-link" href="?page=1">Первая</a></li>
+							{% if page_obj.number != 2 %}
+								<li class="page-item d-sm-none"><a class="page-link" href="?page=1">1</a></li>
+								{% if page_obj.number != 3 %}
+									<li class="page-item d-sm-none"><a class="page-link">...</a></li>
+								{% endif %}
+							{% endif %}
+							<li class="page-item d-none d-sm-inline"><a class="page-link"
+							                                            href="?page={{ page_obj.previous_page_number }}">Назад</a>
+								{% if page_obj.previous_page_number != 1 %}
+									{% if page_obj.previous_page_number != 2 %}
+										<li class="page-item d-none d-sm-inline"><a class="page-link">...</a></li>
+									{% endif %}
+									<li class="page-item d-none d-sm-inline"><a class="page-link"
+									                                            href="?page={{ page_obj.previous_page_number|add:'-1' }}">{{ page_obj.previous_page_number|add:'-1' }}</a>
+									</li>
+								{% endif %}
+							<li class="page-item"><a class="page-link"
+							                         href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+							</li>
+						{% endif %}
+						<li class="page-item disabled"><a class="page-link" href="#">{{ page_obj.number }}</a></li>
+						{% if page_obj.has_next %}
+							<li class="page-item"><a class="page-link"
+							                         href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+							</li>
+							{% if page_obj.next_page_number != page_obj.paginator.num_pages %}
+								<li class="page-item  d-none d-sm-inline"><a class="page-link"
+								                                             href="?page={{ page_obj.next_page_number|add:'1' }}">{{ page_obj.next_page_number|add:'1' }}</a>
+								</li>
+								{% if page_obj.next_page_number != page_obj.paginator.num_pages|add:'-1' %}
+									<li class="page-item"><a class="page-link">...</a>
+									</li>
+								{% endif %}
+								<li class="page-item d-sm-none"><a class="page-link"
+								                                   href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+								</li>
+							{% endif %}
+							<li class="page-item d-none d-sm-inline"><a class="page-link"
+							                                            href="?page={{ page_obj.next_page_number }}">Вперед</a>
+							</li>
+							<li class="page-item d-sm-none"><a class="page-link"
+							                                   href="?page={{ page_obj.number|add:'1' }}">&raquo;</a>
+							</li>
+							<li class="page-item d-none d-sm-inline"><a class="page-link"
+							                                            href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
+							</li>
+						{% endif %}
+					</ul>
+				</div>
+				<p><br></p>
+			{% endif %}
+		</div>
+	</div>
 {% endblock %}

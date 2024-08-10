@@ -2,17 +2,59 @@
 
 {% block content %}
 	{% load static %}
-	<form method="POST" enctype="multipart/form-data" style="margin-left: 30em; margin-right: 30em; margin-bottom: 5em">
-		{% for error in errors %}
-			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
-		{% endfor %}
-		{% csrf_token %}
-		<p>Enter your code: {{ form.confirmation_code }}</p>
-		<p style="background-color: rgba(108,204,73,0.29)">Write to <a href="https://t.me/ChtoZadano_bot">bot</a> a word
-			"код"</p>
-		<p>Choose your grade: {{ form.grade }}</p>
-		<p>Choose your letter: {{ form.letter }} </p>
-		<p>Choose your group: {{ form.group }} </p>
-		<button title="Enter your code">Enter</button>
-	</form>
+	<div class="container">
+		<form method="POST" enctype="multipart/form-data" class="chtozadano-signup-form">
+			{% csrf_token %}
+
+			<div class="mb-3">
+				<label for="exampleInputEmail1" class="form-label">Код подтверждения</label>
+				<input type="text" name="confirmation_code" class="form-control" id="exampleInputEmail1"
+				       aria-describedby="emailHelp" required>
+				<div id="emailHelp" class="form-text">Отправьте сообщение "код" в наш <a
+					style="text-decoration: none;"
+					href="https://t.me/ChtoZadano_bot">бот</a>
+				</div>
+			</div>
+			<div class="mb-3">
+				<label for="grade" class="form-label">Выберите класс</label>
+				<select id="grade" class="form-select" name="grade">
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+					<option value="8">8</option>
+					<option value="9">9</option>
+					<option value="10">10</option>
+					<option value="11">11</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label for="letter" class="form-label">Выберите литеру</label>
+				<select id="letter" class="form-select" name="letter">
+					<option value="А">А</option>
+					<option value="Б">Б</option>
+					<option value="В">В</option>
+					<option value="Г">Г</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label for="group" class="form-label">Выберите группу</label>
+				<select id="group" class="form-select" name="group">
+					<option value="1">1</option>
+					<option value="2">2</option>
+				</select>
+			</div>
+			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-button"
+			        style="background-color: #272727">Создать аккаунт
+			</button>
+		</form>
+		<div class="under-form">
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:signup_password_page" %}">Зарегистрироваться с паролем</a>
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:signin_page" %}">Войти в аккаунт</a>
+		</div>
+	</div>
 {% endblock %}

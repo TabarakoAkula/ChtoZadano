@@ -2,37 +2,228 @@
 
 {% block content %}
 	{% load static %}
-	<br><br><br><h1>ДЗ для {{ grade }}{{ letter }} класса</h1><a href="{% url "homework:all_homework_page" %}">
-	<button>Посмотреть все дз за последние 2 недели</button>
-</a><br>
-	{% if not user.is_staff %}
-		<a href="{% url "homework:choose_grad_let" %}">
-			<button>Change grade or letter</button>
-		</a>
-	{% endif %}
-	<table border="1">
-		{% for i in homework %}
-			<tr>
-				<td>{{ i.grade }}</td>
-				<td>{{ i.letter }}</td>
-				<td>{{ i.subject }}</td>
-				<td>{{ i.description }}</td>
-				<td>{{ i.created_at }}</td>
-				<td>
-					{% for j in i.images.all %}
-						<img src="{{ j.image.url }}" width="500" height="500">
-					{% endfor %}</td>
-				<td>{% for j in i.files.all %}
-					<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
-				{% endfor %}</td>
-				<td><a href="{% url "homework:delete_homework" i.id %}">
-					<button type="submit">Delete</button>
-				</a>
-					<a href="{% url "homework:edit_homework" i.id %}">
-						<button type="submit">Edit</button>
+
+	<div class="container mt-5">
+		<div class="accordion" id="accordionExample1">
+			{% if info.0 or info.1 or info.2 %}
+				<h2>Объявления</h2>
+				{% if user.is_staff %}
+					<br>
+					<a href="{% url "homework:add_mailing_page" %}">
+						<button style="background-color: #2e3944; margin-top: -20px; margin-bottom: 10px"
+						        class="btn btn-dark click-button">Добавить объявление
+						</button>
 					</a>
-				</td>
-			</tr>
-		{% endfor %}
-	</table>
+				{% endif %}
+				{% for i in info %}
+					{% if i %}
+						{% if i.group != -2 or user.is_staff %}
+							<div class="accordion-item">
+								<h2 class="accordion-header" id="heading{{ i.id }}">
+									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+									        data-bs-target="#collapse{{ i.id }}" aria-expanded="false"
+									        aria-controls="collapse{{ i.id }}">
+										{% if i.group == -1 %}
+											Сообщение для класса
+										{% elif i.group == -2 %}
+											Сообщение для администрации
+										{% elif i.group == -3 %}
+											Сообщение для школы
+										{% endif %}
+										<span
+											class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"></span>
+									</button>
+								</h2>
+								<div id="collapse{{ i.id }}" class="accordion-collapse collapse"
+								     aria-labelledby="heading{{ i.id }}"
+								     data-bs-parent="#accordionExample1">
+									<div class="accordion-body">
+										<p style="white-space: pre-line">
+											{{ i.description }}</p>
+										{% if i.images.all %}
+											<div class="image-container gallery">
+												{% for j in i.images.all %}
+													<a href="{{ j.image.url }}" data-lightbox="image-{{ i.id }}"><img
+														src="{{ j.image.url }}" alt="photo №{{ forloop.counter }}"
+														height="200px"
+														style="margin-right: 20px; margin-bottom: 20px"></a>
+												{% endfor %}
+											</div>
+										{% endif %}
+										{% if i.files.all %}
+											{% for j in i.files.all %}
+												Файл №{{ forloop.counter }}: <a href="{{ j.file.url }}">
+												{{ j.file_name }}</a><p></p>
+											{% endfor %}
+										{% endif %}
+										{% if i.group != -3 %}
+											Опубликовал(а) <strong>{{ i.author }}</strong>,
+											<wbr> {{ i.created_at }}<p></p>
+										{% endif %}
+										{% if i.group == -1 and user.is_staff  or i.group == -1 and user.is_superuser %}
+											<a href="{% url "homework:edit_mailing" i.id %}">
+												<button type="submit" class="btn btn-success">Изменить</button>
+											</a>
+											<a href="{% url "homework:delete_mailing" i.id %}">
+												<button type="submit" class="btn btn-danger">Удалить</button>
+											</a>
+										{% elif i.group == -2 and user.is_superuser or i.group == -3 and user.is_superuser %}
+											<a href="{% url "homework:edit_mailing" i.id %}">
+												<button type="submit" class="btn btn-success">Изменить</button>
+											</a>
+											<a href="{% url "homework:delete_mailing" i.id %}">
+												<button type="submit" class="btn btn-danger">Удалить</button>
+											</a>
+										{% endif %}
+									</div>
+								</div>
+							</div>
+						{% endif %}
+					{% endif %}
+				{% endfor %}
+			{% endif %}
+			<p><br></p>
+			<div style="display: flex;justify-content: space-between;">
+				<h1 class="h1-inf-label">Домашние задания для
+					{{ request.user.server_user.grade }}{{ request.user.server_user.letter }} класса </h1>
+				<div class="dropdown" style="margin-top: 2px">
+					<button style="background-color: rgba(39,39,39,0.94)" class="btn btn-dark dropdown-toggle"
+					        type="button"
+					        data-bs-toggle="dropdown"
+					        aria-expanded="false">
+						Всё
+					</button>
+					<ul class="dropdown-menu">
+						{% for j, date in dates.items %}
+							<li><a class="dropdown-item"
+							       href="{% url "homework:weekday_homework" weekday=j|add:'1' %}">{{ date }}</a></li>
+						{% endfor %}
+						<li>
+							<hr class="dropdown-divider">
+						</li>
+						<li>
+							<a class="active dropdown-item" href="{% url "homework:homework_page" %}">Всё</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<a href="{% url "homework:all_homework_page" %}">
+				<button style="background-color: rgba(39,39,39,0.94)"
+				        class="btn btn-dark click-button">Посмотреть все дз за последние 2 недели
+				</button>
+			</a>
+			{% if not user.is_staff or user.is_superuser %}
+				<a href="{% url "homework:choose_grad_let" %}">
+					<button style="background-color: rgba(39,39,39,0.94)"
+					        class="btn btn-dark click-button">Сменить класс или литеру
+					</button>
+				</a>
+			{% endif %}
+			{% if user.is_staff %}
+				<br>
+				<a href="{% url "homework:add_homework_page" %}">
+					<button style="background-color: #2e3944; margin-top: 9px"
+					        class="btn btn-dark click-button">Добавить домашнее задание
+					</button>
+				</a>
+			{% endif %}
+			<p><br></p>
+			{% for i in homework %}
+				{% if i.id in done_list %}
+					<div class="accordion-item" style="opacity: 0.8;">
+				{% else %}
+					<div class="accordion-item">
+				{% endif %}
+				<h2 class="accordion-header" id="heading{{ i.id }}"><a id="{{ i.id }}"></a>
+					<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+					        data-bs-target="#collapse{{ i.id }}" aria-expanded="false"
+					        aria-controls="collapse{{ i.id }}">
+						{{ i.subject }}
+					</button>
+				</h2>
+				{% if i.id == request.session.open_id and request.session.mark_done %}
+					<div id="collapse{{ i.id }}" class="accordion-collapse collapse show"
+					     aria-labelledby="heading{{ i.id }}"
+					     data-bs-parent="#accordionExample1">
+				{% else %}
+					<div id="collapse{{ i.id }}" class="accordion-collapse collapse"
+					     aria-labelledby="heading{{ i.id }}"
+					     data-bs-parent="#accordionExample1">
+				{% endif %}
+			<div class="accordion-body">
+				<p style="white-space: pre-line">{{ i.description }}</p>
+				{% if i.images.all %}
+					<div class="image-container gallery">
+						{% for j in i.images.all %}
+							<a href="{{ j.image.url }}" data-lightbox="image-{{ i.id }}">
+								<img src="{{ j.image.url }}"
+								     alt="photo №{{ forloop.counter }}"
+								     height="200px"
+								     style="margin-right: 20px; margin-bottom: 20px"></a>
+						{% endfor %}
+					</div>
+				{% endif %}
+				{% if i.files.all %}
+					<br>
+					{% for j in i.files.all %}
+						Файл №{{ forloop.counter }}: <a href="{{ j.file.url }}">
+						{{ j.file_name }}</a><p></p>
+					{% endfor %}
+				{% endif %}
+				Опубликовал(а) <strong>{{ i.author }}</strong>,
+				<wbr>
+				{{ i.created_at }}
+				{% if done_list and user.is_authenticated and i.id in done_list %}
+					<a style="text-decoration: none;"
+					   href="{% url "homework:mark_done" i.id %}"><p
+						style="opacity: 0.9; color: grey;"><i>Пометить не сделанным</i></p></a>
+				{% elif user.is_authenticated %}
+					<a style="text-decoration: none;"
+					   href="{% url "homework:mark_done" i.id %}"><p
+						style="opacity: 0.9; color: black;"><i>Пометить сделанным</i></p></a>
+				{% endif %}
+				{% if user.is_staff %}
+					<p></p>
+					<a href="{% url "homework:edit_homework" i.id %}">
+						<button type="submit" class="btn btn-success">Изменить</button>
+					</a>
+					<a href="{% url "homework:delete_homework" i.id %}">
+						<button type="submit" class="btn btn-danger">Удалить</button>
+					</a>
+				{% endif %}
+			</div>
+			</div>
+			</div>
+			{% endfor %}
+			{% for i in empty_hw %}
+				<div class="accordion-item" style="opacity: 0.6">
+					<h2 class="accordion-header" id="heading{{ forloop.counter|add:"999999" }}">
+						<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+						        data-bs-target="#collapse{{ forloop.counter|add:"999999" }}" aria-expanded="false"
+						        aria-controls="collapse{{ forloop.counter|add:"999999" }}">
+							{{ i }}
+						</button>
+					</h2>
+					<div id="collapse{{ forloop.counter|add:"999999" }}" class="accordion-collapse collapse"
+					     aria-labelledby="heading{{ forloop.counter|add:"999999" }}"
+					     data-bs-parent="#accordionExample1">
+						<div class="accordion-body">
+							<p style="white-space: nowrap">
+								Ничего не задано<br><br>
+							</p></div>
+					</div>
+				</div>
+			{% endfor %}
+			</div>
+			</div>
+		</div>
+	</div>
+	<script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({behavior: 'smooth'});
+            });
+        });
+	</script>
 {% endblock %}

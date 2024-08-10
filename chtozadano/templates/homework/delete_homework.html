@@ -2,26 +2,59 @@
 
 {% block content %}
 	{% load static %}
-	<form method="post">
-		{% csrf_token %}
-		<table border="1">
-			<tr>
-				<td>{{ hw_info.grade }}</td>
-				<td>{{ hw_info.letter }}</td>
-				<td>{{ hw_info.description }}</td>
-				<td>{{ hw_info.created_at }}</td>
-				<td>{% for j in hw_info.images.all %}
-					<img src="{{ j.image.url }}" width="500" height="500">
-				{% endfor %}</td>
-				<td>{% for j in hw_info.files.all %}
-					<a href="{{ j.file.url }}"><p>№{{ forloop.counter }}: {{ j.file_name }}</p></a>
-				{% endfor %}</td>
-			</tr>
-		</table>
-		Вы уверены, что хотите удалить эту запись?
-		<button type="submit">Да, уверен</button>
-		<a href="{% url "homework:homework_page" %}">
-			<button>Нет, вернуться</button>
-		</a>
-	</form>
+	<div class="container">
+		<form method="POST" enctype="multipart/form-data" class="chtozadano-form-crud">
+			{% csrf_token %}
+			<div class="mb-3">
+				<label for="subject" class="form-label">Предмет</label>
+				<select id="subject" class="form-select chtozadano-object" name="subject" disabled>
+					<option>{{ hw_info.subject }}</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label for="exampleInputEmail1" class="form-label">Описание</label>
+				<textarea type="text" name="description" class="form-control chtozadano-object" id="exampleInputEmail1"
+				          style="min-height: 150px" disabled>{{ hw_info.description }}</textarea>
+			</div>
+			{% if hw_info.images.all %}
+				<hr class="hr hr-blurry"/>
+				<label for="exampleInputEmail1" class="form-label">Изображения:</label>
+				<div class="image-container gallery" style="">
+					{% for j in hw_info.images.all %}
+						<a href="{{ j.image.url }}" data-lightbox="image-{{ i.id }}">
+							<img src="{{ j.image.url }}"
+							     width="180" height="180"
+							     style="margin-top: 20px"></a>
+					{% endfor %}
+				</div>
+				<hr class="hr"/>
+			{% endif %}
+			{% if hw_info.files.all %}
+				<label for="exampleInputEmail1" class="form-label">Файлы:</label><p></p>
+				<div class="container-img-crud">
+					{% for j in hw_info.files.all %}
+						<div style="justify-content: space-between; display: flex">
+							{% if j.file_name|length > 19 %}
+								<p>№{{ forloop.counter }}: <a
+									href="{{ j.file.url }}">{{ j.file_name|slice:"0:8" }}...{{ j.file_name|slice:"-8:" }}</a>
+								</p>
+							{% else %}
+								<p>№{{ forloop.counter }}: <a href="{{ j.file.url }}">{{ j.file_name }}</a></p>
+							{% endif %}
+						</div>
+						<hr class="hr"/>
+					{% endfor %}
+				</div>
+			{% endif %}
+			<p></p>
+			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-chtozadano-button"
+			        style="background-color: #272727">Удалить
+			</button>
+		</form>
+		<div class="under-form-crud">
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "homework:homework_page" %}">Вернуться</a>
+		</div>
+	</div>
 {% endblock %}

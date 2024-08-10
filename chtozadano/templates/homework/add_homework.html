@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+	{% load static %}
+	<div class="container">
+		<form method="POST" enctype="multipart/form-data" class="chtozadano-form-crud">
+			{% csrf_token %}
+			<div class="mb-3">
+				<label for="subject" class="form-label">Выберите предмет</label>
+				<select id="subject" class="form-select chtozadano-object" name="subject">
+					{% for subject in subjects %}
+						<option value="{{ subject }}">{{ subject }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="mb-3">
+				<label for="exampleInputEmail1" class="form-label">Описание</label>
+				<textarea type="text" name="description" class="form-control chtozadano-object" id="exampleInputEmail1"
+				          style="min-height: 150px" required></textarea>
+			</div>
+			<div class="container-img-crud">
+				<input type="file" id="file-input" onchange="preview()" multiple name="files" class="chtozadano-input">
+				<p id="num-of-files" hidden="">Файлы не выбраны</p>
+				<div id="images" class="container-crud"></div>
+			</div>
+			<script>
+                let fileInput = document.getElementById("file-input");
+                let imageContainer = document.getElementById("images");
+                let numOfFiles = document.getElementById("num-of-files");
+
+                function preview() {
+                    imageContainer.innerHTML = "";
+                    numOfFiles.textContent = `${fileInput.files.length} Files Selected`;
+
+                    for (i of fileInput.files) {
+                        let reader = new FileReader();
+                        let figure = document.createElement("figure");
+                        let figCap = document.createElement("figcaption");
+                        let name = i.name;
+                        if (name.length > 13) {
+                            name = name.slice(0, 6) + "..." + name.slice(-6)
+                        }
+                        figCap.innerText = name;
+                        figCap.setAttribute("align", "center")
+                        figure.appendChild(figCap);
+                        reader.onload = () => {
+                            if (reader.result.split(":")[1].startsWith("image")) {
+                                let img = document.createElement("img");
+                                img.setAttribute("src", reader.result);
+                                img.setAttribute("height", 180);
+                                img.setAttribute("width", 180);
+                                img.setAttribute("style", "padding: 20px;")
+                                figure.insertBefore(img, figCap);
+                            } else {
+                                let img = document.createElement("img");
+                                img.setAttribute("src", "{% static "img/file_image.png" %}");
+                                img.setAttribute("height", 180);
+                                img.setAttribute("width", 180);
+                                img.setAttribute("style", "padding: 20px;")
+                                figure.insertBefore(img, figCap);
+                            }
+                        }
+                        imageContainer.appendChild(figure);
+                        reader.readAsDataURL(i);
+                    }
+                }
+			</script>
+			<p></p>
+			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-chtozadano-button"
+			        style="background-color: #272727">Добавить
+			</button>
+		</form>
+		<div class="under-form-crud">
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "homework:homework_page" %}">Отменить</a>
+		</div>
+	</div>
+{% endblock %}

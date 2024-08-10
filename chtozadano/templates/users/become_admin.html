@@ -2,46 +2,30 @@
 
 {% block content %}
 	{% load static %}
-	<form method="POST" enctype="multipart/form-data" style="margin-left: 30em; margin-right: 30em; margin-bottom: 5em">
-		{% for error in errors %}
-			<p style="background-color: rgba(255,0,0,0.51)">{{ error }}</p>
-		{% endfor %}
-		{% csrf_token %}
-		<h2>Привет, страждущий!</h2>
-		<h3>Заполни эту форму для становления админом. Если ты не получил ответа в течении 48х часов - напиши разрабу в
-			тг: **ссылка**</h3>
-		<label for="grade">Select your grade</label>
-		<select name="grade">
-			<option value="4">4</option>
-			<option value="5">5</option>
-			<option value="6">6</option>
-			<option value="7">7</option>
-			<option value="8">8</option>
-			<option value="9">9</option>
-			<option value="10">10</option>
-			<option value="11">11</option>
-		</select>
-		<br>
-		<label for="letter">Select your letter</label>
-		<select name="letter">
-			<option value="А">А</option>
-			<option value="Б">Б</option>
-			<option value="В">В</option>
-			<option value="Г">Г</option>
-		</select>
-		<br>
-	<label>Choose your group</label>
-	<select name="group">
-		<option value="1">1</option>
-		<option value="2">2</option>
-	</select>
-	<br>
-		<label for="first_name">Enter your name</label>
-		<input name="first_name">
-		<br>
-		<label for="last_name">Enter your last name</label>
-		<input name="last_name">
-	<br>
-		<button type="submit">Отправить</button>
-	</form>
+	<div class="container">
+		<form method="POST" enctype="multipart/form-data" class="chtozadano-form">
+			{% csrf_token %}
+			<div class="mb-3">
+				<label for="exampleInputEmail1" class="form-label">Имя</label>
+				<input type="text" name="first_name" class="form-control" id="exampleInputEmail1"
+				       aria-describedby="emailHelp" required>
+			</div>
+			<div class="mb-3">
+				<label for="exampleInputEmail1" class="form-label">Фамилия</label>
+				<input type="text" name="last_name" class="form-control" id="exampleInputEmail1"
+				       aria-describedby="emailHelp" required>
+				<div id="emailHelp" class="form-text">Ваша заявка будет обработана в течении 48 часов. Вы получите
+					уведомление
+				</div>
+			</div>
+			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-button"
+			        style="background-color: #272727">Отправить заявку
+			</button>
+		</form>
+		<div class="under-form">
+			<a class="btn btn-dark under-button"
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "users:account_page" %}">Вернуться</a>
+		</div>
+	</div>
 {% endblock %}
