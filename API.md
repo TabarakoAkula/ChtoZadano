@@ -166,6 +166,37 @@
   + Возвращает:  
       + ``HttpResponse``:  
         + ``True``/``False``  
++ GetAdminsAPI:
+  + Путь: ``api/v1/get_admins/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: узнать кто в твоём классе админ
+  + Действие: получает из ``Users`` данные о пользователях-администраторах
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ  
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм 
+  + Возвращает:  
+      + ``JSON``:  
+        + ``list`` of dictionaries with:  
+      ``telegram_id`` - ``int``  
+      ``group`` - ``int``  
+      ``user``: {  
+        ``first_name`` - ``str``  
+        ``last_name`` - ``str``  
+        }  
++ IsUserAdminAPI:
+  + Путь: ``api/v1/is_user_admin/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: узнать права пользователя
+  + Действие: получает из ``Users.user`` данные о статусе пользователя
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ  
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм 
+  + Возвращает:  
+      + ``JSON``:   
+      ``is_admin`` - ``bool``  
+      ``is_superuser`` - ``bool``  
 </details>
 <details><summary><h2>Homework:</h2></summary>
 
@@ -180,15 +211,12 @@
     + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
   + Возвращает:
       + ``JSON``:  
-      ``subject``: {  
+      ``subject``: {
         ``id``: ``int``,  
-        ``grade``: ``int``,  
-        ``letter``: ``"str"``,  
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
-        ``group``: ``"int"``,  
+        ``group``: ``int``,  
         ``created_at``: ``datetime``,  
-        ``todo``: ``list``,  
         ``author``: ``str``,  
         ``images``: ``list``,   
         ``files``: ``list``,  
@@ -206,18 +234,15 @@
   + Возвращает:
       + ``HttpResponse``:
         + ``Does not exist``
-      + ``JSON``:    
+      + ``JSON``:
         ``id``: ``int``,  
-        ``grade``: ``int``,  
-        ``letter``: ``"str"``,  
         ``description``: ``str``,  
-        ``subject``: ``"str"``,  
-        ``group``: ``"int"``,  
-        ``created_at``: ``datetime``,  
-        ``todo``: ``list``,  
+        ``subject``: ``"str"``,
+        ``group``: ``int``,  
+        ``created_at``: ``datetime``,
+        ``author``: ``str``,  
         ``images``: ``list``,   
         ``files``: ``list``,  
-        ``author``: ``str``,  
 + GetAllHomeworkFromDateAPI:
   + Путь: ``api/v1/get_homework_from_date/`` 
   + Метод: ``POST``
@@ -232,15 +257,12 @@
       + ``HttpResponse``:
         + ``Does not exist``
       + ``JSON``:  
-      ``subject``: {  
+      ``subject``: {
         ``id``: ``int``,  
-        ``grade``: ``int``,  
-        ``letter``: ``"str"``,  
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
         ``group``: ``"int"``,  
-        ``created_at``: ``datetime``,  
-        ``todo``: ``list``,  
+        ``created_at``: ``datetime``,
         ``author``: ``str``,  
         ``images``: ``list``,   
         ``files``: ``list``,  
@@ -260,17 +282,14 @@
         + ``Undefined``
         + ``Does not exist``
       + ``JSON``:    
-        ``id``: ``int``,  
-        ``grade``: ``int``,  
-        ``letter``: ``"str"``,  
+        ``id``: ``int``,
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
         ``group``: ``"int"``,  
         ``created_at``: ``datetime``,  
-        ``todo``: ``list``,  
+        ``author``: ``str``,  
         ``images``: ``list``,   
         ``files``: ``list``,  
-        ``author``: ``str``, 
 + GetTomorrowHomeworkAPI:
   + Путь: ``api/v1/get_tomorrow_homework/`` 
   + Метод: ``POST``
@@ -283,18 +302,16 @@
     + ``homework_id`` - ``int`` id домашки
   + Возвращает:
       + ``JSON``:  
-        ``subject``: {  
-          ``id``: ``int``,  
-          ``grade``: ``int``,  
-          ``letter``: ``"str"``,  
+        ``lesson``: {  
+          ``id``: ``int``,
           ``description``: ``str``,  
           ``subject``: ``"str"``,  
           ``group``: ``"int"``,  
-          ``created_at``: ``datetime``,  
-          ``todo``: ``list``,  
+          ``created_at``: ``datetime``,
+          ``author``: ``str``,  
           ``images``: ``list``,   
           ``files``: ``list``,  
-          ``author``: ``str``,  
+          ``data``: ``boolean``,  
         }  
 + AddHomeWorkAPI:
   + Путь: ``api/v1/add_homework/`` 
@@ -384,13 +401,10 @@
       + ``JSON``:
       ``level``: {  
         ``id``: ``int``,  
-        ``grade``: ``int``,  
-        ``letter``: ``"str"``,  
         ``description``: ``str``,  
         ``subject``: ``"str"``,  
         ``group``: ``"int"``,  
         ``created_at``: ``datetime``,  
-        ``todo``: ``list``,  
         ``author``: ``str``,  
         ``images``: ``list``,   
         ``files``: ``list``,  
@@ -520,7 +534,10 @@
     + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
   + Возвращает:
       + ``JSON``:
-        + ``lesson``: ``subject``
+        + ``list`` if ``dict`` with:  
+          ``weekday`` - ``int``  
+          ``lesson`` - ``int``  
+          ``subject`` - ``str``  
 + DeleteOldHomeworkAPI:
   + Путь: ``api/v1/delete_old_homework/`` 
   + Метод: ``POST``
@@ -533,4 +550,37 @@
   + Возвращает:
       + ``HttpResponse``
         + ``Successful delete {todo_d_counter:int} Todo and {homework_d_counter:int} Homework rows``
++ AddScheduleAPI:
+  + Путь: ``api/v1/add_schedule/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``superuser``
+  + Суть: добавить расписание
+  + Действие: добавляет в таблицу ``Schedule`` новую запись 
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``grade`` - ``int`` класс
+    + ``letter`` - ``str`` литера
+    + ``group`` - ``int`` группа
+    + ``weekday`` - ``int`` день недели
+    + ``lesson`` - ``int`` номер урока
+    + ``subject`` - ``str`` аббревиатура предмета
+  + Возвращает:
+      + ``HttpResponse``
+        + ``Successful``  
++ GetWeekSchedule:
+  + Путь: ``api/v1/get_week_schedule/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: получить расписание на всю неделю
+  + Действие: забирает с таблицы ``Schedule`` все подходящие  
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ 
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+  + Возвращает:
+      + ``JSON``
+        + ``list`` if ``dicts`` with:
+          ``weekday`` - ``int`` день недели 
+          ``lesson`` - ``int``  номер урока
+          ``subject`` - ``str`` название предмета
 </details>

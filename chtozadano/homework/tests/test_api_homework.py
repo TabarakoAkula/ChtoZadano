@@ -5,7 +5,7 @@ from django.db.models import Q
 from parameterized import parameterized
 from rest_framework.test import APIClient, APITestCase
 
-from homework.models import Homework, Todo
+from homework.models import Homework, Schedule, Todo
 from users.models import User
 
 client = APIClient()
@@ -864,3 +864,58 @@ class HomeworkAPITests(APITestCase):
             ).count()
             self.assertEquals(todo_objects_2, 0)
             self.assertEquals(hw_objects_2, 0)
+
+    @parameterized.expand(
+        [
+            ({"api_key": "1231"}, 403),
+            ({"telegram_id": 0}, 403),
+            ({"api_key": "1231", "telegram_id": 0}, 403),
+            ({"api_key": settings.API_KEY}, 400),
+            ({"api_key": settings.API_KEY, "telegram_id": 0}, 400),
+            ({"api_key": settings.API_KEY, "telegram_id": 1}, 403),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 2,
+                    "grade": 10,
+                    "letter": "Б",
+                    "group": 0,
+                    "weekday": "1",
+                    "lesson": 1,
+                    "subject": "rus",
+                },
+                403,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 3,
+                    "grade": 10,
+                    "letter": "Б",
+                    "group": 0,
+                    "weekday": "1",
+                    "lesson": 1,
+                    "subject": "rus",
+                },
+                200,
+            ),
+        ],
+    )
+    def test_add_schedule(self, data, status_code):
+        if status_code == 200:
+            first_counter = Schedule.objects.filter(
+                weekday=data["weekday"],
+                lesson=data["lesson"],
+            ).count()
+        response = client.post(
+            "/api/v1/add_schedule/",
+            data=data,
+            format="json",
+        )
+        self.assertEquals(response.status_code, status_code)
+        if status_code == 200:
+            second_counter = Schedule.objects.filter(
+                weekday=data["weekday"],
+                lesson=data["lesson"],
+            ).count()
+            self.assertEquals(first_counter + 1, second_counter)

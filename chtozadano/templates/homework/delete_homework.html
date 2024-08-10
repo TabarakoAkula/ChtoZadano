@@ -21,7 +21,10 @@
 				<label for="exampleInputEmail1" class="form-label">Изображения:</label>
 				<div class="image-container gallery" style="">
 					{% for j in hw_info.images.all %}
-						<img src="{{ j.image.url }}" width="180" height="180" style="margin-top: 20px">
+						<a href="{{ j.image.url }}" data-lightbox="image-{{ i.id }}">
+							<img src="{{ j.image.url }}"
+							     width="180" height="180"
+							     style="margin-top: 20px"></a>
 					{% endfor %}
 				</div>
 				<hr class="hr"/>

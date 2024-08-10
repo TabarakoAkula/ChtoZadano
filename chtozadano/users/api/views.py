@@ -4,9 +4,14 @@ import os
 import django.contrib.auth
 import django.db.utils
 from django.http import HttpResponse
+from rest_framework import response, viewsets
 from rest_framework.views import APIView
 
-from users.api.serializers import BecomeAdminSerializer
+from users.api.serializers import (
+    BecomeAdminSerializer,
+    DefaultUserNameSerializer,
+    UserSerializer,
+)
 from users.models import BecomeAdmin, SignIn, User
 from users.utils import (
     create_password,
@@ -52,20 +57,14 @@ class CreateUserAPI(APIView):
         return HttpResponse("Successful")
 
 
-class GetContactsAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetContactsAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = DefaultUserNameSerializer
+
+    def get_contacts(self, request):
         telegram_id = request.data["telegram_id"]
         user_obj = User.objects.get(telegram_id=telegram_id)
         django_user = user_obj.user
-        return HttpResponse(
-            json.dumps(
-                {
-                    "first_name": django_user.first_name,
-                    "last_name": django_user.last_name,
-                },
-            ),
-        )
+        return response.Response(self.get_serializer(django_user).data)
 
 
 class ChangeContactsAPI(APIView):
@@ -187,9 +186,46 @@ class AcceptDeclineBecomeAdminAPI(APIView):
 
 
 class IsUserInSystemAPI(APIView):
-    def post(self, request):
+    @staticmethod
+    def post(request):
         if User.objects.filter(
             telegram_id=request.data["telegram_id"],
         ).first():
             return HttpResponse(True)
         return HttpResponse(False)
+
+
+class GetAdminsAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = UserSerializer
+
+    def get_admins(self, request):
+        try:
+            telegram_id = request.data["telegram_id"]
+            user_obj = User.objects.get(telegram_id=telegram_id)
+        except (KeyError, User.DoesNotExist):
+            return HttpResponse("Bad request data", 400)
+        admins = User.objects.filter(
+            grade=user_obj.grade,
+            letter=user_obj.letter,
+            user__is_staff=True,
+        ).all()
+        serialized = self.get_serializer(admins, many=True)
+        return response.Response(serialized.data)
+
+
+class IsUserAdminAPI(APIView):
+    @staticmethod
+    def post(request):
+        user_obj = User.objects.filter(
+            telegram_id=request.data["telegram_id"],
+        ).first()
+        if user_obj:
+            return HttpResponse(
+                json.dumps(
+                    {
+                        "is_admin": user_obj.user.is_staff,
+                        "is_superuser": user_obj.user.is_superuser,
+                    },
+                ),
+            )
+        return HttpResponse("User does not exist")

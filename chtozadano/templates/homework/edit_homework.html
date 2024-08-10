@@ -27,7 +27,10 @@
 				<label for="exampleInputEmail1" class="form-label">Изображения:</label>
 				<div class="image-container gallery" style="">
 					{% for j in hw_info.images.all %}
-						<img src="{{ j.image.url }}" width="180" height="180" style="margin-top: 20px">
+						<a href="{{ j.image.url }}" data-lightbox="image-{{ i.id }}">
+							<img src="{{ j.image.url }}"
+							     width="180" height="180"
+							     style="margin-top: 20px"></a>
 						<a href="{% url "homework:edit_files_homework" hw_info.id "img" j.id %}">
 							<button type="button" class="btn btn-danger">Удалить</button>
 						</a>
@@ -110,7 +113,8 @@
 		</form>
 		<div class="under-form-crud">
 			<a class="btn btn-dark under-button"
-				style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)" href="{% url "homework:homework_page" %}">Вернуться</a>
+			   style="text-decoration: none; color: white; background-color: rgba(39,39,39,0.9)"
+			   href="{% url "homework:homework_page" %}">Вернуться</a>
 		</div>
 	</div>
 {% endblock %}

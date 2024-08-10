@@ -1,62 +1,65 @@
 from datetime import datetime, timedelta
 import json
 
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 from django.http import HttpResponse
+from rest_framework import response, viewsets
 from rest_framework.views import APIView
 
-from homework.api.serializers import HomeworkSerializer
-from homework.models import File, Homework, Image, Todo
+from homework.api.serializers import HomeworkSerializer, ScheduleSerializer
+from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
     get_abbreviation_from_name,
+    get_name_from_abbreviation,
     get_tomorrow_schedule,
-    get_user_subjects_abbreviation,
 )
 import users.models
 
 
-class GetLastHomeworkAllSubjectsAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetLastHomeworkAllSubjectsAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
             )
         except (KeyError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
-        grade = user.grade
-        letter = user.letter
-        group = user.group
-        subjects = get_user_subjects_abbreviation(grade, letter)
-        data = {}
-        for subject in subjects:
-            try:
-                hw_object = (
+        latest_homework_ids = (
+            Homework.objects.filter(Q(group=0) | Q(group=user.group))
+            .filter(
+                grade=user.grade,
+                letter=user.letter,
+                subject=OuterRef("subject"),
+                created_at=Subquery(
                     Homework.objects.filter(
-                        grade=grade,
-                        letter=letter,
-                        subject=subject,
+                        subject=OuterRef("subject"),
                     )
-                    .filter(Q(group=0) | Q(group=group))
-                    .order_by("-created_at")
-                    .prefetch_related("images", "files")
-                    .first()
-                )
-            except Homework.DoesNotExist:
-                pass
-            if hw_object:
-                images = [i.image.url for i in hw_object.images.all()]
-                files = [i.file.url for i in hw_object.files.all()]
-                serializer_data = HomeworkSerializer(hw_object).data
-                serializer_data["images"] = images
-                serializer_data["files"] = files
-                data[subject] = serializer_data
-        return HttpResponse(json.dumps(data))
+                    .values("created_at")
+                    .order_by("-created_at")[:1],
+                ),
+            )
+            .values("id")
+        )
+        data = (
+            Homework.objects.filter(id__in=latest_homework_ids)
+            .order_by("subject")
+            .prefetch_related("images", "files")
+            .defer("grade", "letter", "group")
+        )
+        for homework_obj in data:
+            homework_obj.subject = get_name_from_abbreviation(
+                homework_obj.subject,
+            )
+        homework = self.get_serializer(data, many=True).data
+        return response.Response(homework)
 
 
-class GetOneSubjectAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -82,58 +85,57 @@ class GetOneSubjectAPI(APIView):
             return HttpResponse("Bad request data", status=400)
         if not hw_object:
             return HttpResponse("Does not exist", status=404)
-        images = [i.image.url for i in hw_object.images.all()]
-        files = [i.file.url for i in hw_object.files.all()]
-        serialized_data = HomeworkSerializer(hw_object).data
-        serialized_data["images"] = images
-        serialized_data["files"] = files
-        return HttpResponse(json.dumps(serialized_data))
+        serialized = self.get_serializer(hw_object)
+        return response.Response(serialized.data)
 
 
-class GetAllHomeworkFromDateAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetAllHomeworkFromDateAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
             )
             date = request.data["date"].split(".")
-            grade = user_obj.grade
-            letter = user_obj.letter
-            group = user_obj.group
             year, month, day = list(map(int, date))
         except (KeyError, ValueError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
-        subjects = get_user_subjects_abbreviation(grade, letter)
-        data = {}
-        for subject in subjects:
-            try:
-                hw_object = (
+        latest_homework_ids = (
+            Homework.objects.filter(Q(group=0) | Q(group=user_obj.group))
+            .filter(
+                grade=user_obj.grade,
+                letter=user_obj.letter,
+                subject=OuterRef("subject"),
+                created_at=Subquery(
                     Homework.objects.filter(
-                        grade=grade,
-                        letter=letter,
-                        subject=subject,
+                        subject=OuterRef("subject"),
                     )
-                    .filter(Q(group=0) | Q(group=group))
-                    .filter(created_at__date=datetime(year, month, day))
-                    .order_by("-created_at")
-                    .first()
-                )
-            except Homework.DoesNotExist:
-                pass
-            if hw_object:
-                images = [i.image.url for i in hw_object.images.all()]
-                files = [i.file.url for i in hw_object.files.all()]
-                serializer_data = HomeworkSerializer(hw_object).data
-                serializer_data["images"] = images
-                serializer_data["files"] = files
-                data[subject] = serializer_data
-        return HttpResponse(json.dumps(data))
+                    .values("created_at")
+                    .order_by("-created_at")[:1],
+                ),
+            )
+            .values("id")
+        )
+        data = (
+            Homework.objects.filter(id__in=latest_homework_ids)
+            .filter(created_at__date=datetime(year, month, day))
+            .order_by("subject")
+            .prefetch_related("images", "files")
+            .defer("grade", "letter", "group")
+        )
+        for homework_obj in data:
+            homework_obj.subject = get_name_from_abbreviation(
+                homework_obj.subject,
+            )
+        homework = self.get_serializer(data, many=True)
+        return response.Response(homework.data)
 
 
-class GetHomeworkFromIdAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetHomeworkFromIdAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -157,18 +159,15 @@ class GetHomeworkFromIdAPI(APIView):
         except (KeyError, ValueError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
         if hw_object:
-            images = [i.image.url for i in hw_object.images.all()]
-            files = [i.file.url for i in hw_object.files.all()]
-            serializer_data = HomeworkSerializer(hw_object).data
-            serializer_data["images"] = images
-            serializer_data["files"] = files
-            return HttpResponse(json.dumps(serializer_data))
+            homework = self.get_serializer(hw_object)
+            return response.Response(homework.data)
         return HttpResponse("Undefined")
 
 
-class GetTomorrowHomeworkAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetTomorrowHomeworkAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_homework(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -198,9 +197,15 @@ class GetTomorrowHomeworkAPI(APIView):
             except Homework.DoesNotExist:
                 data[lesson.lesson] = None
             else:
-                serialized_obj = HomeworkSerializer(homework_obj).data
-                data[lesson.lesson] = serialized_obj
-        return HttpResponse(json.dumps(data))
+                if homework_obj:
+                    serialized_obj = self.get_serializer(homework_obj).data
+                    data[lesson.lesson] = serialized_obj
+                    data[lesson.lesson]["data"] = True
+                else:
+                    data[lesson.lesson] = {}
+                    data[lesson.lesson]["subject"] = lesson.subject
+                    data[lesson.lesson]["data"] = False
+        return response.Response(data)
 
 
 class AddHomeWorkAPI(APIView):
@@ -354,9 +359,10 @@ class DeleteHomeworkAPI(APIView):
         return HttpResponse("Successful")
 
 
-class GetMailingAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetMailingAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = HomeworkSerializer
+
+    def get_mailing(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -373,8 +379,8 @@ class GetMailingAPI(APIView):
                 .order_by("-created_at")
                 .first()
             )
-            data["class"] = HomeworkSerializer(info_obj_one).data
-            data["school"] = HomeworkSerializer(info_obj_two).data
+            data["class"] = self.get_serializer(info_obj_one).data
+            data["school"] = self.get_serializer(info_obj_two).data
             if django_user.is_staff or django_user.is_superuser:
                 info_obj_three = (
                     Homework.objects.filter(group=-2)
@@ -384,7 +390,7 @@ class GetMailingAPI(APIView):
                 data["admins"] = HomeworkSerializer(info_obj_three).data
         except (KeyError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
-        return HttpResponse(json.dumps(data))
+        return response.Response(data)
 
 
 class AddMailingAPI(APIView):
@@ -624,9 +630,10 @@ class TodoWorkAPI(APIView):
         return HttpResponse("Successful")
 
 
-class GetTomorrowScheduleAPI(APIView):
-    @staticmethod
-    def post(request):
+class GetTomorrowScheduleAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ScheduleSerializer
+
+    def get_schedule(self, request):
         try:
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
@@ -638,10 +645,7 @@ class GetTomorrowScheduleAPI(APIView):
             )
         except (KeyError, users.models.User.DoesNotExist):
             return HttpResponse("Bad request data", status=400)
-        date = {}
-        for lesson in schedule:
-            date[lesson.lesson] = lesson.subject
-        return HttpResponse(json.dumps(date))
+        return response.Response(self.get_serializer(schedule, many=True).data)
 
 
 class DeleteOldHomeworkAPI(APIView):
@@ -668,3 +672,61 @@ class DeleteOldHomeworkAPI(APIView):
         todo_objects.delete()
         hw_objects.delete()
         return HttpResponse(response_message)
+
+
+class AddScheduleAPI(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            user_obj = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+            if not user_obj.user.is_superuser:
+                return HttpResponse("Not allowed", status=403)
+            grade = request.data["grade"]
+            letter = request.data["letter"]
+            weekday = request.data["weekday"]
+            lesson = request.data["lesson"]
+            subject = request.data["subject"]
+            group = request.data["group"]
+        except (KeyError, users.models.User.DoesNotExist):
+            return HttpResponse("Bad request data", status=400)
+        Schedule.objects.create(
+            grade=grade,
+            letter=letter,
+            group=group,
+            weekday=weekday,
+            subject=subject,
+            lesson=lesson,
+        )
+        return HttpResponse("Successful")
+
+
+class GetWeekScheduleAPI(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ScheduleSerializer
+
+    def get_schedule(self, request):
+        try:
+            user = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+        except (KeyError, users.models.User.DoesNotExist):
+            return HttpResponse("Bad request data", status=400)
+        latest_schedule_ids = (
+            Schedule.objects.filter(Q(group=0) | Q(group=user.group))
+            .filter(
+                grade=user.grade,
+                letter=user.letter,
+                weekday=OuterRef("weekday"),
+            )
+            .values("id")
+        )
+        data = Schedule.objects.filter(id__in=latest_schedule_ids).order_by(
+            "weekday",
+            "lesson",
+        )
+        for schedule_obj in data:
+            schedule_obj.subject = get_name_from_abbreviation(
+                schedule_obj.subject,
+            )
+        return response.Response(self.get_serializer(data, many=True).data)

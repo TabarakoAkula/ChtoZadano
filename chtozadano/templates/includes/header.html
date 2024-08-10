@@ -15,7 +15,8 @@
 				<ul>
 					<li><a href="{% url "homework:schedule" %}" style="color: rgba(255,255,255,0.92);">Расписание</a>
 					</li>
-					<li><a href="{% url "homework:homework_page" %}" style="color: rgba(255,255,255,0.92);">Домашка</a></li>
+					<li><a href="{% url "homework:homework_page" %}" style="color: rgba(255,255,255,0.92);">Домашка</a>
+					</li>
 					<li><a href="{% url "users:account_page" %}" style="color: rgba(255,255,255,0.92);">Аккаунт</a></li>
 				</ul>
 			</nav>
@@ -32,6 +33,11 @@
 				</div>
 			{% elif message.tags == "error" %}
 				<div class="alert alert-danger alert-dismissible fade" role="alert"
+				     style="vertical-align: middle;">
+					<p class="alert-text">{{ message }}</p>
+				</div>
+			{% else %}
+				<div class="alert alert-info alert-dismissible fade" role="alert"
 				     style="vertical-align: middle;">
 					<p class="alert-text">{{ message }}</p>
 				</div>
