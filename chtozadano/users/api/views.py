@@ -187,7 +187,7 @@ class AcceptDeclineBecomeAdminAPI(APIView):
 
 class IsUserInSystemAPI(APIView):
     @staticmethod
-    def post(self, request):
+    def post(request):
         if User.objects.filter(
             telegram_id=request.data["telegram_id"],
         ).first():
@@ -211,3 +211,21 @@ class GetAdminsAPI(viewsets.ReadOnlyModelViewSet):
         ).all()
         serialized = self.get_serializer(admins, many=True)
         return response.Response(serialized.data)
+
+
+class IsUserAdminAPI(APIView):
+    @staticmethod
+    def post(request):
+        user_obj = User.objects.filter(
+            telegram_id=request.data["telegram_id"],
+        ).first()
+        if user_obj:
+            return HttpResponse(
+                json.dumps(
+                    {
+                        "is_admin": user_obj.user.is_staff,
+                        "is_superuser": user_obj.user.is_superuser,
+                    },
+                ),
+            )
+        return HttpResponse("User does not exist")

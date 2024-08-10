@@ -53,6 +53,10 @@ urlpatterns = [
         users.api.views.GetAdminsAPI.as_view({"post": "get_admins"}),
     ),
     path(
+        "is_user_admin/",
+        users.api.views.IsUserAdminAPI.as_view(),
+    ),
+    path(
         "get_last_homework_all_subjects/",
         homework.api.views.GetLastHomeworkAllSubjectsAPI.as_view(
             {"post": "get_homework"},

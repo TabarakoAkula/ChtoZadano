@@ -183,7 +183,20 @@
       ``user``: {  
         ``first_name`` - ``str``  
         ``last_name`` - ``str``  
-        }
+        }  
++ IsUserAdminAPI:
+  + Путь: ``api/v1/is_user_admin/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: узнать права пользователя
+  + Действие: получает из ``Users.user`` данные о статусе пользователя
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ  
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм 
+  + Возвращает:  
+      + ``JSON``:   
+      ``is_admin`` - ``bool``  
+      ``is_superuser`` - ``bool``  
 </details>
 <details><summary><h2>Homework:</h2></summary>
 
@@ -554,7 +567,7 @@
     + ``subject`` - ``str`` аббревиатура предмета
   + Возвращает:
       + ``HttpResponse``
-        + ``Successful``
+        + ``Successful``  
 + GetWeekSchedule:
   + Путь: ``api/v1/get_week_schedule/`` 
   + Метод: ``POST``
