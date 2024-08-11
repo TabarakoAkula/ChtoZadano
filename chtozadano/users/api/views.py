@@ -29,9 +29,11 @@ class CodeConfirmationAPI(APIView):
             confirmation_code=confirmation_code,
             name=user_name,
         )
-        return HttpResponse(
-            f"Информация о пользователе {telegram_id}"
-            f" успешно внесена в таблицу SignIN",
+        return response.Response(
+            {
+                "success": f"Информация о пользователе {telegram_id}"
+                           f" успешно внесена в таблицу SignIN",
+            },
         )
 
 
@@ -58,7 +60,7 @@ class CreateUserAPI(APIView):
             group=request.data["group"],
             telegram_id=telegram_id,
         )
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class GetContactsAPI(viewsets.ReadOnlyModelViewSet):
@@ -82,14 +84,14 @@ class ChangeContactsAPI(APIView):
         django_user.first_name = first_name
         django_user.last_name = last_name
         django_user.save()
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class ChangeGradeLetterAPI(APIView):
     @staticmethod
     def post(request):
         if request.user.is_staff and not request.user.is_superuser:
-            return HttpResponse("Not allowed")
+            return response.Response({"error": "Not allowed"})
         telegram_id = request.data["telegram_id"]
         grade = request.data["grade"]
         letter = request.data["letter"]
@@ -97,7 +99,7 @@ class ChangeGradeLetterAPI(APIView):
         user_obj.grade = grade
         user_obj.letter = letter
         user_obj.save()
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class GetChatModeAPI(APIView):
@@ -105,7 +107,7 @@ class GetChatModeAPI(APIView):
     def post(request):
         telegram_id = request.data["telegram_id"]
         user_obj = User.objects.get(telegram_id=telegram_id)
-        return HttpResponse(user_obj.chat_mode)
+        return response.Response({"chat_mode": user_obj.chat_mode})
 
 
 class ChangeChatModeAPI(APIView):
@@ -116,7 +118,7 @@ class ChangeChatModeAPI(APIView):
         user_obj = User.objects.get(telegram_id=telegram_id)
         user_obj.chat_mode = chat_mode
         user_obj.save()
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class ShowBecomeAdminAPI(APIView):
@@ -130,8 +132,8 @@ class ShowBecomeAdminAPI(APIView):
                 request_data,
                 many=True,
             ).data
-            return HttpResponse(json.dumps(serialized_data))
-        return HttpResponse("Not allowed")
+            return response.Response(json.dumps(serialized_data))
+        return response.Response({"error": "Not allowed"})
 
 
 class BecomeAdminAPI(APIView):
@@ -145,13 +147,13 @@ class BecomeAdminAPI(APIView):
         last_name = request.data["last_name"]
         django_user = User.objects.get(telegram_id=telegram_id).user
         if django_user.is_staff:
-            return HttpResponse("You are already admin")
+            return response.Response({"error": "You are already admin"})
         if django_user.is_superuser:
-            return HttpResponse("You are superuser, damn")
+            return response.Response({"error": "You are superuser, damn"})
         try:
             BecomeAdmin.objects.get(telegram_id=telegram_id)
         except BecomeAdmin.MultipleObjectsReturned:
-            return HttpResponse("Already have request")
+            return response.Response({"error": "Already have request"})
         except BecomeAdmin.DoesNotExist:
             BecomeAdmin.objects.create(
                 grade=grade,
@@ -161,8 +163,8 @@ class BecomeAdminAPI(APIView):
                 group=group,
                 telegram_id=telegram_id,
             )
-            return HttpResponse("Successful")
-        return HttpResponse("Wait pls")
+            return response.Response({"success": "Successful"})
+        return response.Response({"error": "Wait pls"})
 
 
 class AcceptDeclineBecomeAdminAPI(APIView):
@@ -175,18 +177,18 @@ class AcceptDeclineBecomeAdminAPI(APIView):
             try:
                 BecomeAdmin.objects.get(telegram_id=candidate_id)
             except BecomeAdmin.DoesNotExist:
-                return HttpResponse("Это кто? Я такого не знаю")
+                return response.Response({"error": "Это кто? Я такого не знаю"})
             decision = request.data["decision"]
             if decision == "accept":
                 candidat_user = User.objects.get(telegram_id=candidate_id).user
                 candidat_user.is_staff = True
                 candidat_user.save()
                 BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
-                return HttpResponse("Successful accepted")
+                return response.Response({"success": "Successful accepted"})
             if decision == "decline":
                 BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
-                return HttpResponse("Successful declined")
-        return HttpResponse("Not allowed")
+                return response.Response({"success": "Successful declined"})
+        return response.Response({"error": "Not allowed"})
 
 
 class IsUserInSystemAPI(APIView):
@@ -207,7 +209,7 @@ class GetAdminsAPI(viewsets.ReadOnlyModelViewSet):
             telegram_id = request.data["telegram_id"]
             user_obj = User.objects.get(telegram_id=telegram_id)
         except (KeyError, User.DoesNotExist):
-            return HttpResponse("Bad request data", 400)
+            return response.Response({"error": "Bad request data"}, 400)
         admins = User.objects.filter(
             grade=user_obj.grade,
             letter=user_obj.letter,
@@ -224,7 +226,7 @@ class IsUserAdminAPI(APIView):
             telegram_id=request.data["telegram_id"],
         ).first()
         if user_obj:
-            return HttpResponse(
+            return response.Response(
                 json.dumps(
                     {
                         "is_admin": user_obj.user.is_staff,
@@ -232,4 +234,4 @@ class IsUserAdminAPI(APIView):
                     },
                 ),
             )
-        return HttpResponse("User does not exist")
+        return response.Response({"error": "User does not exist"})
