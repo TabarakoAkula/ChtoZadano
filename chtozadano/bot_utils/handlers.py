@@ -1,5 +1,6 @@
 import asyncio
 import os
+import json
 import random
 
 from aiogram import F, html, Router
@@ -91,7 +92,7 @@ async def command_reset_handler(message: Message, state: FSMContext):
             "telegram_id": message.from_user.id,
         },
     )
-    response_data = response.json()
+    response_data = json.loads(response.json())
     if response_data["is_admin"] and not response_data["is_superuser"]:
         await message.answer(
             "Ты назначен администратором в своем классе,"
