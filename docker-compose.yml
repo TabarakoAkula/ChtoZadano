@@ -50,7 +50,8 @@ services:
     build: .
     volumes:
       - .:/code
-    command: python bot.py
+    command: bash -c "cd chtozadano &&
+                      python telegram_bot.py"
     depends_on:
       - web
     restart: always

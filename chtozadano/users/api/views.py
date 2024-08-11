@@ -41,7 +41,11 @@ class CreateUserAPI(APIView):
         telegram_id = request.data["telegram_id"]
         all_users = User.objects.filter(telegram_id=telegram_id).all()
         if all_users:
-            return HttpResponse("Пользователь уже зарегистрирован")
+            user = all_users[0]
+            user.grade = request.data["grade"]
+            user.letter = request.data["letter"]
+            user.group = request.data["group"]
+            user.save()
         django_user = django.contrib.auth.models.User.objects.create_user(
             username=request.data["name"],
             first_name=request.data["name"],
