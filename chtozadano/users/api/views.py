@@ -48,6 +48,7 @@ class CreateUserAPI(APIView):
             user.letter = request.data["letter"]
             user.group = request.data["group"]
             user.save()
+            return response.Response({"success": "Successful"})
         django_user = django.contrib.auth.models.User.objects.create_user(
             username=request.data["name"],
             first_name=request.data["name"],

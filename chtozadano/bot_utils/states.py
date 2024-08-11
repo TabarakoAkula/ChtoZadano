@@ -5,4 +5,9 @@ class Register(StatesGroup):
     start = State()
     choose_class = State()
     choose_group = State()
-    reset = State()
+
+
+class Schedule(StatesGroup):
+    start = State()
+    week_schedule = State()
+    tomorrow_schedule = State()

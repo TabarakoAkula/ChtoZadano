@@ -664,6 +664,8 @@ class GetTomorrowScheduleAPI(viewsets.ReadOnlyModelViewSet):
             )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
+        for lesson in schedule:
+            lesson.subject = get_name_from_abbreviation(lesson.subject)
         return response.Response(self.get_serializer(schedule, many=True).data)
 
 

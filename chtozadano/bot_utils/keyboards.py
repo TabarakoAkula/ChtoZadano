@@ -90,3 +90,16 @@ def menu_rp_kb():
         ],
     ]
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
+
+
+def schedule_rp_kb():
+    buttons_list = [
+        [
+            KeyboardButton(text="На неделю"),
+            KeyboardButton(text="На завтра"),
+        ],
+        [
+            KeyboardButton(text="Вернуться"),
+        ],
+    ]
+    return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)

@@ -8,7 +8,8 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from bot_utils import keyboards
-from bot_utils.states import Register
+from bot_utils.filters import ScheduleStateFilter
+from bot_utils.states import Register, Schedule
 import dotenv
 import requests
 
@@ -45,6 +46,15 @@ MENU_MESSAGES = [
     f"- {html.italic('Мишель де Монтень')}",
 ]
 
+WEEK_DAYS = {
+    1: "Понедельник",
+    2: "Вторник",
+    3: "Среда",
+    4: "Четверг",
+    5: "Пятница",
+    6: "Суббота",
+}
+
 rp = Router()
 
 
@@ -54,7 +64,9 @@ async def command_help_handler(message: Message):
         "/start - инициализировать бота\n"
         "/reset - сменить класс\n"
         "/menu - меню\n"
-        "/code - код верификации",
+        "/code - код верификации\n"
+        "/get_week_schedule - расписание на неделю\n"
+        "/get_tomorrow_schedule - расписание на завтра\n",
     )
 
 
@@ -74,7 +86,6 @@ async def command_start_handler(message: Message, state: FSMContext):
         )
         await command_menu_handler(message)
     else:
-        await state.update_data(reset=False)
         await state.set_state(Register.choose_class)
         await message.answer(
             "Привет!\nЧтобы начать работу, выбери класс,"
@@ -106,7 +117,6 @@ async def command_reset_handler(message: Message, state: FSMContext):
         )
     else:
         await state.set_state(Register.choose_class)
-        await state.update_data(reset=True)
         await message.answer(
             "Выбери класс, в котором ты учишься в этом году",
             reply_markup=keyboards.choose_gr_let_in_kb(),
@@ -125,31 +135,32 @@ async def choose_group_handler(call: CallbackQuery, state: FSMContext):
 
 
 @rp.callback_query(Register.choose_group, F.data.startswith("ch_group_"))
-async def redirect_to_menu_handler(call: CallbackQuery, state: FSMContext):
+async def start_redirect_to_menu_handler(
+    call: CallbackQuery,
+    state: FSMContext,
+):
     await state.update_data(choose_group=call.data.split("_")[-1])
     user_data = await state.get_data()
     grade = user_data["choose_class"][:-1]
     letter = user_data["choose_class"][-1]
     group = user_data["choose_group"]
-    reset = user_data["reset"]
 
     await call.message.answer(
         f"Вы в {html.italic(grade)}{html.italic(letter)}"
         f" классе, группа {html.italic(group)}",
     )
-    if not reset:
-        await asyncio.to_thread(
-            requests.post,
-            url=DOCKER_URL + "/api/v1/create_user/",
-            json={
-                "api_key": os.getenv("API_KEY"),
-                "telegram_id": call.from_user.id,
-                "grade": grade,
-                "letter": letter,
-                "group": group,
-                "name": call.from_user.username,
-            },
-        )
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/create_user/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": call.from_user.id,
+            "grade": grade,
+            "letter": letter,
+            "group": group,
+            "name": call.from_user.username,
+        },
+    )
     await state.clear()
     await call.message.answer(
         "На этом всё. Теперь я всегда готов ответить на"
@@ -199,3 +210,90 @@ async def site_register_handler(message: Message) -> None:
         )
     else:
         await message.answer("Ошибка сервера")
+
+
+@rp.message(F.text == "Расписание🗓")
+async def schedule_handler(message: Message, state: FSMContext):
+    await state.set_state(Schedule.start)
+    await message.answer(
+        "Выбери какое расписание ты хочешь посмотреть",
+        reply_markup=keyboards.schedule_rp_kb(),
+    )
+
+
+@rp.message(F.text == "На неделю", ScheduleStateFilter)
+async def schedule_week_handler(message: Message, state: FSMContext):
+    await state.set_state(Schedule.week_schedule)
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_week_schedule/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.from_user.id,
+        },
+    )
+    await message.answer(
+        "Расписание на неделю для твоей группы:",
+        reply_markup=keyboards.schedule_rp_kb(),
+    )
+    schedule = response.json()
+    weekday_now = 0
+    result_message = ""
+    for i in schedule:
+        if i["weekday"] == weekday_now:
+            result_message += f"{i['lesson']}. {i['subject']}\n"
+        else:
+            result_message += f"\n{WEEK_DAYS[i['weekday']]}:\n"
+            result_message += f"{i['lesson']}. {i['subject']}\n"
+            weekday_now = i["weekday"]
+    await message.answer(
+        result_message,
+        reply_markup=keyboards.schedule_rp_kb(),
+    )
+
+
+@rp.message(F.text == "На завтра", ScheduleStateFilter)
+async def schedule_tomorrow_handler(message: Message, state: FSMContext):
+    await state.set_state(Schedule.tomorrow_schedule)
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_tomorrow_schedule/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.from_user.id,
+        },
+    )
+    await message.answer(
+        "Расписание на завтра для твоей группы:",
+        reply_markup=keyboards.schedule_rp_kb(),
+    )
+    schedule = response.json()
+    result_message = WEEK_DAYS[schedule[0]["weekday"]] + ":"
+    for i in schedule:
+        result_message += f"\n{i['lesson']}. {i['subject']}"
+    await message.answer(
+        result_message,
+        reply_markup=keyboards.schedule_rp_kb(),
+    )
+
+
+@rp.message(F.text == "Вернуться", ScheduleStateFilter)
+async def schedule_back_handler(message: Message, state: FSMContext):
+    await state.clear()
+    await command_menu_handler(message)
+
+
+@rp.message(Command("get_week_schedule"))
+async def command_week_schedule_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await schedule_week_handler(message, state)
+
+
+@rp.message(Command("get_tomorrow_schedule"))
+async def command_tomorrow_schedule_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await schedule_tomorrow_handler(message, state)
