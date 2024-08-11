@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 import json
 
 from django.db.models import OuterRef, Q, Subquery
-from django.http import HttpResponse
 from rest_framework import response, viewsets
 from rest_framework.views import APIView
 
@@ -25,7 +24,7 @@ class GetLastHomeworkAllSubjectsAPI(viewsets.ReadOnlyModelViewSet):
                 telegram_id=request.data["telegram_id"],
             )
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         latest_homework_ids = (
             Homework.objects.filter(Q(group=0) | Q(group=user.group))
             .filter(
@@ -80,11 +79,11 @@ class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
                 .first()
             )
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist", status=404)
+            return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         if not hw_object:
-            return HttpResponse("Does not exist", status=404)
+            return response.Response({"error": "Does not exist"}, status=404)
         serialized = self.get_serializer(hw_object)
         return response.Response(serialized.data)
 
@@ -100,7 +99,7 @@ class GetAllHomeworkFromDateAPI(viewsets.ReadOnlyModelViewSet):
             date = request.data["date"].split(".")
             year, month, day = list(map(int, date))
         except (KeyError, ValueError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         latest_homework_ids = (
             Homework.objects.filter(Q(group=0) | Q(group=user_obj.group))
             .filter(
@@ -155,13 +154,13 @@ class GetHomeworkFromIdAPI(viewsets.ReadOnlyModelViewSet):
                 .first()
             )
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist", status=404)
+            return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, ValueError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         if hw_object:
             homework = self.get_serializer(hw_object)
             return response.Response(homework.data)
-        return HttpResponse("Undefined")
+        return response.Response({"error": "Undefined"})
 
 
 class GetTomorrowHomeworkAPI(viewsets.ReadOnlyModelViewSet):
@@ -173,7 +172,7 @@ class GetTomorrowHomeworkAPI(viewsets.ReadOnlyModelViewSet):
                 telegram_id=request.data["telegram_id"],
             )
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         schedule = get_tomorrow_schedule(
             user_obj.grade,
             user_obj.letter,
@@ -217,7 +216,7 @@ class AddHomeWorkAPI(APIView):
             )
             django_user = user_obj.user
             if not django_user.is_staff:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             grade = user_obj.grade
             letter = user_obj.letter
             subject = request.data["subject"]
@@ -225,7 +224,7 @@ class AddHomeWorkAPI(APIView):
             images = request.data["images"]
             files = request.data["files"]
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         if subject not in ["eng1", "eng2", "ger1", "ger2", "ikt1", "ikt2"]:
             group = 0
         else:
@@ -242,7 +241,7 @@ class AddHomeWorkAPI(APIView):
             hw_object.images.add(Image.objects.create(image=image))
         for file in files:
             hw_object.files.add(File.objects.create(file=file))
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class EditHomeworkDescriptionAPI(APIView):
@@ -254,7 +253,7 @@ class EditHomeworkDescriptionAPI(APIView):
             )
             django_user = user_obj.user
             if not django_user.is_staff:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             homework_id = request.data["homework_id"]
             new_description = request.data["description"]
             grade = user_obj.grade
@@ -264,12 +263,12 @@ class EditHomeworkDescriptionAPI(APIView):
                 Q(group=0) | Q(group=group),
             ).get(id=homework_id, grade=grade, letter=letter)
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist", status=404)
+            return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         homework_obj.description = new_description
         homework_obj.save()
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class EditHomeworkImagesAPI(APIView):
@@ -281,7 +280,7 @@ class EditHomeworkImagesAPI(APIView):
             )
             django_user = user_obj.user
             if not django_user.is_staff:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             homework_id = request.data["homework_id"]
             new_images = request.data["images"]
             grade = user_obj.grade
@@ -292,13 +291,13 @@ class EditHomeworkImagesAPI(APIView):
             ).get(id=homework_id, grade=grade, letter=letter)
             Image.objects.filter(homework_id=homework_id).delete()
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist", status=404)
+            return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         for image in new_images:
             image_object = Image.objects.create(image=image)
             homework_obj.images.add(image_object)
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class EditHomeworkFilesAPI(APIView):
@@ -310,7 +309,7 @@ class EditHomeworkFilesAPI(APIView):
             )
             django_user = user_obj.user
             if not django_user.is_staff:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             homework_id = request.data["homework_id"]
             new_files = request.data["files"]
             grade = user_obj.grade
@@ -321,16 +320,16 @@ class EditHomeworkFilesAPI(APIView):
             ).get(id=homework_id, grade=grade, letter=letter)
             File.objects.filter(homework_id=homework_id).delete()
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist", status=404)
+            return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         for file in new_files:
             file_object = File.objects.create(file=file)
             file_name = file.split("/")[-1]
             file_object.file_name = file_name
             file_object.save()
             homework_obj.files.add(file_object)
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class DeleteHomeworkAPI(APIView):
@@ -342,7 +341,7 @@ class DeleteHomeworkAPI(APIView):
             )
             django_user = user_obj.user
             if not django_user.is_staff:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             user_grade = user_obj.grade
             user_letter = user_obj.letter
             user_group = user_obj.group
@@ -353,10 +352,10 @@ class DeleteHomeworkAPI(APIView):
                 id=homework_id,
             ).delete()
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist", status=404)
+            return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
-        return HttpResponse("Successful")
+            return response.Response({"error": "Bad request data"}, status=400)
+        return response.Response({"success": "Successful"})
 
 
 class GetMailingAPI(viewsets.ReadOnlyModelViewSet):
@@ -389,7 +388,7 @@ class GetMailingAPI(viewsets.ReadOnlyModelViewSet):
                 )
                 data["admins"] = HomeworkSerializer(info_obj_three).data
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         return response.Response(data)
 
 
@@ -404,7 +403,7 @@ class AddMailingAPI(APIView):
             level = request.data["level"]
             if level == "class":
                 if not django_user.is_staff:
-                    return HttpResponse("Not allowed", status=403)
+                    return response.Response({"error": "Not allowed"}, status=403)
                 grade = user_obj.grade
                 letter = user_obj.letter
                 images = request.data["images"]
@@ -423,9 +422,9 @@ class AddMailingAPI(APIView):
                 homework_obj.description = request.data["description"]
                 homework_obj.subject = "info"
                 homework_obj.save()
-                return HttpResponse("Successful")
+                return response.Response({"success": "Successful"})
             if not django_user.is_superuser:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             grade = 0
             letter = ""
             images = request.data["images"]
@@ -448,8 +447,8 @@ class AddMailingAPI(APIView):
             )
             homework_obj.save()
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
-        return HttpResponse("Successful")
+            return response.Response({"error": "Bad request data"}, status=400)
+        return response.Response({"success": "Successful"})
 
 
 class EditMailingAPI(APIView):
@@ -470,19 +469,19 @@ class EditMailingAPI(APIView):
                     id=homework_id,
                 )
             else:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist | Not allowed", status=404)
+            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         if homework_obj:
             serialized_data = HomeworkSerializer(homework_obj).data
             images = [i.image.url for i in homework_obj.images.all()]
             files = [i.file.url for i in homework_obj.files.all()]
             serialized_data["images"] = images
             serialized_data["files"] = files
-            return HttpResponse(json.dumps(serialized_data))
-        return HttpResponse("Does not exist | Not allowed", status=404)
+            return response.Response(serialized_data)
+        return response.Response({"error": "Does not exist | Not allowed"}, status=404)
 
 
 class EditMailingDescriptionAPI(APIView):
@@ -493,7 +492,7 @@ class EditMailingDescriptionAPI(APIView):
             user_obj = users.models.User.objects.get(telegram_id=telegram_id)
             django_user = user_obj.user
             if not django_user.is_staff:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             homework_id = request.data["homework_id"]
             new_description = request.data["description"]
             homework_obj = None
@@ -504,14 +503,14 @@ class EditMailingDescriptionAPI(APIView):
                     id=homework_id,
                 )
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist | Not allowed", status=404)
+            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         if not homework_obj:
-            return HttpResponse("Error")
+            return response.Response({"error": "Error"})
         homework_obj.description = new_description
         homework_obj.save()
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class EditMailingImagesAPI(APIView):
@@ -523,7 +522,7 @@ class EditMailingImagesAPI(APIView):
             )
             django_user = user_obj.user
             if not django_user.is_staff:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             homework_id = request.data["homework_id"]
             new_images = request.data["images"]
             if django_user.is_superuser:
@@ -533,13 +532,13 @@ class EditMailingImagesAPI(APIView):
                 homework_obj = Homework.objects.get(id=homework_id, group=-1)
                 Image.objects.filter(homework_id=homework_id).delete()
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist | Not allowed", status=404)
+            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         for image in new_images:
             image_object = Image.objects.create(image=image)
             homework_obj.images.add(image_object)
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class EditMailingFilesAPI(APIView):
@@ -551,7 +550,7 @@ class EditMailingFilesAPI(APIView):
             )
             django_user = user_obj.user
             if not django_user.is_staff:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             homework_id = request.data["homework_id"]
             new_files = request.data["files"]
             if django_user.is_superuser:
@@ -561,16 +560,16 @@ class EditMailingFilesAPI(APIView):
                 homework_obj = Homework.objects.get(id=homework_id, group=-1)
                 File.objects.filter(homework_id=homework_id).delete()
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist | Not allowed", status=404)
+            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         for file in new_files:
             file_object = File.objects.create(file=file)
             file_name = file.split("/")[-1]
             file_object.file_name = file_name
             file_object.save()
             homework_obj.files.add(file_object)
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class DeleteMailingAPI(APIView):
@@ -582,7 +581,7 @@ class DeleteMailingAPI(APIView):
             )
             django_user = user_obj.user
             if not django_user.is_staff:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             homework_id = request.data["homework_id"]
             if django_user.is_superuser:
                 Homework.objects.get(
@@ -594,10 +593,10 @@ class DeleteMailingAPI(APIView):
                     id=homework_id,
                 ).delete()
         except Homework.DoesNotExist:
-            return HttpResponse("Does not exist | Not allowed", status=404)
+            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
-        return HttpResponse("Successful")
+            return response.Response({"error": "Bad request data"}, status=400)
+        return response.Response({"success": "Successful"})
 
 
 class TodoWorkAPI(APIView):
@@ -609,7 +608,7 @@ class TodoWorkAPI(APIView):
             )
             homework_id = request.data["homework_id"]
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         try:
             homework_obj = Homework.objects.get(id=homework_id)
             homework_todo = Todo.objects.get(
@@ -617,7 +616,7 @@ class TodoWorkAPI(APIView):
                 homework_todo=homework_obj,
             )
         except Homework.DoesNotExist:
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         except Todo.DoesNotExist:
             todo_obj = Todo.objects.create()
             todo_obj.user_todo.add(user_obj)
@@ -627,7 +626,7 @@ class TodoWorkAPI(APIView):
         else:
             homework_todo.is_done = not homework_todo.is_done
             homework_todo.save()
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class GetTomorrowScheduleAPI(viewsets.ReadOnlyModelViewSet):
@@ -644,7 +643,7 @@ class GetTomorrowScheduleAPI(viewsets.ReadOnlyModelViewSet):
                 user_obj.group,
             )
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         return response.Response(self.get_serializer(schedule, many=True).data)
 
 
@@ -656,9 +655,9 @@ class DeleteOldHomeworkAPI(APIView):
                 telegram_id=request.data["telegram_id"],
             )
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         if not user_obj.user.is_superuser:
-            return HttpResponse("Not allowed ^)", status=403)
+            return response.Response({"error": "Not allowed ^)"}, status=403)
 
         today = datetime.today().date()
         two_weeks_ago = today - timedelta(days=14)
@@ -671,7 +670,7 @@ class DeleteOldHomeworkAPI(APIView):
         )
         todo_objects.delete()
         hw_objects.delete()
-        return HttpResponse(response_message)
+        return response.Response({"success": response_message})
 
 
 class AddScheduleAPI(APIView):
@@ -682,7 +681,7 @@ class AddScheduleAPI(APIView):
                 telegram_id=request.data["telegram_id"],
             )
             if not user_obj.user.is_superuser:
-                return HttpResponse("Not allowed", status=403)
+                return response.Response({"error": "Not allowed"}, status=403)
             grade = request.data["grade"]
             letter = request.data["letter"]
             weekday = request.data["weekday"]
@@ -690,7 +689,7 @@ class AddScheduleAPI(APIView):
             subject = request.data["subject"]
             group = request.data["group"]
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         Schedule.objects.create(
             grade=grade,
             letter=letter,
@@ -699,7 +698,7 @@ class AddScheduleAPI(APIView):
             subject=subject,
             lesson=lesson,
         )
-        return HttpResponse("Successful")
+        return response.Response({"success": "Successful"})
 
 
 class GetWeekScheduleAPI(viewsets.ReadOnlyModelViewSet):
@@ -711,7 +710,7 @@ class GetWeekScheduleAPI(viewsets.ReadOnlyModelViewSet):
                 telegram_id=request.data["telegram_id"],
             )
         except (KeyError, users.models.User.DoesNotExist):
-            return HttpResponse("Bad request data", status=400)
+            return response.Response({"error": "Bad request data"}, status=400)
         latest_schedule_ids = (
             Schedule.objects.filter(Q(group=0) | Q(group=user.group))
             .filter(
