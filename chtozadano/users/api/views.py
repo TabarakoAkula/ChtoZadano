@@ -88,6 +88,23 @@ class ChangeContactsAPI(APIView):
         return response.Response({"success": "Successful"})
 
 
+class GetQuotesAPI(APIView):
+    @staticmethod
+    def post(request):
+        telegram_id = request.data["telegram_id"]
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        return response.Response({"quotes_status": user_obj.show_quotes})
+
+
+class ChangeQuotesAPI(APIView):
+    @staticmethod
+    def post(request):
+        telegram_id = request.data["telegram_id"]
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        user_obj.show_quotes = not user_obj.show_quotes
+        return response.Response({"quotes_status": user_obj.show_quotes})
+
+
 class ChangeGradeLetterAPI(APIView):
     @staticmethod
     def post(request):

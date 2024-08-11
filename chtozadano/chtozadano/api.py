@@ -21,6 +21,14 @@ urlpatterns = [
         users.api.views.ChangeContactsAPI.as_view(),
     ),
     path(
+        "get_quotes_status/",
+        users.api.views.GetQuotesAPI.as_view(),
+    ),
+    path(
+        "change_quotes/",
+        users.api.views.ChangeQuotesAPI.as_view(),
+    ),
+    path(
         "change_grade_letter/",
         users.api.views.ChangeGradeLetterAPI.as_view(),
     ),

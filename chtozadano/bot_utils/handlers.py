@@ -8,8 +8,16 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from bot_utils import keyboards
-from bot_utils.filters import ScheduleStateFilter
-from bot_utils.states import Register, Schedule
+from bot_utils.filters import (
+    AccountStateFilter,
+    ScheduleStateFilter,
+)
+from bot_utils.states import (
+    Account,
+    ChangeContacts,
+    Register,
+    Schedule,
+)
 import dotenv
 import requests
 
@@ -66,7 +74,8 @@ async def command_help_handler(message: Message):
         "/menu - меню\n"
         "/code - код верификации\n"
         "/get_week_schedule - расписание на неделю\n"
-        "/get_tomorrow_schedule - расписание на завтра\n",
+        "/get_tomorrow_schedule - расписание на завтра\n"
+        "/change_contacts - изменить имя и фамилию\n",
     )
 
 
@@ -178,10 +187,24 @@ async def start_redirect_to_menu_handler(
 
 @rp.message(Command("menu"))
 async def command_menu_handler(message: Message):
-    await message.answer(
-        text=random.choice(MENU_MESSAGES),
-        reply_markup=keyboards.menu_rp_kb(),
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_quotes_status/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.from_user.id,
+        },
     )
+    if response.json()["quotes_status"]:
+        await message.answer(
+            text=random.choice(MENU_MESSAGES),
+            reply_markup=keyboards.menu_rp_kb(),
+        )
+    else:
+        await message.answer(
+            text="Ты находишься в основном меню",
+            reply_markup=keyboards.menu_rp_kb(),
+        )
 
 
 @rp.callback_query(F.data == "back_to_start", Register.choose_group)
@@ -277,7 +300,7 @@ async def schedule_tomorrow_handler(message: Message, state: FSMContext):
     )
 
 
-@rp.message(F.text == "Вернуться", ScheduleStateFilter)
+@rp.message(F.text == "Вернуться")
 async def schedule_back_handler(message: Message, state: FSMContext):
     await state.clear()
     await command_menu_handler(message)
@@ -297,3 +320,110 @@ async def command_tomorrow_schedule_handler(
     state: FSMContext,
 ):
     await schedule_tomorrow_handler(message, state)
+
+
+@rp.message(F.text == "Аккаунт👤")
+async def account_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.set_state(Account.start)
+    await message.answer(
+        "Ты находишься в меню аккаунта",
+        reply_markup=keyboards.account_page_rp_kb(),
+    )
+
+
+@rp.message(F.text == "Имя и Фамилия✏️", AccountStateFilter)
+async def change_contacts_account_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.set_state(Account.change_contacts)
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_contacts/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.from_user.id,
+        },
+    )
+    response = response.json()
+    first_name = response["first_name"]
+    last_name = response["last_name"]
+    answer_message = (
+        f"Сейчас твои данные выглядят так:\nИмя: {html.bold(first_name)}\n"
+        f"Фамилия: {html.bold(last_name)}\n\nЭти данные будут отображаться"
+        f" при добавлении домашнего задания, а также при отправке"
+        f" заявки на становление администратором"
+    )
+    await message.answer(
+        text=answer_message,
+        reply_markup=keyboards.change_contacts_rp_kb(),
+    )
+
+
+@rp.message(F.text == "Назад", AccountStateFilter)
+async def redirect_to_account_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.set_state(Account.start)
+    await message.answer(
+        "Ты находишься в меню аккаунта",
+        reply_markup=keyboards.account_page_rp_kb(),
+    )
+
+
+@rp.message(F.text == "Изменить данные📝", AccountStateFilter)
+async def first_name_change_contacts_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.set_state(ChangeContacts.first_name)
+    await message.answer(
+        "Введи свое имя:",
+    )
+
+
+@rp.message(ChangeContacts.first_name)
+async def last_name_change_contacts_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.update_data(first_name=message.text)
+    await state.set_state(ChangeContacts.last_name)
+    await message.answer(
+        "Введи свою фамилию:",
+    )
+
+
+@rp.message(ChangeContacts.last_name)
+async def redirect_from_change_contacts_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.update_data(last_name=message.text)
+    data = await state.get_data()
+    data["first_name"] = data["first_name"][:15]
+    data["last_name"] = data["last_name"][:15]
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/change_contacts/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.from_user.id,
+            "first_name": data["first_name"],
+            "last_name": data["last_name"],
+        },
+    )
+    await state.clear()
+    await change_contacts_account_handler(message, state)
+
+
+@rp.message(Command("change_contacts"))
+async def redirect_change_contacts(
+    message: Message,
+    state: FSMContext,
+):
+    await change_contacts_account_handler(message, state)
