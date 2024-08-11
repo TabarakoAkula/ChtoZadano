@@ -66,6 +66,10 @@ class User(django.db.models.Model):
         default=False,
         verbose_name="Режим чата",
     )
+    show_quotes = django.db.models.BooleanField(
+        default=False,
+        verbose_name="Режим цитат",
+    )
     todo = django.db.models.ManyToManyField(
         homework.models.Todo,
         blank=True,
