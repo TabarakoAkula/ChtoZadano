@@ -15,6 +15,7 @@ import requests
 dotenv.load_dotenv()
 
 DOMAIN_URL = os.getenv("DOMAIN_URL")
+DOCKER_URL = os.getenv("DOCKER_URL")
 
 MENU_MESSAGES = [
     "Какой сегодня чудный день🔮",
@@ -61,7 +62,7 @@ async def command_help_handler(message: Message):
 async def command_start_handler(message: Message, state: FSMContext):
     response = await asyncio.to_thread(
         requests.post,
-        url=DOMAIN_URL + "/api/v1/is_user_in_system/",
+        url=DOCKER_URL + "/api/v1/is_user_in_system/",
         json={
             "api_key": os.getenv("API_KEY"),
             "telegram_id": message.from_user.id,
@@ -86,7 +87,7 @@ async def command_start_handler(message: Message, state: FSMContext):
 async def command_reset_handler(message: Message, state: FSMContext):
     response = await asyncio.to_thread(
         requests.post,
-        url=DOMAIN_URL + "/api/v1/is_user_admin/",
+        url=DOCKER_URL + "/api/v1/is_user_admin/",
         json={
             "api_key": os.getenv("API_KEY"),
             "telegram_id": message.from_user.id,
@@ -139,7 +140,7 @@ async def redirect_to_menu_handler(call: CallbackQuery, state: FSMContext):
     if not reset:
         await asyncio.to_thread(
             requests.post,
-            url=DOMAIN_URL + "/api/v1/create_user/",
+            url=DOCKER_URL + "/api/v1/create_user/",
             json={
                 "api_key": os.getenv("API_KEY"),
                 "telegram_id": call.from_user.id,
@@ -183,7 +184,7 @@ async def site_register_handler(message: Message) -> None:
     confirmation_code = random.randint(111111, 999999)
     response = await asyncio.to_thread(
         requests.post,
-        url=DOMAIN_URL + "/api/v1/code_confirmation/",
+        url=DOCKER_URL + "/api/v1/code_confirmation/",
         json={
             "api_key": os.getenv("API_KEY"),
             "telegram_id": message.from_user.id,
