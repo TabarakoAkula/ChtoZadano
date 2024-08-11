@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import json
 
 from django.db.models import OuterRef, Q, Subquery
 from rest_framework import response, viewsets
@@ -403,7 +402,10 @@ class AddMailingAPI(APIView):
             level = request.data["level"]
             if level == "class":
                 if not django_user.is_staff:
-                    return response.Response({"error": "Not allowed"}, status=403)
+                    return response.Response(
+                        {"error": "Not allowed"},
+                        status=403,
+                    )
                 grade = user_obj.grade
                 letter = user_obj.letter
                 images = request.data["images"]
@@ -471,7 +473,10 @@ class EditMailingAPI(APIView):
             else:
                 return response.Response({"error": "Not allowed"}, status=403)
         except Homework.DoesNotExist:
-            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
+            return response.Response(
+                {"error": "Does not exist | Not allowed"},
+                status=404,
+            )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         if homework_obj:
@@ -481,7 +486,10 @@ class EditMailingAPI(APIView):
             serialized_data["images"] = images
             serialized_data["files"] = files
             return response.Response(serialized_data)
-        return response.Response({"error": "Does not exist | Not allowed"}, status=404)
+        return response.Response(
+            {"error": "Does not exist | Not allowed"},
+            status=404,
+        )
 
 
 class EditMailingDescriptionAPI(APIView):
@@ -503,7 +511,10 @@ class EditMailingDescriptionAPI(APIView):
                     id=homework_id,
                 )
         except Homework.DoesNotExist:
-            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
+            return response.Response(
+                {"error": "Does not exist | Not allowed"},
+                status=404,
+            )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         if not homework_obj:
@@ -532,7 +543,10 @@ class EditMailingImagesAPI(APIView):
                 homework_obj = Homework.objects.get(id=homework_id, group=-1)
                 Image.objects.filter(homework_id=homework_id).delete()
         except Homework.DoesNotExist:
-            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
+            return response.Response(
+                {"error": "Does not exist | Not allowed"},
+                status=404,
+            )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         for image in new_images:
@@ -560,7 +574,10 @@ class EditMailingFilesAPI(APIView):
                 homework_obj = Homework.objects.get(id=homework_id, group=-1)
                 File.objects.filter(homework_id=homework_id).delete()
         except Homework.DoesNotExist:
-            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
+            return response.Response(
+                {"error": "Does not exist | Not allowed"},
+                status=404,
+            )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         for file in new_files:
@@ -593,7 +610,10 @@ class DeleteMailingAPI(APIView):
                     id=homework_id,
                 ).delete()
         except Homework.DoesNotExist:
-            return response.Response({"error": "Does not exist | Not allowed"}, status=404)
+            return response.Response(
+                {"error": "Does not exist | Not allowed"},
+                status=404,
+            )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         return response.Response({"success": "Successful"})

@@ -32,7 +32,7 @@ class CodeConfirmationAPI(APIView):
         return response.Response(
             {
                 "success": f"Информация о пользователе {telegram_id}"
-                           f" успешно внесена в таблицу SignIN",
+                f" успешно внесена в таблицу SignIN",
             },
         )
 
@@ -177,7 +177,9 @@ class AcceptDeclineBecomeAdminAPI(APIView):
             try:
                 BecomeAdmin.objects.get(telegram_id=candidate_id)
             except BecomeAdmin.DoesNotExist:
-                return response.Response({"error": "Это кто? Я такого не знаю"})
+                return response.Response(
+                    {"error": "Это кто? Я такого не знаю"},
+                )
             decision = request.data["decision"]
             if decision == "accept":
                 candidat_user = User.objects.get(telegram_id=candidate_id).user

@@ -1,6 +1,6 @@
 import asyncio
-import os
 import json
+import os
 import random
 
 from aiogram import F, html, Router
