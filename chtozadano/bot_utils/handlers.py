@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 import random
 
@@ -18,6 +17,7 @@ from bot_utils.states import (
     Register,
     Schedule,
 )
+from bot_utils.utils import check_for_admin
 import dotenv
 import requests
 
@@ -75,7 +75,8 @@ async def command_help_handler(message: Message):
         "/code - код верификации\n"
         "/get_week_schedule - расписание на неделю\n"
         "/get_tomorrow_schedule - расписание на завтра\n"
-        "/change_contacts - изменить имя и фамилию\n",
+        "/change_contacts - изменить имя или фамилию\n"
+        "/become_admin - стать администратором\n",
     )
 
 
@@ -105,16 +106,7 @@ async def command_start_handler(message: Message, state: FSMContext):
 
 @rp.message(Command("reset"))
 async def command_reset_handler(message: Message, state: FSMContext):
-    response = await asyncio.to_thread(
-        requests.post,
-        url=DOCKER_URL + "/api/v1/is_user_admin/",
-        json={
-            "api_key": os.getenv("API_KEY"),
-            "telegram_id": message.from_user.id,
-        },
-    )
-    response_data = json.loads(response.json())
-    if response_data["is_admin"] and not response_data["is_superuser"]:
+    if await check_for_admin(message.from_user.id) == "admin":
         await message.answer(
             "Ты назначен администратором в своем классе,"
             " поэтому не можешь поменять класс\n\n"
@@ -329,10 +321,16 @@ async def account_handler(
     state: FSMContext,
 ):
     await state.set_state(Account.start)
-    await message.answer(
-        "Ты находишься в меню аккаунта",
-        reply_markup=keyboards.account_page_rp_kb(),
-    )
+    if await check_for_admin(message.from_user.id) == "admin":
+        await message.answer(
+            "Ты находишься в меню аккаунта",
+            reply_markup=keyboards.account_admin_page_rp_kb(),
+        )
+    else:
+        await message.answer(
+            "Ты находишься в меню аккаунта",
+            reply_markup=keyboards.account_user_page_rp_kb(),
+        )
 
 
 @rp.message(F.text == "Имя и Фамилия✏️", AccountStateFilter)
@@ -370,10 +368,16 @@ async def redirect_to_account_handler(
     state: FSMContext,
 ):
     await state.set_state(Account.start)
-    await message.answer(
-        "Ты находишься в меню аккаунта",
-        reply_markup=keyboards.account_page_rp_kb(),
-    )
+    if await check_for_admin(message.from_user.id) == "admin":
+        await message.answer(
+            "Ты находишься в меню аккаунта",
+            reply_markup=keyboards.account_admin_page_rp_kb(),
+        )
+    else:
+        await message.answer(
+            "Ты находишься в меню аккаунта",
+            reply_markup=keyboards.account_user_page_rp_kb(),
+        )
 
 
 @rp.message(F.text == "Изменить данные📝", AccountStateFilter)
@@ -437,3 +441,78 @@ async def change_class_account_handler(
 ):
     await state.clear()
     await command_reset_handler(message, state)
+
+
+@rp.message(F.text == "Стать администратором👨‍💼", AccountStateFilter)
+async def become_admin_account_handler(
+    message: Message,
+    state: FSMContext,
+):
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_contacts/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.from_user.id,
+        },
+    )
+    if await check_for_admin(message.from_user.id) == "admin":
+        await state.set_state(Account.start)
+        await message.answer(
+            "Ты уже являешься администратором😉",
+            reply_markup=keyboards.account_admin_page_rp_kb(),
+        )
+    else:
+        response = response.json()
+        first_name = response["first_name"]
+        last_name = response["last_name"]
+        await message.answer(
+            text=f"Став администратором, у тебя появится возможность добавлять"
+            f" и редактировать домашние задания.\n\nПеред отправкой заявки"
+            f" обязательно проверь свои данные:\n"
+            f"Имя: {html.bold(first_name)}\n"
+            f"Фамилия: {html.bold(last_name)}\n\n"
+            f"Данные можно изменить в меню {html.bold('Имя и фамилия✏️')},"
+            f" или введя команду /change_contacts\n"
+            f"Для отправки заявки нажми кнопку ниже👇",
+            reply_markup=keyboards.become_admin_rp_kb(),
+        )
+
+
+@rp.message(Command("become_admin"))
+async def command_become_admin_account_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await become_admin_account_handler(message, state)
+
+
+@rp.message(F.text == "Отправить заявку📁")
+async def send_become_admin_handler(
+    message: Message,
+    state: FSMContext,
+):
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/become_admin/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.chat.id,
+        },
+    )
+    response_data = response.json()
+    try:
+        answer = response_data["error"]
+    except KeyError:
+        answer = response_data["success"]
+    if answer == "Wait pls":
+        await message.answer(
+            text="Заявка уже была отправлена, пожалуйста, подождите⏰",
+        )
+    elif answer == "Successful":
+        await message.answer(
+            "✅Заявка успешно отправлена, если она не будет рассмотрена за 48"
+            " часов - свяжись с главными администраторами:\n"
+            "· @alex010407\n· @tabara_bulkala",
+        )
+    await state.set_state(Account.start)

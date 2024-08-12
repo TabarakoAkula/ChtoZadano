@@ -105,17 +105,31 @@ def schedule_rp_kb():
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
 
 
-def account_page_rp_kb():
+def account_user_page_rp_kb():
     buttons_list = [
         [
             KeyboardButton(text="Имя и Фамилия✏️"),
             KeyboardButton(text="Сменить класс🏫"),
         ],
         [
-            KeyboardButton(text="Стань администратором👨‍💼"),
+            KeyboardButton(text="Стать администратором👨‍💼"),
             KeyboardButton(text="Настройки🛠️"),
         ],
         [
+            KeyboardButton(text="Вернуться"),
+        ],
+    ]
+    return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
+
+
+def account_admin_page_rp_kb():
+    buttons_list = [
+        [
+            KeyboardButton(text="Имя и Фамилия✏️"),
+            KeyboardButton(text="Сменить класс🏫"),
+        ],
+        [
+            KeyboardButton(text="Настройки🛠️"),
             KeyboardButton(text="Вернуться"),
         ],
     ]
@@ -126,6 +140,18 @@ def change_contacts_rp_kb():
     buttons_list = [
         [
             KeyboardButton(text="Изменить данные📝"),
+        ],
+        [
+            KeyboardButton(text="Назад"),
+        ],
+    ]
+    return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
+
+
+def become_admin_rp_kb():
+    buttons_list = [
+        [
+            KeyboardButton(text="Отправить заявку📁"),
         ],
         [
             KeyboardButton(text="Назад"),

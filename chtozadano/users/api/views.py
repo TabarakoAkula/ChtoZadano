@@ -158,12 +158,9 @@ class BecomeAdminAPI(APIView):
     @staticmethod
     def post(request):
         telegram_id = request.data["telegram_id"]
-        grade = request.data["grade"]
-        letter = request.data["letter"]
-        group = request.data["group"]
-        first_name = request.data["first_name"]
-        last_name = request.data["last_name"]
-        django_user = User.objects.get(telegram_id=telegram_id).user
+
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        django_user = user_obj.user
         if django_user.is_staff:
             return response.Response({"error": "You are already admin"})
         if django_user.is_superuser:
@@ -174,11 +171,11 @@ class BecomeAdminAPI(APIView):
             return response.Response({"error": "Already have request"})
         except BecomeAdmin.DoesNotExist:
             BecomeAdmin.objects.create(
-                grade=grade,
-                letter=letter,
-                first_name=first_name,
-                last_name=last_name,
-                group=group,
+                grade=user_obj.grade,
+                letter=user_obj.letter,
+                first_name=django_user.first_name,
+                last_name=django_user.first_name,
+                group=user_obj.group,
                 telegram_id=telegram_id,
             )
             return response.Response({"success": "Successful"})
