@@ -78,8 +78,7 @@ async def command_help_handler(message: Message):
         "/get_tomorrow_schedule - расписание на завтра\n"
         "/change_contacts - изменить имя или фамилию\n"
         "/become_admin - стать администратором\n"
-        "/chat_mode - изменить режим чата\n"
-        "/quotes_mode - изменить режим цитат\n",
+        "/settings - настройки\n",
     )
 
 
@@ -656,16 +655,8 @@ async def quotes_handler(
     await settings_handler(message, state)
 
 
-@rp.message(Command("chat_mode"))
-async def command_change_chat_mode_handler(
-    message: Message,
-    state: FSMContext,
-):
-    await settings_handler(message, state)
-
-
-@rp.message(Command("quotes_mode"))
-async def command_change_quotes_handler(
+@rp.message(Command("settings"))
+async def command_settings_handler(
     message: Message,
     state: FSMContext,
 ):
