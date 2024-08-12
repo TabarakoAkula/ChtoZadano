@@ -150,7 +150,7 @@ class ShowBecomeAdminAPI(APIView):
                 request_data,
                 many=True,
             ).data
-            return response.Response(json.dumps(serialized_data))
+            return response.Response(serialized_data)
         return response.Response({"error": "Not allowed"})
 
 
@@ -174,7 +174,7 @@ class BecomeAdminAPI(APIView):
                 grade=user_obj.grade,
                 letter=user_obj.letter,
                 first_name=django_user.first_name,
-                last_name=django_user.first_name,
+                last_name=django_user.last_name,
                 group=user_obj.group,
                 telegram_id=telegram_id,
             )
@@ -188,7 +188,7 @@ class AcceptDeclineBecomeAdminAPI(APIView):
         if User.objects.get(
             telegram_id=request.data["telegram_id"],
         ).user.is_superuser:
-            candidate_id = request.data["candidate_id"]
+            candidate_id = request.data["telegram_id"]
             try:
                 BecomeAdmin.objects.get(telegram_id=candidate_id)
             except BecomeAdmin.DoesNotExist:

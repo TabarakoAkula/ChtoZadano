@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import os
 import random
 
@@ -78,6 +79,9 @@ async def command_help_handler(message: Message):
         "/change_contacts - изменить имя или фамилию\n"
         "/become_admin - стать администратором\n",
     )
+
+
+# /show_become_admin - просмотр заявок на администратора
 
 
 @rp.message(Command("start"))
@@ -515,4 +519,58 @@ async def send_become_admin_handler(
             " часов - свяжись с главными администраторами:\n"
             "· @alex010407\n· @tabara_bulkala",
         )
+    elif answer == "You are already admin":
+        await message.answer(
+            "Ты уже являешься администратором",
+        )
     await state.set_state(Account.start)
+
+
+@rp.message(Command("show_become_admin"))
+async def command_show_become_admin_handler(
+    message: Message,
+):
+    if await check_for_admin(message.chat.id) == "superuser":
+        response = await asyncio.to_thread(
+            requests.post,
+            url=DOCKER_URL + "/api/v1/show_become_admin/",
+            json={
+                "api_key": os.getenv("API_KEY"),
+                "telegram_id": message.chat.id,
+            },
+        )
+        data = response.json()
+        if not data:
+            await message.answer("Заявок пока что нет :/")
+            return
+        for request in data:
+            created_at = datetime.datetime.strptime(
+                request["created_at"],
+                "%Y-%m-%dT%H:%M:%S.%f",
+            ).date()
+            user_id = message.chat.id
+            await message.answer(
+                f"Заявка №{request['id']}\n\nКласс: {request['grade']}"
+                f"{request['letter']}\nГруппа: {request['group']}\n"
+                f"Имя: {request['first_name']}\n"
+                f"Фамилия: {request['last_name']}\n"
+                f"Дата: {created_at}\n"
+                f"tg://openmessage?user_id={request['telegram_id']}\n",
+                reply_markup=keyboards.show_become_admin_in_kb(user_id),
+            )
+
+
+@rp.callback_query(F.data.startswith("decision_show_become_admin_"))
+async def accept_show_become_admin(
+    call: CallbackQuery,
+):
+    await call.message.delete()
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/become_admin_accept_decline/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": call.from_user.id,
+            "decision": call.data.split("_")[-2],
+        },
+    )

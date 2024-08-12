@@ -147,6 +147,12 @@ class BecomeAdmin(django.db.models.Model):
         blank=True,
         verbose_name="Телеграм id",
     )
+    created_at = DateTimeWithoutTZField(
+        auto_now_add=True,
+        verbose_name="Дата создания",
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return str(self.telegram_id)
