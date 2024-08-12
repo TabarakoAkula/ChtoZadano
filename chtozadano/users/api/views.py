@@ -102,6 +102,7 @@ class ChangeQuotesAPI(APIView):
         telegram_id = request.data["telegram_id"]
         user_obj = User.objects.get(telegram_id=telegram_id)
         user_obj.show_quotes = not user_obj.show_quotes
+        user_obj.save()
         return response.Response({"quotes_status": user_obj.show_quotes})
 
 
@@ -132,9 +133,8 @@ class ChangeChatModeAPI(APIView):
     @staticmethod
     def post(request):
         telegram_id = request.data["telegram_id"]
-        chat_mode = request.data["chat_mode"]
         user_obj = User.objects.get(telegram_id=telegram_id)
-        user_obj.chat_mode = chat_mode
+        user_obj.chat_mode = not user_obj.chat_mode
         user_obj.save()
         return response.Response({"success": "Successful"})
 

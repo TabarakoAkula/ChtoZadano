@@ -63,7 +63,7 @@ class User(django.db.models.Model):
     )
     notebook_color = colorfield.fields.ColorField(default="#FF0000")
     chat_mode = django.db.models.BooleanField(
-        default=False,
+        default=True,
         verbose_name="Режим чата",
     )
     show_quotes = django.db.models.BooleanField(

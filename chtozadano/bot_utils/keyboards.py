@@ -130,6 +130,8 @@ def account_admin_page_rp_kb():
         ],
         [
             KeyboardButton(text="Настройки🛠️"),
+        ],
+        [
             KeyboardButton(text="Вернуться"),
         ],
     ]
@@ -174,3 +176,16 @@ def show_become_admin_in_kb(user_id):
         ],
     ]
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
+
+
+def settings_rp_kb():
+    buttons_list = [
+        [
+            KeyboardButton(text="Сменить режим чата💬"),
+            KeyboardButton(text="Сменить режим цитат📓"),
+        ],
+        [
+            KeyboardButton(text="Назад"),
+        ],
+    ]
+    return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)

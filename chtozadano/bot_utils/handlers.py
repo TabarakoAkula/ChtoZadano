@@ -77,7 +77,9 @@ async def command_help_handler(message: Message):
         "/get_week_schedule - расписание на неделю\n"
         "/get_tomorrow_schedule - расписание на завтра\n"
         "/change_contacts - изменить имя или фамилию\n"
-        "/become_admin - стать администратором\n",
+        "/become_admin - стать администратором\n"
+        "/chat_mode - изменить режим чата\n"
+        "/quotes_mode - изменить режим цитат\n",
     )
 
 
@@ -561,7 +563,7 @@ async def command_show_become_admin_handler(
 
 
 @rp.callback_query(F.data.startswith("decision_show_become_admin_"))
-async def accept_show_become_admin(
+async def decision_show_become_admin(
     call: CallbackQuery,
 ):
     await call.message.delete()
@@ -574,3 +576,97 @@ async def accept_show_become_admin(
             "decision": call.data.split("_")[-2],
         },
     )
+
+
+@rp.message(F.text == "Настройки🛠️")
+async def settings_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.set_state(Account.settings)
+    chat_mode = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_chat_mode/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.chat.id,
+        },
+    )
+    quotes_status = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_quotes_status/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.chat.id,
+        },
+    )
+    chat_mode = chat_mode.json()["chat_mode"]
+    if chat_mode:
+        chat_mode = "Включен"
+    else:
+        chat_mode = "Выключен"
+    quotes_status = quotes_status.json()["quotes_status"]
+    if quotes_status:
+        quotes_status = "Включен"
+    else:
+        quotes_status = "Выключен"
+    await message.answer(
+        text="Здесь ты сможешь настроить:\n· Режим чата - если включено, "
+        "то при добавлении новой домашки - ты увидишь ее\n"
+        "· Режим цитат - если включено, то при открытии меню (/menu)"
+        " ты увидишь случайную цитату",
+    )
+    await message.answer(
+        text=f"Текущие настройки:\n"
+        f"· Режим чата: {html.bold(chat_mode)}\n"
+        f"· Режим цитат: {html.bold(quotes_status)}",
+        reply_markup=keyboards.settings_rp_kb(),
+    )
+
+
+@rp.message(F.text == "Сменить режим чата💬", AccountStateFilter)
+async def chat_mode_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/change_chat_mode/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.chat.id,
+        },
+    )
+    await settings_handler(message, state)
+
+
+@rp.message(F.text == "Сменить режим цитат📓", AccountStateFilter)
+async def quotes_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/change_quotes/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.chat.id,
+        },
+    )
+    await settings_handler(message, state)
+
+
+@rp.message(Command("chat_mode"))
+async def command_change_chat_mode_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await settings_handler(message, state)
+
+
+@rp.message(Command("quotes_mode"))
+async def command_change_quotes_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await settings_handler(message, state)

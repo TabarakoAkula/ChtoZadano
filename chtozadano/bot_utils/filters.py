@@ -1,5 +1,5 @@
 from aiogram.filters import StateFilter
-from bot_utils.states import Account, Schedule, Settings
+from bot_utils.states import Account, Schedule
 
 ScheduleStateFilter = StateFilter(
     Schedule.tomorrow_schedule,
@@ -12,10 +12,4 @@ AccountStateFilter = StateFilter(
     Account.change_contacts,
     Account.become_admin,
     Account.settings,
-)
-
-SettingsStateFilter = StateFilter(
-    Settings.start,
-    Settings.change_quotes,
-    Settings.change_chat_mode,
 )

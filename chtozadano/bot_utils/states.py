@@ -23,9 +23,3 @@ class Account(StatesGroup):
 class ChangeContacts(StatesGroup):
     first_name = State()
     last_name = State()
-
-
-class Settings(StatesGroup):
-    start = State()
-    change_chat_mode = State()
-    change_quotes = State()
