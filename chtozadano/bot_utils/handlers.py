@@ -123,6 +123,7 @@ async def command_reset_handler(message: Message, state: FSMContext):
             "Если ты больше не хочешь быть администратором -"
             " напиши одному из главных администраторов:\n"
             "· @alex010407\n· @tabara_bulkala",
+            reply_markup=keyboards.menu_rp_kb(),
         )
     else:
         await state.set_state(Register.choose_class)
@@ -192,7 +193,7 @@ async def command_menu_handler(message: Message):
         url=DOCKER_URL + "/api/v1/get_quotes_status/",
         json={
             "api_key": os.getenv("API_KEY"),
-            "telegram_id": message.from_user.id,
+            "telegram_id": message.chat.id,
         },
     )
     if response.json()["quotes_status"]:
@@ -427,3 +428,12 @@ async def redirect_change_contacts(
     state: FSMContext,
 ):
     await change_contacts_account_handler(message, state)
+
+
+@rp.message(F.text == "Сменить класс🏫", AccountStateFilter)
+async def change_class_account_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.clear()
+    await command_reset_handler(message, state)
