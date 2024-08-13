@@ -709,7 +709,14 @@ async def tomorrow_homework_handler(
     if response_data:
         for record in response_data:
             homework = response_data[record]
-            if homework["group"] != 0:
+            try:
+                group = homework["group"]
+            except KeyError:
+                await message.answer(
+                    text=f"{record}: {homework['subject']}\nНичего не задано",
+                )
+                continue
+            if group != 0:
                 text = (
                     f"{record}: {homework['subject']},"
                     f" {homework['group']} группа, {homework['author']}:\n"

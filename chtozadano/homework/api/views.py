@@ -204,7 +204,9 @@ class GetTomorrowHomeworkAPI(viewsets.ReadOnlyModelViewSet):
                     data[lesson.lesson]["data"] = True
                 else:
                     data[lesson.lesson] = {}
-                    data[lesson.lesson]["subject"] = lesson.subject
+                    data[lesson.lesson][
+                        "subject"
+                    ] = get_name_from_abbreviation(lesson.subject)
                     data[lesson.lesson]["data"] = False
         return response.Response(data)
 
