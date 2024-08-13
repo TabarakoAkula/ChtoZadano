@@ -1,5 +1,5 @@
 from aiogram.filters import StateFilter
-from bot_utils.states import Account, Schedule
+from bot_utils.states import Account, Homework, Schedule
 
 ScheduleStateFilter = StateFilter(
     Schedule.tomorrow_schedule,
@@ -12,4 +12,10 @@ AccountStateFilter = StateFilter(
     Account.change_contacts,
     Account.become_admin,
     Account.settings,
+)
+
+HomeworkStateFilter = StateFilter(
+    Homework.start,
+    Homework.subject,
+    Homework.find,
 )

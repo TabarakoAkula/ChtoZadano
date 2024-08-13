@@ -196,6 +196,9 @@ class GetTomorrowHomeworkAPI(viewsets.ReadOnlyModelViewSet):
                 data[lesson.lesson] = None
             else:
                 if homework_obj:
+                    homework_obj.subject = get_name_from_abbreviation(
+                        homework_obj.subject,
+                    )
                     serialized_obj = self.get_serializer(homework_obj).data
                     data[lesson.lesson] = serialized_obj
                     data[lesson.lesson]["data"] = True

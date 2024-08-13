@@ -1,20 +1,25 @@
 import asyncio
 import datetime
 import os
+import pathlib
 import random
+import urllib.parse
 
 from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, FSInputFile, Message
+from aiogram.utils.media_group import MediaGroupBuilder
 from bot_utils import keyboards
 from bot_utils.filters import (
     AccountStateFilter,
+    HomeworkStateFilter,
     ScheduleStateFilter,
 )
 from bot_utils.states import (
     Account,
     ChangeContacts,
+    Homework,
     Register,
     Schedule,
 )
@@ -29,29 +34,29 @@ DOCKER_URL = os.getenv("DOCKER_URL")
 
 MENU_MESSAGES = [
     "Какой сегодня чудный день🔮",
-    f"Мы все учились понемногу чему-нибудь и как-нибудь.\n"
+    f"″Мы все учились понемногу чему-нибудь и как-нибудь.″\n"
     f"- {html.italic('Александр Сергеевич Пушкин')}",
-    f"Учение — только свет, по народной пословице, — оно также и свобода."
-    f" Ничто так не освобождает человека, как знание.\n"
+    f"″Учение — только свет, по народной пословице, — оно также и свобода."
+    f" Ничто так не освобождает человека, как знание.″\n"
     f"- {html.italic('Иван Сергеевич Тургенев')}",
-    f"Чему бы ты ни учился, ты учишься для себя.\n"
+    f"″Чему бы ты ни учился, ты учишься для себя.″\n"
     f"- {html.italic('Петроний Арбитр Гай')}",
-    f"В учении нельзя останавливаться.\n- {html.italic('Сюнь-цзы')}",
-    f"Самостоятельность головы учащегося — единственное прочное основание"
-    f" всякого плодотворного учения.\n"
+    f"″В учении нельзя останавливаться.″\n- {html.italic('Сюнь-цзы')}",
+    f"″Самостоятельность головы учащегося — единственное прочное основание"
+    f" всякого плодотворного учения.″\n"
     f"- {html.italic('Константин Дмитриевич Ушинский')}",
-    f"Кто ни о чем не спрашивает, тот ничему не научится.\n"
+    f"″Кто ни о чем не спрашивает, тот ничему не научится.″\n"
     f"- {html.italic('Томас Фуллер')}",
-    f"Надо много учиться, чтобы знать хоть немного.\n"
+    f"″Надо много учиться, чтобы знать хоть немного.″\n"
     f"- {html.italic('Шарль Луи Монтескье')}",
-    f"Тот, кто не желает учиться, — никогда не станет настоящим человеком.\n"
+    f"″Тот, кто не желает учиться, — никогда не станет настоящим человеком.″\n"
     f"- {html.italic('Хосе Хулиан Марти')}",
-    f"Ученье свет, а неученье — тьма. Дело мастера боится.\n"
+    f"″Ученье свет, а неученье — тьма. Дело мастера боится.″\n"
     f"- {html.italic('Александр Васильевич Суворов')}",
-    f"Ни искусство, ни мудрость не могут быть достигнуты,"
-    f" если им не учиться.\n"
+    f"″Ни искусство, ни мудрость не могут быть достигнуты,"
+    f" если им не учиться.″\n"
     f"- {html.italic('Демокрит')}",
-    f"Надо много учиться, чтобы осознать, что знаешь мало.\n"
+    f"″Надо много учиться, чтобы осознать, что знаешь мало.″\n"
     f"- {html.italic('Мишель де Монтень')}",
 ]
 
@@ -343,6 +348,14 @@ async def change_contacts_account_handler(
     message: Message,
     state: FSMContext,
 ):
+    if await check_for_admin(message.chat.id) == "admin":
+        await message.answer(
+            "Ты являешься администратором, поэтому"
+            " не можешь менять свои данные без разрешения"
+            " главных администраторов",
+        )
+        await account_handler(message, state)
+        return
     await state.set_state(Account.change_contacts)
     response = await asyncio.to_thread(
         requests.post,
@@ -661,3 +674,84 @@ async def command_settings_handler(
     state: FSMContext,
 ):
     await settings_handler(message, state)
+
+
+@rp.message(F.text == "Домашка📝")
+async def homework_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.set_state(Homework.start)
+    if await check_for_admin(message.chat.id) == "admin":
+        keyboard = keyboards.homework_main_admin_rp_kb()
+    else:
+        keyboard = keyboards.homework_main_user_rp_kb()
+    await message.answer(
+        text="Список доступных опций:",
+        reply_markup=keyboard,
+    )
+
+
+@rp.message(F.text == "Домашка на завтра⏰", HomeworkStateFilter)
+async def tomorrow_homework_handler(
+    message: Message,
+    state: FSMContext,
+):
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_tomorrow_homework/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.chat.id,
+        },
+    )
+    response_data = response.json()
+    if response_data:
+        for record in response_data:
+            homework = response_data[record]
+            if homework["group"] != 0:
+                text = (
+                    f"{record}: {homework['subject']},"
+                    f" {homework['group']} группа, {homework['author']}:\n"
+                    f"{homework['description']}"
+                )
+            else:
+                text = (
+                    f"{record}: {homework['subject']},"
+                    f" {homework['author']}:\n"
+                    f"{homework['description']}"
+                )
+            images = homework["images"]
+            files = homework["files"]
+            if images or files:
+                if images:
+                    photo_media_group = MediaGroupBuilder(caption=text)
+                    for image in homework["images"]:
+                        path = urllib.parse.unquote(image[1:])
+                        abs_path = pathlib.Path(path).resolve()
+                        photo_media_group.add_photo(FSInputFile(abs_path))
+                    await message.answer_media_group(photo_media_group.build())
+                if files:
+                    if not images:
+                        caption = text
+                    else:
+                        caption = "Добавленные файлы"
+                    files_media_group = MediaGroupBuilder(caption=caption)
+                    for file in homework["files"]:
+                        path = urllib.parse.unquote(file[1:])
+                        abs_path = pathlib.Path(path).resolve()
+                        files_media_group.add_document(FSInputFile(abs_path))
+                    await message.answer_media_group(files_media_group.build())
+            else:
+                await message.answer(text)
+    else:
+        await message.answer("На завтра ничего не задано")
+    await homework_handler(message, state)
+
+
+@rp.message(Command("tomorrow"))
+async def command_homework_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await tomorrow_homework_handler(message, state)

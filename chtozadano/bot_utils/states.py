@@ -23,3 +23,9 @@ class Account(StatesGroup):
 class ChangeContacts(StatesGroup):
     first_name = State()
     last_name = State()
+
+
+class Homework(StatesGroup):
+    start = State()
+    subject = State()
+    find = State()
