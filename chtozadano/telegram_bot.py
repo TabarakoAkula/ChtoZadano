@@ -6,28 +6,60 @@ import sys
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
-from aiogram.fsm.storage.memory import MemoryStorage
-from bot_utils import handlers
+from aiogram.webhook.aiohttp_server import (
+    setup_application,
+    SimpleRequestHandler,
+)
+from aiohttp import web
+from bot_utils.handlers import rp
 import dotenv
 
 dotenv.load_dotenv()
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.getenv("BOT_TOKEN")
 
-dp = Dispatcher(storage=MemoryStorage())
+USE_WEBHOOK = os.getenv("USE_WEBHOOK").lower() == "true"
+WEB_SERVER_HOST = os.getenv("WEB_SERVER_HOST")
+WEB_SERVER_PORT = int(os.getenv("WEB_SERVER_PORT"))
+WEBHOOK_PATH = os.getenv("WEBHOOK_PATH")
+WEBHOOK_SECRET = os.getenv("SECRET_KEY")
+BASE_WEBHOOK_URL = os.getenv("DOMAIN_URL")
 
-dp.include_router(handlers.rp)
+dp = Dispatcher()
+dp.include_router(rp)
+
+bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 
-async def main() -> None:
-    bot = Bot(
-        token=BOT_TOKEN,
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+async def on_startup() -> None:
+    await bot.set_webhook(
+        url=f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}",
+        secret_token=WEBHOOK_SECRET,
     )
 
+
+def run_webhook() -> None:
+    dp.startup.register(on_startup)
+    app = web.Application()
+
+    webhook_requests_handler = SimpleRequestHandler(
+        dispatcher=dp,
+        bot=bot,
+        secret_token=WEBHOOK_SECRET,
+    )
+    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
+    setup_application(app, dp, bot=bot)
+    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+
+
+async def run_polling() -> None:
+    await bot.delete_webhook()
     await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())
+    if USE_WEBHOOK:
+        run_webhook()
+    else:
+        asyncio.run(run_polling())

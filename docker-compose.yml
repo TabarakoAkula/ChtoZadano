@@ -55,6 +55,8 @@ services:
     depends_on:
       - web
     restart: always
+    expose:
+      - "8000"
     networks:
       - django-network
 
