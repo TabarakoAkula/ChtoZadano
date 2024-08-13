@@ -188,7 +188,7 @@ class AcceptDeclineBecomeAdminAPI(APIView):
         if User.objects.get(
             telegram_id=request.data["telegram_id"],
         ).user.is_superuser:
-            candidate_id = request.data["telegram_id"]
+            candidate_id = request.data["candidate_id"]
             try:
                 BecomeAdmin.objects.get(telegram_id=candidate_id)
             except BecomeAdmin.DoesNotExist:

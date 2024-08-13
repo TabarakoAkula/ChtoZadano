@@ -563,7 +563,7 @@ async def command_show_become_admin_handler(
                 request["created_at"],
                 "%Y-%m-%dT%H:%M:%S.%f",
             ).date()
-            user_id = message.chat.id
+            user_id = request["telegram_id"]
             await message.answer(
                 f"Заявка №{request['id']}\n\nКласс: {request['grade']}"
                 f"{request['letter']}\nГруппа: {request['group']}\n"
@@ -586,6 +586,7 @@ async def decision_show_become_admin(
         json={
             "api_key": os.getenv("API_KEY"),
             "telegram_id": call.from_user.id,
+            "candidate_id": call.data.split("_")[-1],
             "decision": call.data.split("_")[-2],
         },
     )
