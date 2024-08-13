@@ -23,7 +23,7 @@ from bot_utils.states import (
     Register,
     Schedule,
 )
-from bot_utils.utils import check_for_admin
+from bot_utils.utils import check_for_admin, delete_become_admin
 import dotenv
 import requests
 
@@ -128,6 +128,7 @@ async def command_reset_handler(message: Message, state: FSMContext):
             reply_markup=keyboards.menu_rp_kb(),
         )
     else:
+        await delete_become_admin(message.from_user.id)
         await state.set_state(Register.choose_class)
         await message.answer(
             "Выбери класс, в котором ты учишься в этом году",

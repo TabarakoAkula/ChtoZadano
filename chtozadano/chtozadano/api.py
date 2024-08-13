@@ -53,6 +53,10 @@ urlpatterns = [
         users.api.views.AcceptDeclineBecomeAdminAPI.as_view(),
     ),
     path(
+        "become_admin_delete_user/",
+        users.api.views.DeleteUserBecomeAdminAPI.as_view(),
+    ),
+    path(
         "is_user_in_system/",
         users.api.views.IsUserInSystemAPI.as_view(),
     ),

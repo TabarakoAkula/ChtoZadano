@@ -218,6 +218,19 @@ class IsUserInSystemAPI(APIView):
         return HttpResponse(False)
 
 
+class DeleteUserBecomeAdminAPI(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            become_admin_obj = BecomeAdmin.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+            become_admin_obj.delete()
+        except BecomeAdmin.DoesNotExist:
+            pass
+        return response.Response({"success": "OK"})
+
+
 class GetAdminsAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
 

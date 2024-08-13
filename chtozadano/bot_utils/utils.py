@@ -29,3 +29,15 @@ async def check_for_admin(telegram_id):
     if superuser:
         return "superuser"
     return "Undefined"
+
+
+async def delete_become_admin(telegram_id):
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/become_admin_delete_user/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": telegram_id,
+        },
+    )
+    return
