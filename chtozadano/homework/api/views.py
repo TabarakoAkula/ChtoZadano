@@ -60,6 +60,10 @@ class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
 
     def get_homework(self, request):
         try:
+            use_abbreviation = request.data["use_abbreviation"]
+        except KeyError:
+            use_abbreviation = False
+        try:
             user = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
             )
@@ -67,6 +71,16 @@ class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
             letter = user.letter
             group = user.group
             subject = request.data["subject"]
+            if use_abbreviation:
+                subject = get_name_from_abbreviation(subject)
+            user_subjects = get_user_subjects(grade, letter, group)
+            if subject not in user_subjects:
+                return response.Response(
+                    {
+                        "empty": "Not in subjects",
+                    },
+                    status=406,
+                )
             abr_subject = get_abbreviation_from_name(subject)
             hw_object = (
                 Homework.objects.filter(

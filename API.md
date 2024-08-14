@@ -247,7 +247,8 @@
   + Параметры: 
     + ``api_key`` - ``str`` апи ключ 
     + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
-    + ``subject`` - ``str`` название запрашиваемого предмета
+    + ``subject`` - ``str`` название запрашиваемого предмета  
+    + ``use_abbreviation`` - ``bool`` send subject abbreviation instead of name (optional)  
   + Возвращает:
       + ``HttpResponse``:
         + ``Does not exist``

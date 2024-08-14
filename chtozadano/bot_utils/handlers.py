@@ -70,6 +70,62 @@ WEEK_DAYS = {
     6: "Суббота",
 }
 
+SUBJECTS = {
+    "русский язык": "rus",
+    "русский": "rus",
+    "математика": "math",
+    "матем": "math",
+    "литература": "lit",
+    "литра": "lit",
+    "окружающий мир": "okr",
+    "окружающий": "okr",
+    "окружайка": "okr",
+    "английский язык": "eng",
+    "английский": "eng",
+    "англ": "eng",
+    "немецкий язык": "ger",
+    "немецкий": "ger",
+    "география": "geog",
+    "история": "hist",
+    "ист": "hist",
+    "обществознание": "soc",
+    "общество": "soc",
+    "общага": "soc",
+    "право": "law",
+    "естествознание": "nat",
+    "биология": "bio",
+    "био": "bio",
+    "алгебра": "alg",
+    "алг": "alg",
+    "вероятность и статистика": "stat",
+    "вероятность": "stat",
+    "статистика": "stat",
+    "экономка": "eco",
+    "геометрия": "geom",
+    "геом": "geom",
+    "геома": "geom",
+    "астрономия": "ast",
+    "физика": "phys",
+    "физ": "phys",
+    "химия": "chem",
+    "хим": "chem",
+    "индивидуальный проект": "proj",
+    "проект": "proj",
+    "информатика": "ikt",
+    "инф": "ikt",
+    "изо": "izo",
+    "музыка": "mus",
+    "технология": "tech",
+    "обж": "obg",
+    "орксэ": "ork",
+    "однкнр": "odn",
+    "информация": "info",
+    "классный": "class",
+    "классный час": "class",
+    "физкультура": "phys-c",
+    "физра": "phys-c",
+}
+
 rp = Router()
 
 
@@ -781,3 +837,24 @@ async def command_redirect_homework_subject(
     state: FSMContext,
 ) -> None:
     await get_subject_hw_handler(message, state)
+
+
+@rp.message(F.text.in_(SUBJECTS))
+async def enter_subject_handler(
+    message: Message,
+) -> None:
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_homework_for_subject/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.from_user.id,
+            "subject": SUBJECTS[message.text],
+            "use_abbreviation": True,
+        },
+    )
+    if response.status_code == 406:
+        await message.answer("В твоем классе нет такого предмета")
+        return
+    response_data = response.json()
+    await generate_homework(homework=response_data, record=0, message=message)
