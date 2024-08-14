@@ -168,4 +168,8 @@ urlpatterns = [
             {"post": "get_schedule"},
         ),
     ),
+    path(
+        "get_user_subjects/",
+        homework.api.views.GetUserSubjects.as_view(),
+    ),
 ]

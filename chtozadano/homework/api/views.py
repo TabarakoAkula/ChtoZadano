@@ -10,6 +10,7 @@ from homework.utils import (
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
+    get_user_subjects,
 )
 import users.models
 
@@ -66,12 +67,12 @@ class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
             letter = user.letter
             group = user.group
             subject = request.data["subject"]
-            subject = get_abbreviation_from_name(subject)
+            abr_subject = get_abbreviation_from_name(subject)
             hw_object = (
                 Homework.objects.filter(
                     grade=grade,
                     letter=letter,
-                    subject=subject,
+                    subject=abr_subject,
                 )
                 .filter(Q(group=group) | Q(group=0))
                 .order_by("-created_at")
@@ -82,7 +83,14 @@ class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         if not hw_object:
-            return response.Response({"error": "Does not exist"}, status=404)
+            return response.Response(
+                {
+                    "empty": "Does not exist",
+                    "subject": subject,
+                },
+                status=404,
+            )
+        hw_object.subject = subject
         serialized = self.get_serializer(hw_object)
         return response.Response(serialized.data)
 
@@ -756,3 +764,16 @@ class GetWeekScheduleAPI(viewsets.ReadOnlyModelViewSet):
                 schedule_obj.subject,
             )
         return response.Response(self.get_serializer(data, many=True).data)
+
+
+class GetUserSubjects(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            user = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+        except (KeyError, users.models.User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        user_subjects = get_user_subjects(user.grade, user.letter, user.group)
+        return response.Response(user_subjects)

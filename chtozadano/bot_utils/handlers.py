@@ -1,15 +1,12 @@
 import asyncio
 import datetime
 import os
-import pathlib
 import random
-import urllib.parse
 
 from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, FSInputFile, Message
-from aiogram.utils.media_group import MediaGroupBuilder
+from aiogram.types import CallbackQuery, Message
 from bot_utils import keyboards
 from bot_utils.filters import (
     AccountStateFilter,
@@ -23,7 +20,11 @@ from bot_utils.states import (
     Register,
     Schedule,
 )
-from bot_utils.utils import check_for_admin, delete_become_admin
+from bot_utils.utils import (
+    check_for_admin,
+    delete_become_admin,
+    generate_homework,
+)
 import dotenv
 import requests
 
@@ -73,7 +74,7 @@ rp = Router()
 
 
 @rp.message(Command("help"))
-async def command_help_handler(message: Message):
+async def command_help_handler(message: Message) -> None:
     await message.answer(
         "/start - инициализировать бота\n"
         "/reset - сменить класс\n"
@@ -83,7 +84,9 @@ async def command_help_handler(message: Message):
         "/get_tomorrow_schedule - расписание на завтра\n"
         "/change_contacts - изменить имя или фамилию\n"
         "/become_admin - стать администратором\n"
-        "/settings - настройки\n",
+        "/settings - настройки\n"
+        "/tomorrow - посмотреть дз на завтра\n"
+        "/subject - посмотреть дз по конкретному предмету\n",
     )
 
 
@@ -91,7 +94,7 @@ async def command_help_handler(message: Message):
 
 
 @rp.message(Command("start"))
-async def command_start_handler(message: Message, state: FSMContext):
+async def command_start_handler(message: Message, state: FSMContext) -> None:
     response = await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/is_user_in_system/",
@@ -115,7 +118,7 @@ async def command_start_handler(message: Message, state: FSMContext):
 
 
 @rp.message(Command("reset"))
-async def command_reset_handler(message: Message, state: FSMContext):
+async def command_reset_handler(message: Message, state: FSMContext) -> None:
     if await check_for_admin(message.from_user.id) == "admin":
         await message.answer(
             "Ты назначен администратором в своем классе,"
@@ -137,7 +140,7 @@ async def command_reset_handler(message: Message, state: FSMContext):
 
 
 @rp.callback_query(Register.choose_class, F.data.startswith("ch_gr_let_"))
-async def choose_group_handler(call: CallbackQuery, state: FSMContext):
+async def choose_group_handler(call: CallbackQuery, state: FSMContext) -> None:
     await call.answer(f"Вы выбрали {call.data.split('_')[-1]}")
     await state.update_data(choose_class=call.data.split("_")[-1])
     await state.set_state(Register.choose_group)
@@ -151,7 +154,7 @@ async def choose_group_handler(call: CallbackQuery, state: FSMContext):
 async def start_redirect_to_menu_handler(
     call: CallbackQuery,
     state: FSMContext,
-):
+) -> None:
     await state.update_data(choose_group=call.data.split("_")[-1])
     user_data = await state.get_data()
     grade = user_data["choose_class"][:-1]
@@ -190,7 +193,7 @@ async def start_redirect_to_menu_handler(
 
 
 @rp.message(Command("menu"))
-async def command_menu_handler(message: Message):
+async def command_menu_handler(message: Message) -> None:
     response = await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/get_quotes_status/",
@@ -212,7 +215,10 @@ async def command_menu_handler(message: Message):
 
 
 @rp.callback_query(F.data == "back_to_start", Register.choose_group)
-async def redirect_to_start_handler(call: CallbackQuery, state: FSMContext):
+async def redirect_to_start_handler(
+    call: CallbackQuery,
+    state: FSMContext,
+) -> None:
     await state.set_state(Register.start)
     await command_start_handler(call.message, state)
 
@@ -240,7 +246,7 @@ async def site_register_handler(message: Message) -> None:
 
 
 @rp.message(F.text == "Расписание🗓")
-async def schedule_handler(message: Message, state: FSMContext):
+async def schedule_handler(message: Message, state: FSMContext) -> None:
     await state.set_state(Schedule.start)
     await message.answer(
         "Выбери какое расписание ты хочешь посмотреть",
@@ -249,7 +255,7 @@ async def schedule_handler(message: Message, state: FSMContext):
 
 
 @rp.message(F.text == "На неделю", ScheduleStateFilter)
-async def schedule_week_handler(message: Message, state: FSMContext):
+async def schedule_week_handler(message: Message, state: FSMContext) -> None:
     await state.set_state(Schedule.week_schedule)
     response = await asyncio.to_thread(
         requests.post,
@@ -280,7 +286,10 @@ async def schedule_week_handler(message: Message, state: FSMContext):
 
 
 @rp.message(F.text == "На завтра", ScheduleStateFilter)
-async def schedule_tomorrow_handler(message: Message, state: FSMContext):
+async def schedule_tomorrow_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
     await state.set_state(Schedule.tomorrow_schedule)
     response = await asyncio.to_thread(
         requests.post,
@@ -305,7 +314,7 @@ async def schedule_tomorrow_handler(message: Message, state: FSMContext):
 
 
 @rp.message(F.text == "Вернуться")
-async def schedule_back_handler(message: Message, state: FSMContext):
+async def schedule_back_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
     await command_menu_handler(message)
 
@@ -314,7 +323,7 @@ async def schedule_back_handler(message: Message, state: FSMContext):
 async def command_week_schedule_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await schedule_week_handler(message, state)
 
 
@@ -322,7 +331,7 @@ async def command_week_schedule_handler(
 async def command_tomorrow_schedule_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await schedule_tomorrow_handler(message, state)
 
 
@@ -330,7 +339,7 @@ async def command_tomorrow_schedule_handler(
 async def account_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await state.set_state(Account.start)
     if await check_for_admin(message.from_user.id) == "admin":
         await message.answer(
@@ -348,7 +357,7 @@ async def account_handler(
 async def change_contacts_account_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     if await check_for_admin(message.chat.id) == "admin":
         await message.answer(
             "Ты являешься администратором, поэтому"
@@ -385,7 +394,7 @@ async def change_contacts_account_handler(
 async def redirect_to_account_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await state.set_state(Account.start)
     if await check_for_admin(message.from_user.id) == "admin":
         await message.answer(
@@ -403,7 +412,7 @@ async def redirect_to_account_handler(
 async def first_name_change_contacts_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await state.set_state(ChangeContacts.first_name)
     await message.answer(
         "Введи свое имя:",
@@ -414,7 +423,7 @@ async def first_name_change_contacts_handler(
 async def last_name_change_contacts_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await state.update_data(first_name=message.text)
     await state.set_state(ChangeContacts.last_name)
     await message.answer(
@@ -426,7 +435,7 @@ async def last_name_change_contacts_handler(
 async def redirect_from_change_contacts_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await state.update_data(last_name=message.text)
     data = await state.get_data()
     data["first_name"] = data["first_name"][:15]
@@ -449,7 +458,7 @@ async def redirect_from_change_contacts_handler(
 async def redirect_change_contacts(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await change_contacts_account_handler(message, state)
 
 
@@ -457,7 +466,7 @@ async def redirect_change_contacts(
 async def change_class_account_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await state.clear()
     await command_reset_handler(message, state)
 
@@ -466,7 +475,7 @@ async def change_class_account_handler(
 async def become_admin_account_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     response = await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/get_contacts/",
@@ -502,7 +511,7 @@ async def become_admin_account_handler(
 async def command_become_admin_account_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await become_admin_account_handler(message, state)
 
 
@@ -510,7 +519,7 @@ async def command_become_admin_account_handler(
 async def send_become_admin_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     response = await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/become_admin/",
@@ -544,7 +553,7 @@ async def send_become_admin_handler(
 @rp.message(Command("show_become_admin"))
 async def command_show_become_admin_handler(
     message: Message,
-):
+) -> None:
     if await check_for_admin(message.chat.id) == "superuser":
         response = await asyncio.to_thread(
             requests.post,
@@ -578,7 +587,7 @@ async def command_show_become_admin_handler(
 @rp.callback_query(F.data.startswith("decision_show_become_admin_"))
 async def decision_show_become_admin(
     call: CallbackQuery,
-):
+) -> None:
     await call.message.delete()
     await asyncio.to_thread(
         requests.post,
@@ -596,7 +605,7 @@ async def decision_show_become_admin(
 async def settings_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await state.set_state(Account.settings)
     chat_mode = await asyncio.to_thread(
         requests.post,
@@ -642,7 +651,7 @@ async def settings_handler(
 async def chat_mode_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/change_chat_mode/",
@@ -658,7 +667,7 @@ async def chat_mode_handler(
 async def quotes_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/change_quotes/",
@@ -674,7 +683,7 @@ async def quotes_handler(
 async def command_settings_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await settings_handler(message, state)
 
 
@@ -682,7 +691,7 @@ async def command_settings_handler(
 async def homework_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await state.set_state(Homework.start)
     if await check_for_admin(message.chat.id) == "admin":
         keyboard = keyboards.homework_main_admin_rp_kb()
@@ -698,7 +707,7 @@ async def homework_handler(
 async def tomorrow_homework_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     response = await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/get_tomorrow_homework/",
@@ -711,48 +720,7 @@ async def tomorrow_homework_handler(
     if response_data:
         for record in response_data:
             homework = response_data[record]
-            try:
-                group = homework["group"]
-            except KeyError:
-                await message.answer(
-                    text=f"{record}: {homework['subject']}\nНичего не задано",
-                )
-                continue
-            if group != 0:
-                text = (
-                    f"{record}: {homework['subject']},"
-                    f" {homework['group']} группа, {homework['author']}:\n"
-                    f"{homework['description']}"
-                )
-            else:
-                text = (
-                    f"{record}: {homework['subject']},"
-                    f" {homework['author']}:\n"
-                    f"{homework['description']}"
-                )
-            images = homework["images"]
-            files = homework["files"]
-            if images or files:
-                if images:
-                    photo_media_group = MediaGroupBuilder(caption=text)
-                    for image in homework["images"]:
-                        path = urllib.parse.unquote(image[1:])
-                        abs_path = pathlib.Path(path).resolve()
-                        photo_media_group.add_photo(FSInputFile(abs_path))
-                    await message.answer_media_group(photo_media_group.build())
-                if files:
-                    if not images:
-                        caption = text
-                    else:
-                        caption = "Добавленные файлы"
-                    files_media_group = MediaGroupBuilder(caption=caption)
-                    for file in homework["files"]:
-                        path = urllib.parse.unquote(file[1:])
-                        abs_path = pathlib.Path(path).resolve()
-                        files_media_group.add_document(FSInputFile(abs_path))
-                    await message.answer_media_group(files_media_group.build())
-            else:
-                await message.answer(text)
+            await generate_homework(homework, record, message)
     else:
         await message.answer("На завтра ничего не задано")
     await homework_handler(message, state)
@@ -762,5 +730,54 @@ async def tomorrow_homework_handler(
 async def command_homework_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await tomorrow_homework_handler(message, state)
+
+
+@rp.message(F.text == "Выбрать предмет📚", HomeworkStateFilter)
+async def get_subject_hw_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    await state.set_state(Homework.subject)
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_user_subjects/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.chat.id,
+        },
+    )
+    response_data = response.json()
+    await message.answer(
+        text="Выбери предмет, по которому хочешь увидеть последнюю домашку",
+        reply_markup=keyboards.homework_subject_in_kb(response_data),
+    )
+
+
+@rp.callback_query(F.data.startswith("homework_subject_"), HomeworkStateFilter)
+async def callback_homework_subject(
+    call: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    await state.set_state(Homework.subject)
+    subject = call.data.split("_")[-1]
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_homework_for_subject/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": call.from_user.id,
+            "subject": subject,
+        },
+    )
+    response_data = response.json()
+    await generate_homework(response_data, 0, call.message)
+
+
+@rp.message(Command("subject"))
+async def command_redirect_homework_subject(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    await get_subject_hw_handler(message, state)

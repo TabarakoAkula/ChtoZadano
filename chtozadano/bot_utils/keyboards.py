@@ -6,7 +6,7 @@ from aiogram.types import (
 )
 
 
-def choose_gr_let_in_kb():
+def choose_gr_let_in_kb() -> InlineKeyboardMarkup:
     inline_list = [
         [
             InlineKeyboardButton(text="4А", callback_data="ch_gr_let_4А"),
@@ -53,7 +53,7 @@ def choose_gr_let_in_kb():
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
 
 
-def choose_group_in_kb():
+def choose_group_in_kb() -> InlineKeyboardMarkup:
     inline_list = [
         [
             InlineKeyboardButton(text="1", callback_data="ch_group_1"),
@@ -69,7 +69,7 @@ def choose_group_in_kb():
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
 
 
-def open_site_in_kb(domain):
+def open_site_in_kb(domain) -> InlineKeyboardMarkup:
     inline_list = [
         [
             InlineKeyboardButton(
@@ -81,7 +81,7 @@ def open_site_in_kb(domain):
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
 
 
-def menu_rp_kb():
+def menu_rp_kb() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
             KeyboardButton(text="Расписание🗓"),
@@ -92,7 +92,7 @@ def menu_rp_kb():
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
 
 
-def schedule_rp_kb():
+def schedule_rp_kb() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
             KeyboardButton(text="На неделю"),
@@ -105,7 +105,7 @@ def schedule_rp_kb():
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
 
 
-def account_user_page_rp_kb():
+def account_user_page_rp_kb() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
             KeyboardButton(text="Имя и Фамилия✏️"),
@@ -122,7 +122,7 @@ def account_user_page_rp_kb():
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
 
 
-def account_admin_page_rp_kb():
+def account_admin_page_rp_kb() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
             KeyboardButton(text="Имя и Фамилия✏️"),
@@ -138,7 +138,7 @@ def account_admin_page_rp_kb():
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
 
 
-def change_contacts_rp_kb():
+def change_contacts_rp_kb() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
             KeyboardButton(text="Изменить данные📝"),
@@ -150,7 +150,7 @@ def change_contacts_rp_kb():
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
 
 
-def become_admin_rp_kb():
+def become_admin_rp_kb() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
             KeyboardButton(text="Отправить заявку📁"),
@@ -162,7 +162,7 @@ def become_admin_rp_kb():
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
 
 
-def show_become_admin_in_kb(user_id):
+def show_become_admin_in_kb(user_id) -> InlineKeyboardMarkup:
     inline_list = [
         [
             InlineKeyboardButton(
@@ -178,7 +178,7 @@ def show_become_admin_in_kb(user_id):
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
 
 
-def settings_rp_kb():
+def settings_rp_kb() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
             KeyboardButton(text="Сменить режим чата💬"),
@@ -191,7 +191,7 @@ def settings_rp_kb():
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
 
 
-def homework_main_admin_rp_kb():
+def homework_main_admin_rp_kb() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
             KeyboardButton(text="Домашка на завтра⏰"),
@@ -209,7 +209,7 @@ def homework_main_admin_rp_kb():
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
 
 
-def homework_main_user_rp_kb():
+def homework_main_user_rp_kb() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
             KeyboardButton(text="Домашка на завтра⏰"),
@@ -221,3 +221,24 @@ def homework_main_user_rp_kb():
         ],
     ]
     return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
+
+
+def homework_subject_in_kb(subjects) -> InlineKeyboardMarkup:
+    inline_list = []
+    counter = 1
+    temp_list = []
+    last_subject = subjects[-1]
+    for i in subjects:
+        temp_list.append(
+            InlineKeyboardButton(
+                text=i,
+                callback_data=f"homework_subject_{i}",
+            ),
+        )
+        if counter % 2 == 0 and i != last_subject:
+            inline_list.append(temp_list)
+            temp_list = []
+        if i == last_subject:
+            inline_list.append(temp_list)
+        counter += 1
+    return InlineKeyboardMarkup(inline_keyboard=inline_list)
