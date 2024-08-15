@@ -101,6 +101,7 @@ class Image(models.Model):
         null=True,
         verbose_name="Домашнее задание",
     )
+    telegram_file_id = models.CharField(null=True, blank=True)
 
     def __str__(self):
         return self.image.url
@@ -126,6 +127,7 @@ class File(models.Model):
     file_name = models.CharField(
         verbose_name="Название файлы",
     )
+    telegram_file_id = models.CharField(null=True, blank=True)
 
     def __str__(self):
         return self.file.url

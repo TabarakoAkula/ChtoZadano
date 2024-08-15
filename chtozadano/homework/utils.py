@@ -47,14 +47,14 @@ def get_user_subjects(grade: int, letter: str, group: int) -> list:
                     if i_group != group:
                         continue
                     if isinstance(json_subject_data[i], list):
-                        response.append(json_subject_data[i][0])
+                        response.append(json_subject_data[i][0].lower())
                     else:
-                        response.append(json_subject_data[i])
+                        response.append(json_subject_data[i].lower())
                 else:
                     if isinstance(json_subject_data[i], list):
-                        response.append(json_subject_data[i][0])
+                        response.append(json_subject_data[i][0].lower())
                     else:
-                        response.append(json_subject_data[i])
+                        response.append(json_subject_data[i].lower())
     return response
 
 
@@ -105,7 +105,7 @@ def save_files(
     files_list_for_model = []
     for r_file in request_files_list:
         file_extension = r_file.name.split(".")[-1]
-        if file_extension.lower() in ["png", "jpeg", "webp", "gif", "jpg"]:
+        if file_extension.lower() in ["png", "jpeg", "jpg"]:
             file_name = default_storage.save(
                 f"homework/img/{today_path}/{r_file.name}",
                 r_file,

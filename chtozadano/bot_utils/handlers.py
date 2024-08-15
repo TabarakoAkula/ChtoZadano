@@ -824,7 +824,7 @@ async def callback_homework_subject(
         json={
             "api_key": os.getenv("API_KEY"),
             "telegram_id": call.from_user.id,
-            "subject": subject,
+            "subject": subject.lower(),
         },
     )
     response_data = response.json()
@@ -839,7 +839,7 @@ async def command_redirect_homework_subject(
     await get_subject_hw_handler(message, state)
 
 
-@rp.message(F.text.in_(SUBJECTS))
+@rp.message(F.text.lower().in_(SUBJECTS))
 async def enter_subject_handler(
     message: Message,
 ) -> None:
@@ -849,7 +849,7 @@ async def enter_subject_handler(
         json={
             "api_key": os.getenv("API_KEY"),
             "telegram_id": message.from_user.id,
-            "subject": SUBJECTS[message.text],
+            "subject": SUBJECTS[message.text.lower()],
             "use_abbreviation": True,
         },
     )

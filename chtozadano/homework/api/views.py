@@ -72,7 +72,13 @@ class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
             group = user.group
             subject = request.data["subject"]
             if use_abbreviation:
-                subject = get_name_from_abbreviation(subject)
+                if subject in [
+                    "ikt",
+                    "eng",
+                    "ger",
+                ]:
+                    subject += str(group)
+                subject = get_name_from_abbreviation(subject).lower()
             user_subjects = get_user_subjects(grade, letter, group)
             if subject not in user_subjects:
                 return response.Response(
@@ -264,9 +270,23 @@ class AddHomeWorkAPI(APIView):
             author=f"{django_user.first_name} {django_user.last_name}",
         )
         for image in images:
-            hw_object.images.add(Image.objects.create(image=image))
+            path = image["path"]
+            tg_id = image["telegram_file_id"]
+            hw_object.images.add(
+                Image.objects.create(
+                    image=path,
+                    telegram_file_id=tg_id,
+                ),
+            )
         for file in files:
-            hw_object.files.add(File.objects.create(file=file))
+            path = file["path"]
+            tg_id = file["telegram_file_id"]
+            hw_object.files.add(
+                File.objects.create(
+                    file=path,
+                    telegram_file_id=tg_id,
+                ),
+            )
         return response.Response({"success": "Successful"})
 
 
@@ -321,7 +341,12 @@ class EditHomeworkImagesAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         for image in new_images:
-            image_object = Image.objects.create(image=image)
+            path = image["path"]
+            tg_id = image["telegram_file_id"]
+            image_object = Image.objects.create(
+                image=path,
+                telegram_file_id=tg_id,
+            )
             homework_obj.images.add(image_object)
         return response.Response({"success": "Successful"})
 
@@ -350,8 +375,13 @@ class EditHomeworkFilesAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         for file in new_files:
-            file_object = File.objects.create(file=file)
-            file_name = file.split("/")[-1]
+            path = file["path"]
+            tg_id = file["telegram_file_id"]
+            file_object = File.objects.create(
+                file=path,
+                telegram_file_id=tg_id,
+            )
+            file_name = path.split("/")[-1]
             file_object.file_name = file_name
             file_object.save()
             homework_obj.files.add(file_object)
@@ -442,10 +472,20 @@ class AddMailingAPI(APIView):
                     letter=letter,
                 )
                 for image in images:
-                    image_obj = Image.objects.create(image=image)
+                    path = image["path"]
+                    tg_id = image["telegram_file_id"]
+                    image_obj = Image.objects.create(
+                        image=path,
+                        telegram_file_id=tg_id,
+                    )
                     homework_obj.images.add(image_obj)
                 for file in files:
-                    file_obj = File.objects.create(file=file)
+                    path = file["path"]
+                    tg_id = file["telegram_file_id"]
+                    file_obj = File.objects.create(
+                        file=path,
+                        telegram_file_id=tg_id,
+                    )
                     homework_obj.files.add(file_obj)
                 homework_obj.group = -1
                 homework_obj.description = request.data["description"]
@@ -460,10 +500,20 @@ class AddMailingAPI(APIView):
             files = request.data["files"]
             homework_obj = Homework.objects.create(grade=grade, letter=letter)
             for image in images:
-                image_obj = Image.objects.create(image=image)
+                path = image["path"]
+                tg_id = image["telegram_file_id"]
+                image_obj = Image.objects.create(
+                    image=path,
+                    telegram_file_id=tg_id,
+                )
                 homework_obj.images.add(image_obj)
             for file in files:
-                file_obj = File.objects.create(file=file)
+                path = file["path"]
+                tg_id = file["telegram_file_id"]
+                file_obj = File.objects.create(
+                    file=path,
+                    telegram_file_id=tg_id,
+                )
                 homework_obj.files.add(file_obj)
             if level == "admins":
                 homework_obj.group = -2
@@ -577,7 +627,12 @@ class EditMailingImagesAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         for image in new_images:
-            image_object = Image.objects.create(image=image)
+            path = image["path"]
+            tg_id = image["telegram_file_id"]
+            image_object = Image.objects.create(
+                image=path,
+                telegram_file_id=tg_id,
+            )
             homework_obj.images.add(image_object)
         return response.Response({"success": "Successful"})
 
@@ -608,8 +663,13 @@ class EditMailingFilesAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         for file in new_files:
-            file_object = File.objects.create(file=file)
-            file_name = file.split("/")[-1]
+            path = file["path"]
+            tg_id = file["telegram_file_id"]
+            file_object = File.objects.create(
+                file=path,
+                telegram_file_id=tg_id,
+            )
+            file_name = path.split("/")[-1]
             file_object.file_name = file_name
             file_object.save()
             homework_obj.files.add(file_object)

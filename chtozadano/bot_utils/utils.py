@@ -4,6 +4,7 @@ import os
 import pathlib
 import urllib
 
+import aiogram.exceptions
 from aiogram.types import FSInputFile, Message
 from aiogram.utils.media_group import MediaGroupBuilder
 import dotenv
@@ -47,7 +48,48 @@ async def delete_become_admin(telegram_id: int) -> None:
     return
 
 
-async def generate_homework(homework: dict, record: int, message: Message):
+async def send_images(images: list, caption: str, message: Message) -> None:
+    photo_media_group = MediaGroupBuilder(caption=caption)
+    for image in images:
+        image_path = image["path"]
+        tg_id = image["telegram_file_id"]
+        try:
+            if tg_id:
+                photo_media_group.add_photo(media=tg_id)
+            else:
+                path = urllib.parse.unquote(image_path[1:])
+                abs_path = pathlib.Path(path).resolve()
+                photo_media_group.add_photo(FSInputFile(abs_path))
+        except aiogram.exceptions.TelegramBadRequest:
+            continue
+    await message.answer_media_group(photo_media_group.build())
+
+
+async def send_files(files: list, caption: str, message: Message) -> None:
+    files_media_group = MediaGroupBuilder(caption=caption)
+    for file in files:
+        file_path = file["path"]
+        tg_id = file["telegram_file_id"]
+        try:
+            if tg_id:
+                files_media_group.add_document(media=tg_id)
+            else:
+                path = urllib.parse.unquote(file_path[1:])
+                abs_path = pathlib.Path(path).resolve()
+                files_media_group.add_document(FSInputFile(abs_path))
+        except aiogram.exceptions.TelegramBadRequest:
+            continue
+    await message.answer_media_group(files_media_group.build())
+
+
+async def generate_homework(
+    homework: dict,
+    record: int,
+    message: Message,
+) -> None:
+    homework["subject"] = (
+        homework["subject"][0].upper() + homework["subject"][1:]
+    )
     try:
         group = homework["group"]
     except KeyError:
@@ -78,24 +120,12 @@ async def generate_homework(homework: dict, record: int, message: Message):
     files = homework["files"]
     if images or files:
         if images:
-            photo_media_group = MediaGroupBuilder(caption=text)
-            for image in homework["images"]:
-                path = urllib.parse.unquote(image[1:])
-                abs_path = pathlib.Path(path).resolve()
-                photo_media_group.add_photo(FSInputFile(abs_path))
-            await message.answer_media_group(photo_media_group.build())
+            await send_images(images, text, message)
         if files:
             if not images:
                 caption = text
             else:
-                caption = (
-                    f"Добавленные файлы к домашке по {homework['subject']}"
-                )
-            files_media_group = MediaGroupBuilder(caption=caption)
-            for file in homework["files"]:
-                path = urllib.parse.unquote(file[1:])
-                abs_path = pathlib.Path(path).resolve()
-                files_media_group.add_document(FSInputFile(abs_path))
-            await message.answer_media_group(files_media_group.build())
+                caption = f"{homework['subject']}, добавленные файлы"
+            await send_files(files, caption, message)
     else:
         await message.answer(text)

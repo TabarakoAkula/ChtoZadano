@@ -6,13 +6,19 @@ from homework.models import File, Homework, Image, Schedule
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = ("image",)
+        fields = (
+            "image",
+            "telegram_file_id",
+        )
 
 
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ("file",)
+        fields = (
+            "file",
+            "telegram_file_id",
+        )
 
 
 class HomeworkSerializer(serializers.ModelSerializer):
@@ -34,8 +40,18 @@ class HomeworkSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation["images"] = [i.image.url for i in instance.images.all()]
-        representation["files"] = [i.file.url for i in instance.files.all()]
+        representation["images"] = [
+            {"path": i.image.url, "telegram_file_id": i.telegram_file_id}
+            for i in instance.images.all()
+        ]
+        representation["files"] = [
+            {
+                "path": i.file.url,
+                "telegram_file_id": i.telegram_file_id,
+                "filename": i.file_name,
+            }
+            for i in instance.files.all()
+        ]
         return representation
 
 

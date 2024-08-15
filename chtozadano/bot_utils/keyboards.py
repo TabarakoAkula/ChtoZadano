@@ -229,6 +229,7 @@ def homework_subject_in_kb(subjects) -> InlineKeyboardMarkup:
     temp_list = []
     last_subject = subjects[-1]
     for i in subjects:
+        i = i[0].upper() + i[1:]
         temp_list.append(
             InlineKeyboardButton(
                 text=i,
