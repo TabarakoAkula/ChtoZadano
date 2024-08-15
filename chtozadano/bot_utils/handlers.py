@@ -935,6 +935,7 @@ async def add_files_handler(
                     message,
                     subject,
                     state,
+                    message.document.file_name,
                 )
     if message.audio:
         for idx, music in enumerate(message.audio):
@@ -951,6 +952,7 @@ async def add_files_handler(
                     message,
                     subject,
                     state,
+                    message.audio.file_name,
                 )
 
 

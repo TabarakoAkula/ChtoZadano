@@ -186,6 +186,7 @@ async def bot_save_files(
     message,
     subject: str,
     state,
+    file_name: str = "",
 ) -> None:
     if fs_type == "img":
         file_id = document.file_id
@@ -209,7 +210,7 @@ async def bot_save_files(
         documents = state_data[state_type]
     except KeyError:
         await message.answer(
-            f"Файл {html.italic(save_path.split('/')[-1])} не был"
+            f"Файл {html.italic(file_name)} не был"
             f" добавлен т.к. вы не дождались его отправки",
         )
         return
@@ -219,8 +220,7 @@ async def bot_save_files(
             await state.update_data(images=documents)
         else:
             await message.answer(
-                f"Файл {html.italic(save_path.split('/')[-1])}"
-                f" успешно добавлен",
+                f"Файл {html.italic(file_name)} успешно добавлен",
             )
             await state.update_data(files=documents)
 
