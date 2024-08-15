@@ -148,7 +148,9 @@ async def command_help_handler(message: Message) -> None:
         "/become_admin - стать администратором\n"
         "/settings - настройки\n"
         "/tomorrow - посмотреть дз на завтра\n"
-        "/subject - посмотреть дз по конкретному предмету\n",
+        "/subject - посмотреть дз по конкретному предмету\n"
+        "/new - добавить домашнее задание\n"
+        "/publish - опубликовать домашнее задание\n",
     )
 
 
@@ -900,7 +902,7 @@ async def choose_subject_handler(
 async def add_homework_files_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     await message.answer(
         "Отправь файлы, которые хочешь прикрепить к домашке"
         " (размер файла не должен превышать 20Мб)\n"
@@ -917,7 +919,7 @@ async def add_homework_files_handler(
 async def add_files_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     state_data = await state.get_data()
     subject = state_data["choose_subject"]
     if message.document:
@@ -960,13 +962,21 @@ async def add_files_handler(
 async def publish_hw_handler(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     state_data = await state.get_data()
     status_code = await publish_homework(state_data, message.chat.id)
     if status_code == 200:
         await message.answer("Успешно опубликовано")
     await state.clear()
     await command_menu_handler(message)
+
+
+@rp.message(Command("publish"))
+async def command_publish_hw_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    await publish_hw_handler(message, state)
 
 
 @rp.message(
@@ -997,7 +1007,7 @@ async def add_description_images_handler(
                 )
 
 
-@rp.message(Command("add"))
+@rp.message(Command("new"))
 async def command_add_homework_handler(
     message: Message,
     state: FSMContext,

@@ -7,6 +7,7 @@ import urllib
 
 from aiogram import html
 import aiogram.exceptions
+from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile, Message
 from aiogram.utils.media_group import MediaGroupBuilder
 import dotenv
@@ -146,7 +147,6 @@ async def get_user_subjects(telegram_id: int) -> list:
 
 
 async def get_file_path(
-    filename: str,
     file_type: str,
     subject: str,
     telegram_id: int,
@@ -182,10 +182,10 @@ async def bot_save_files(
     bot: aiogram.Bot,
     fs_type: str,
     state_type: str,
-    document,
-    message,
+    document: any,
+    message: Message,
     subject: str,
-    state,
+    state: FSMContext,
     file_name: str = "",
 ) -> None:
     if fs_type == "img":
@@ -195,7 +195,6 @@ async def bot_save_files(
     file_info = await bot.get_file(file_id=file_id)
     file_path = file_info.file_path
     save_path = await get_file_path(
-        file_path,
         fs_type,
         subject,
         message.chat.id,
