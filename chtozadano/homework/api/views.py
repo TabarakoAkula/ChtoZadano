@@ -281,10 +281,12 @@ class AddHomeWorkAPI(APIView):
         for file in files:
             path = file["path"]
             tg_id = file["telegram_file_id"]
+
             hw_object.files.add(
                 File.objects.create(
                     file=path,
                     telegram_file_id=tg_id,
+                    file_name=path.split("/")[-1],
                 ),
             )
         return response.Response({"success": "Successful"})
@@ -485,6 +487,7 @@ class AddMailingAPI(APIView):
                     file_obj = File.objects.create(
                         file=path,
                         telegram_file_id=tg_id,
+                        file_name=path.split("/")[-1],
                     )
                     homework_obj.files.add(file_obj)
                 homework_obj.group = -1
@@ -513,6 +516,7 @@ class AddMailingAPI(APIView):
                 file_obj = File.objects.create(
                     file=path,
                     telegram_file_id=tg_id,
+                    file_name=path.split("/")[-1],
                 )
                 homework_obj.files.add(file_obj)
             if level == "admins":
@@ -668,6 +672,7 @@ class EditMailingFilesAPI(APIView):
             file_object = File.objects.create(
                 file=path,
                 telegram_file_id=tg_id,
+                file_name=path.split("/")[-1],
             )
             file_name = path.split("/")[-1]
             file_object.file_name = file_name
@@ -851,3 +856,22 @@ class GetUserSubjects(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         user_subjects = get_user_subjects(user.grade, user.letter, user.group)
         return response.Response(user_subjects)
+
+
+class CreatePathAPI(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            user = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+            subject = request.data["subject"]
+        except (KeyError, users.models.User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        return response.Response(
+            {
+                "abbreviation": get_abbreviation_from_name(subject),
+                "grade": user.grade,
+                "letter": user.letter,
+            },
+        )

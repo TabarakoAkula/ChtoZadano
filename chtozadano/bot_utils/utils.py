@@ -1,9 +1,11 @@
 import asyncio
+import datetime
 import json
 import os
 import pathlib
 import urllib
 
+from aiogram import html
 import aiogram.exceptions
 from aiogram.types import FSInputFile, Message
 from aiogram.utils.media_group import MediaGroupBuilder
@@ -129,3 +131,135 @@ async def generate_homework(
             await send_files(files, caption, message)
     else:
         await message.answer(text)
+
+
+async def get_user_subjects(telegram_id: int) -> list:
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_user_subjects/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": telegram_id,
+        },
+    )
+    return response.json()
+
+
+async def get_file_path(
+    filename: str,
+    file_type: str,
+    subject: str,
+    telegram_id: int,
+    file_id: int,
+    extension: str,
+) -> str:
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_abbreviation/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "subject": subject,
+            "telegram_id": telegram_id,
+        },
+    )
+    response = response.json()
+    today = datetime.datetime.today()
+    month = today.month
+    if month < 10:
+        month = f"0{month}"
+    day = today.day
+    if day < 10:
+        day = f"0{day}"
+    save_directory = (
+        f"media/homework/{file_type}/{today.year}/{month}/"
+        f"{response['grade']}/{response['letter']}/{day}/"
+        f"{response['abbreviation']}/"
+    )
+    return save_directory + f"{telegram_id}_{file_id[:20]}{extension}"
+
+
+async def bot_save_files(
+    bot: aiogram.Bot,
+    fs_type: str,
+    state_type: str,
+    document,
+    message,
+    subject: str,
+    state,
+) -> None:
+    if fs_type == "img":
+        file_id = document.file_id
+    else:
+        file_id = document[1]
+    file_info = await bot.get_file(file_id=file_id)
+    file_path = file_info.file_path
+    save_path = await get_file_path(
+        file_path,
+        fs_type,
+        subject,
+        message.chat.id,
+        file_id,
+        os.path.splitext(file_path)[1],
+    )
+    path = pathlib.Path(save_path[: save_path.rfind("/")])
+    path.mkdir(exist_ok=True, parents=True)
+    await bot.download_file(file_path, save_path)
+    state_data = await state.get_data()
+    try:
+        documents = state_data[state_type]
+    except KeyError:
+        await message.answer(
+            f"Файл {html.italic(save_path.split('/')[-1])} не был"
+            f" добавлен т.к. вы не дождались его отправки",
+        )
+        return
+    else:
+        documents.append((save_path, file_id))
+        if fs_type == "img":
+            await state.update_data(images=documents)
+        else:
+            await message.answer(
+                f"Файл {html.italic(save_path.split('/')[-1])}"
+                f" успешно добавлен",
+            )
+            await state.update_data(files=documents)
+
+
+async def publish_homework(data: dict, telegram_id: int) -> None:
+    images_list = []
+    files_list = []
+    try:
+        for image_tuple in data["images"]:
+            path = image_tuple[0]
+            images_list.append(
+                {
+                    "path": path[path.find("/") + 1 :],
+                    "telegram_file_id": image_tuple[1],
+                },
+            )
+    except KeyError:
+        pass
+    try:
+        for file_tuple in data["files"]:
+            path = file_tuple[0]
+            files_list.append(
+                {
+                    "path": path[path.find("/") + 1 :],
+                    "telegram_file_id": file_tuple[1],
+                },
+            )
+    except KeyError:
+        pass
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/add_homework/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": telegram_id,
+            "description": data["text"],
+            "subject": data["choose_subject"],
+            "images": images_list,
+            "files": files_list,
+        },
+    )
+    return response.status_code

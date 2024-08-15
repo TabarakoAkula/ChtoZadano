@@ -172,4 +172,8 @@ urlpatterns = [
         "get_user_subjects/",
         homework.api.views.GetUserSubjects.as_view(),
     ),
+    path(
+        "get_abbreviation/",
+        homework.api.views.CreatePathAPI.as_view(),
+    ),
 ]

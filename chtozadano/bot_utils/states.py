@@ -29,3 +29,9 @@ class Homework(StatesGroup):
     start = State()
     subject = State()
     find = State()
+
+
+class AddHomework(StatesGroup):
+    choose_subject = State()
+    add_descriptions_images = State()
+    add_files = State()

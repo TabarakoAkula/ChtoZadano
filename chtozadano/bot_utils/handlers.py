@@ -6,24 +6,30 @@ import random
 from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, ContentType, Message
 from bot_utils import keyboards
+from bot_utils.bot import bot
 from bot_utils.filters import (
     AccountStateFilter,
+    AddHomeworkStateFilter,
     HomeworkStateFilter,
     ScheduleStateFilter,
 )
 from bot_utils.states import (
     Account,
+    AddHomework,
     ChangeContacts,
     Homework,
     Register,
     Schedule,
 )
 from bot_utils.utils import (
+    bot_save_files,
     check_for_admin,
     delete_become_admin,
     generate_homework,
+    get_user_subjects,
+    publish_homework,
 )
 import dotenv
 import requests
@@ -749,7 +755,7 @@ async def homework_handler(
     state: FSMContext,
 ) -> None:
     await state.set_state(Homework.start)
-    if await check_for_admin(message.chat.id) == "admin":
+    if await check_for_admin(message.chat.id) in ["admin", "superuser"]:
         keyboard = keyboards.homework_main_admin_rp_kb()
     else:
         keyboard = keyboards.homework_main_user_rp_kb()
@@ -796,18 +802,12 @@ async def get_subject_hw_handler(
     state: FSMContext,
 ) -> None:
     await state.set_state(Homework.subject)
-    response = await asyncio.to_thread(
-        requests.post,
-        url=DOCKER_URL + "/api/v1/get_user_subjects/",
-        json={
-            "api_key": os.getenv("API_KEY"),
-            "telegram_id": message.chat.id,
-        },
-    )
-    response_data = response.json()
     await message.answer(
         text="Выбери предмет, по которому хочешь увидеть последнюю домашку",
-        reply_markup=keyboards.homework_subject_in_kb(response_data),
+        reply_markup=keyboards.homework_subject_in_kb(
+            subjects=await get_user_subjects(message.chat.id),
+            add=False,
+        ),
     )
 
 
@@ -858,3 +858,146 @@ async def enter_subject_handler(
         return
     response_data = response.json()
     await generate_homework(homework=response_data, record=0, message=message)
+
+
+@rp.message(F.text == "Добавить📋", HomeworkStateFilter)
+async def add_homework_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    await state.set_state(AddHomework.choose_subject)
+    await message.answer(
+        text="Выбери предмет, по которому хочешь добавить домашку",
+        reply_markup=keyboards.homework_subject_in_kb(
+            subjects=await get_user_subjects(message.chat.id),
+            add=True,
+        ),
+    )
+
+
+@rp.callback_query(
+    F.data.startswith("add_hw_subject_"),
+    AddHomeworkStateFilter,
+)
+async def choose_subject_handler(
+    call: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    subject = call.data.split("_")[-1]
+    await state.update_data(choose_subject=subject)
+    await state.update_data(images=[])
+    await state.update_data(files=[])
+    await state.set_state(AddHomework.add_descriptions_images)
+    await call.answer(f"Выбранный предмет: {subject}")
+    await call.message.answer(
+        text="Отлично, теперь отправь домашку\n(Ты можешь отправить"
+        " изображения и описание, файлы можно будет отправить позже)",
+        reply_markup=keyboards.add_homework_rp_kb(),
+    )
+
+
+@rp.message(F.text == "Добавить файлы📂", AddHomeworkStateFilter)
+async def add_homework_files_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await message.answer(
+        "Отправь файлы, которые хочешь прикрепить к домашке"
+        " (размер файла не должен превышать 20Мб)\n"
+        "Для корректного добавления - дождись уведомления о том,"
+        " что файл добавлен",
+    )
+    await state.set_state(AddHomework.add_files)
+
+
+@rp.message(
+    AddHomework.add_files,
+    F.content_type.in_([ContentType.DOCUMENT, ContentType.AUDIO]),
+)
+async def add_files_handler(
+    message: Message,
+    state: FSMContext,
+):
+    state_data = await state.get_data()
+    subject = state_data["choose_subject"]
+    if message.document:
+        for idx, document in enumerate(message.document):
+            if document[0] == "file_id":
+                await message.answer(
+                    f"Файл {html.italic(message.document.file_name)}"
+                    f" был отправлен на обработку",
+                )
+                await bot_save_files(
+                    bot,
+                    "files",
+                    "files",
+                    document,
+                    message,
+                    subject,
+                    state,
+                )
+    if message.audio:
+        for idx, music in enumerate(message.audio):
+            if music[0] == "file_id":
+                await message.answer(
+                    f"Файл {html.italic(message.audio.file_name)}"
+                    f" был отправлен на обработку",
+                )
+                await bot_save_files(
+                    bot,
+                    "music",
+                    "files",
+                    music,
+                    message,
+                    subject,
+                    state,
+                )
+
+
+@rp.message(F.text == "Опубликовать🚀")
+async def publish_hw_handler(
+    message: Message,
+    state: FSMContext,
+):
+    state_data = await state.get_data()
+    status_code = await publish_homework(state_data, message.chat.id)
+    if status_code == 200:
+        await message.answer("Успешно опубликовано")
+    await state.clear()
+    await command_menu_handler(message)
+
+
+@rp.message(
+    AddHomework.add_descriptions_images,
+    F.content_type.in_([ContentType.TEXT, ContentType.PHOTO]),
+)
+async def add_description_images_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    await state.set_state(AddHomework.add_descriptions_images)
+    text = message.caption or message.text
+    state_data = await state.get_data()
+    subject = state_data["choose_subject"]
+    if text:
+        await state.update_data(text=text)
+    if message.photo:
+        for idx, photo in enumerate(message.photo):
+            if idx == len(message.photo) - 1:
+                await bot_save_files(
+                    bot,
+                    "img",
+                    "images",
+                    photo,
+                    message,
+                    subject,
+                    state,
+                )
+
+
+@rp.message(Command("add"))
+async def command_add_homework_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    await add_homework_handler(message, state)

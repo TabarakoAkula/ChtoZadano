@@ -3,20 +3,17 @@ import logging
 import os
 import sys
 
-from aiogram import Bot, Dispatcher
-from aiogram.client.default import DefaultBotProperties
-from aiogram.enums import ParseMode
+from aiogram import Dispatcher
 from aiogram.webhook.aiohttp_server import (
     setup_application,
     SimpleRequestHandler,
 )
 from aiohttp import web
+from bot_utils.bot import bot
 from bot_utils.handlers import rp
 import dotenv
 
 dotenv.load_dotenv()
-
-TOKEN = os.getenv("BOT_TOKEN")
 
 USE_WEBHOOK = os.getenv("USE_WEBHOOK").lower() == "true"
 WEB_SERVER_HOST = os.getenv("WEB_SERVER_HOST")
@@ -27,8 +24,6 @@ BASE_WEBHOOK_URL = os.getenv("DOMAIN_URL")
 
 dp = Dispatcher()
 dp.include_router(rp)
-
-bot = Bot(token=TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 
 async def on_startup() -> None:

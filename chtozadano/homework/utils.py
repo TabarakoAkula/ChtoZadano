@@ -97,11 +97,12 @@ def save_files(
 ) -> tuple[str, list] | tuple[str, str]:
     today = datetime.date.today()
     month = today.month
+    day = today.day
     if month < 10:
         month = f"0{month}"
-    today_path = (
-        f"{today.year}/{month}/{grade}/{letter}/{today.day}/{subject}/"
-    )
+    if day < 10:
+        day = f"0{day}"
+    today_path = f"{today.year}/{month}/{grade}/{letter}/{day}/{subject}/"
     files_list_for_model = []
     for r_file in request_files_list:
         file_extension = r_file.name.split(".")[-1]
