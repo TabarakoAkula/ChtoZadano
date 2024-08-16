@@ -38,7 +38,7 @@ SUBJECTS_LIST = [
     "phys-c",
 ]
 
-DOMAIN = os.getenv("DOMAIN")
+DOMAIN = os.getenv("DOMAIN_URL")
 
 DAYS_IN_WEEK = {
     1: "Понедельник",
