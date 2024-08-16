@@ -267,7 +267,7 @@ def add_homework_in_kb() -> InlineKeyboardMarkup:
                 callback_data="add_homework_files",
             ),
             InlineKeyboardButton(
-                text="Вернуться",
+                text="Сбросить",
                 callback_data="back_to_menu",
             ),
         ],
@@ -303,7 +303,7 @@ def add_homework_maximum_in_kb() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton(
-                text="Вернуться",
+                text="Сбросить",
                 callback_data="back_to_menu",
             ),
         ],

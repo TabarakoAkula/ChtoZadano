@@ -171,7 +171,8 @@ async def command_help_handler(message: Message) -> None:
         "/tomorrow - посмотреть дз на завтра\n"
         "/subject - посмотреть дз по конкретному предмету\n"
         "/new - добавить домашнее задание\n"
-        "/publish - опубликовать домашнее задание\n",
+        "/publish - опубликовать домашнее задание\n"
+        "/stop - прекратить добавление домашнего задания\n",
     )
 
 
@@ -1069,3 +1070,10 @@ async def command_add_homework_handler(
     state: FSMContext,
 ) -> None:
     await add_homework_handler(message, state)
+
+
+@rp.message(Command("stop"), AddHomeworkStateFilter)
+async def command_add_homework_handler(
+    message: Message,
+) -> None:
+    await command_menu_handler(message)
