@@ -224,7 +224,7 @@ async def bot_save_files(
             await state.update_data(files=documents)
 
 
-async def publish_homework(data: dict, telegram_id: int) -> None:
+async def publish_homework(data: dict, telegram_id: int) -> tuple[int, int]:
     images_list = []
     files_list = []
     try:
@@ -259,6 +259,53 @@ async def publish_homework(data: dict, telegram_id: int) -> None:
             "subject": data["choose_subject"],
             "images": images_list,
             "files": files_list,
+        },
+    )
+    return response.status_code, response.json()["homework_id"]
+
+
+async def get_homework_from_id(telegram_id: int, homework_id: int) -> dict:
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_homework_from_id/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": telegram_id,
+            "homework_id": homework_id,
+        },
+    )
+    return response.json()
+
+
+async def edit_hw_description(
+    telegram_id: int,
+    homework_id: int,
+    description: str,
+) -> tuple[int, int]:
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/edit_homework_description/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": telegram_id,
+            "homework_id": homework_id,
+            "description": description,
+        },
+    )
+    return response.status_code, homework_id
+
+
+async def delete_homework(
+    telegram_id: int,
+    homework_id: int,
+) -> int:
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/delete_homework/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": telegram_id,
+            "homework_id": homework_id,
         },
     )
     return response.status_code

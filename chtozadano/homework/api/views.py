@@ -289,7 +289,12 @@ class AddHomeWorkAPI(APIView):
                     file_name=path.split("/")[-1],
                 ),
             )
-        return response.Response({"success": "Successful"})
+        return response.Response(
+            {
+                "success": "Successful",
+                "homework_id": hw_object.id,
+            },
+        )
 
 
 class EditHomeworkDescriptionAPI(APIView):

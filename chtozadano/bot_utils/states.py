@@ -36,3 +36,8 @@ class AddHomework(StatesGroup):
     add_descriptions_images = State()
     add_files = State()
     message_id = State()
+
+
+class EditHomework(StatesGroup):
+    start = State()
+    edit_text = State()

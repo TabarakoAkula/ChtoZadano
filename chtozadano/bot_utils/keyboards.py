@@ -199,10 +199,9 @@ def homework_main_admin_rp_kb() -> ReplyKeyboardMarkup:
         ],
         [
             KeyboardButton(text="Добавить📋"),
-            KeyboardButton(text="Редактировать📝"),
+            KeyboardButton(text="Найти домашку🔎"),
         ],
         [
-            KeyboardButton(text="Найти домашку🔎"),
             KeyboardButton(text="Вернуться"),
         ],
     ]
@@ -302,6 +301,52 @@ def add_homework_maximum_in_kb() -> InlineKeyboardMarkup:
             ),
         ],
         [
+            InlineKeyboardButton(
+                text="Сбросить",
+                callback_data="back_to_menu",
+            ),
+        ],
+    ]
+    return InlineKeyboardMarkup(
+        inline_keyboard=buttons_list,
+        resize_keyboard=True,
+    )
+
+
+def to_edit_homework_in_kb(homework_id: int) -> InlineKeyboardMarkup:
+    buttons_list = [
+        [
+            InlineKeyboardButton(
+                text="Редактировать✏️",
+                callback_data=f"edit_homework_{homework_id}",
+            ),
+        ],
+    ]
+    return InlineKeyboardMarkup(
+        inline_keyboard=buttons_list,
+        resize_keyboard=True,
+    )
+
+
+def edit_homework_in_kb() -> InlineKeyboardMarkup:
+    buttons_list = [
+        [
+            InlineKeyboardButton(
+                text="Изменить описание💬",
+                callback_data="edit_hw_text",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="Удалить запись❌",
+                callback_data="edit_hw_delete",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="Сохранить",
+                callback_data="edit_hw_save",
+            ),
             InlineKeyboardButton(
                 text="Сбросить",
                 callback_data="back_to_menu",
