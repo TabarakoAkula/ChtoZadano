@@ -408,6 +408,7 @@ async def schedule_back_handler(message: Message, state: FSMContext) -> None:
 @rp.callback_query(F.data == "back_to_menu")
 async def inline_back_handler(call: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
+    await call.message.answer("Добавление домашнего задания отменено❌")
     await command_menu_handler(call.message)
 
 
