@@ -253,23 +253,62 @@ def homework_subject_in_kb(subjects: list, add: bool) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
 
 
-def add_homework_rp_kb() -> ReplyKeyboardMarkup:
+def add_homework_in_kb() -> InlineKeyboardMarkup:
     buttons_list = [
         [
-            KeyboardButton(text="Опубликовать🚀"),
+            InlineKeyboardButton(
+                text="Опубликовать🚀",
+                callback_data="publish_hw",
+            ),
         ],
         [
-            KeyboardButton(text="Добавить файлы📂"),
-            KeyboardButton(text="Вернуться"),
+            InlineKeyboardButton(
+                text="Добавить файлы📂",
+                callback_data="add_homework_files",
+            ),
+            InlineKeyboardButton(
+                text="Вернуться",
+                callback_data="back_to_menu",
+            ),
         ],
     ]
-    return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
+    return InlineKeyboardMarkup(
+        inline_keyboard=buttons_list,
+        resize_keyboard=True,
+    )
 
 
 def return_to_menu() -> ReplyKeyboardMarkup:
     buttons_list = [
         [
-            KeyboardButton(text="Вернуться"),
+            KeyboardButton(
+                text="Вернуться",
+                callback_data="back_to_menu",
+            ),
         ],
     ]
-    return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)
+    return ReplyKeyboardMarkup(
+        keyboard=buttons_list,
+        resize_keyboard=True,
+    )
+
+
+def add_homework_maximum_in_kb() -> InlineKeyboardMarkup:
+    buttons_list = [
+        [
+            InlineKeyboardButton(
+                text="Опубликовать🚀",
+                callback_data="publish_hw",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="Вернуться",
+                callback_data="back_to_menu",
+            ),
+        ],
+    ]
+    return InlineKeyboardMarkup(
+        inline_keyboard=buttons_list,
+        resize_keyboard=True,
+    )

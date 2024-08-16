@@ -13,6 +13,7 @@ from bot_utils.filters import (
     AccountStateFilter,
     AddHomeworkStateFilter,
     HomeworkStateFilter,
+    PublishHomeworkStateFilter,
     ScheduleStateFilter,
 )
 from bot_utils.states import (
@@ -401,6 +402,12 @@ async def schedule_tomorrow_handler(
 async def schedule_back_handler(message: Message, state: FSMContext) -> None:
     await state.clear()
     await command_menu_handler(message)
+
+
+@rp.callback_query(F.data == "back_to_menu")
+async def inline_back_handler(call: CallbackQuery, state: FSMContext) -> None:
+    await state.clear()
+    await command_menu_handler(call.message)
 
 
 @rp.message(Command("get_week_schedule"))
@@ -909,25 +916,27 @@ async def choose_subject_handler(
     await state.update_data(choose_subject=subject)
     await state.update_data(images=[])
     await state.update_data(files=[])
+    await state.update_data(message_id=[])
     await state.set_state(AddHomework.add_descriptions_images)
     await call.answer(f"Выбранный предмет: {subject}")
     await call.message.answer(
         text="Отлично, теперь отправь домашку\n(Ты можешь отправить"
         " изображения и описание, файлы можно будет отправить позже)",
-        reply_markup=keyboards.add_homework_rp_kb(),
     )
 
 
-@rp.message(F.text == "Добавить файлы📂", AddHomeworkStateFilter)
+@rp.callback_query(F.data == "add_homework_files", AddHomeworkStateFilter)
 async def add_homework_files_handler(
-    message: Message,
+    call: CallbackQuery,
     state: FSMContext,
 ) -> None:
-    await message.answer(
-        "Отправь файлы, которые хочешь прикрепить к домашке"
+    await call.message.delete_reply_markup()
+    await call.message.answer(
+        text="Отправь файлы, которые хочешь прикрепить к домашке"
         " (размер файла не должен превышать 20Мб)\n"
         "Для корректного добавления - дождись уведомления о том,"
         " что файл добавлен",
+        reply_markup=keyboards.add_homework_maximum_in_kb(),
     )
     await state.set_state(AddHomework.add_files)
 
@@ -978,8 +987,21 @@ async def add_files_handler(
                 )
 
 
-@rp.message(F.text == "Опубликовать🚀")
+@rp.callback_query(F.data == "publish_hw")
 async def publish_hw_handler(
+    call: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    state_data = await state.get_data()
+    status_code = await publish_homework(state_data, call.message.chat.id)
+    if status_code == 200:
+        await call.message.answer("Успешно опубликовано")
+    await state.clear()
+    await command_menu_handler(call.message)
+
+
+@rp.message(Command("publish"), PublishHomeworkStateFilter)
+async def command_publish_hw_handler(
     message: Message,
     state: FSMContext,
 ) -> None:
@@ -991,14 +1013,6 @@ async def publish_hw_handler(
     await command_menu_handler(message)
 
 
-@rp.message(Command("publish"))
-async def command_publish_hw_handler(
-    message: Message,
-    state: FSMContext,
-) -> None:
-    await publish_hw_handler(message, state)
-
-
 @rp.message(
     AddHomework.add_descriptions_images,
     F.content_type.in_([ContentType.TEXT, ContentType.PHOTO]),
@@ -1007,12 +1021,34 @@ async def add_description_images_handler(
     message: Message,
     state: FSMContext,
 ) -> None:
-    await state.set_state(AddHomework.add_descriptions_images)
     text = message.caption or message.text
     state_data = await state.get_data()
     subject = state_data["choose_subject"]
     if text:
         await state.update_data(text=text)
+    data = await state.get_data()
+    state_message_id = data["message_id"]
+    text = data["text"]
+    state_message_id.append(message.message_id)
+    await state.update_data(message_id=state_message_id)
+    if message.photo and text:
+        if len(state_message_id) == 1:
+            await message.answer(
+                text="Фотографии и текст успешно загружены",
+                reply_markup=keyboards.add_homework_in_kb(),
+            )
+    elif message.photo:
+        if len(state_message_id) == 1:
+            await message.answer(
+                text="Фотографии успешно загружены",
+                reply_markup=keyboards.add_homework_in_kb(),
+            )
+    elif not message.photo and message.text:
+        await message.answer(
+            text="Текст успешно добавлен",
+            reply_markup=keyboards.add_homework_in_kb(),
+        )
+    await state.set_state(AddHomework.add_descriptions_images)
     if message.photo:
         for idx, photo in enumerate(message.photo):
             if idx == len(message.photo) - 1:

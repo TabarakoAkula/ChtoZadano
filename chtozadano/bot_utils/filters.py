@@ -25,3 +25,8 @@ AddHomeworkStateFilter = StateFilter(
     AddHomework.add_descriptions_images,
     AddHomework.add_files,
 )
+
+PublishHomeworkStateFilter = StateFilter(
+    AddHomework.add_files,
+    AddHomework.add_descriptions_images,
+)
