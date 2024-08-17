@@ -477,6 +477,7 @@ class AddMailingAPI(APIView):
                 homework_obj = Homework.objects.create(
                     grade=grade,
                     letter=letter,
+                    author=f"{django_user.first_name} {django_user.last_name}",
                 )
                 for image in images:
                     path = image["path"]
@@ -506,7 +507,11 @@ class AddMailingAPI(APIView):
             letter = ""
             images = request.data["images"]
             files = request.data["files"]
-            homework_obj = Homework.objects.create(grade=grade, letter=letter)
+            homework_obj = Homework.objects.create(
+                grade=grade,
+                letter=letter,
+                author="Администрация сайта",
+            )
             for image in images:
                 path = image["path"]
                 tg_id = image["telegram_file_id"]

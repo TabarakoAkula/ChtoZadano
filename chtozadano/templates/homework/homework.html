@@ -5,7 +5,6 @@
 
 	<div class="container mt-5">
 		<div class="accordion" id="accordionExample1">
-			{% if info.0 or info.1 or info.2 %}
 				<h2>Объявления</h2>
 				{% if user.is_staff %}
 					<br>
@@ -15,6 +14,7 @@
 						</button>
 					</a>
 				{% endif %}
+			{% if info.0 or info.1 or info.2 %}
 				{% for i in info %}
 					{% if i %}
 						{% if i.group != -2 or user.is_staff %}

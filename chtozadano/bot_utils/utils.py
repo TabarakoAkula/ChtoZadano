@@ -85,6 +85,41 @@ async def send_files(files: list, caption: str, message: Message) -> None:
     await message.answer_media_group(files_media_group.build())
 
 
+async def generate_mailing(homework: dict, message: Message) -> None:
+    counter = 0
+    for row in homework:
+        i = homework[row]
+        try:
+            if not i["group"]:
+                continue
+        except TypeError:
+            continue
+        counter += 1
+        level = ""
+        if row == "class":
+            level = "Информация для класса"
+        elif row == "admins":
+            level = "Информация для администрации"
+        elif row == "school":
+            level = "Информация для школы"
+        text = f"{level}, {i['author']}:\n{i['description']}"
+        images = i["images"]
+        files = i["files"]
+        if images or files:
+            if images:
+                await send_images(images, text, message)
+            if files:
+                if not images:
+                    caption = text
+                else:
+                    caption = f"{i['subject']}, добавленные файлы"
+                await send_files(files, caption, message)
+        else:
+            await message.answer(text)
+    if counter == 0:
+        await message.answer("Новой информации пока что нет")
+
+
 async def generate_homework(
     homework: dict,
     record: int,
@@ -93,6 +128,9 @@ async def generate_homework(
     homework["subject"] = (
         homework["subject"][0].upper() + homework["subject"][1:]
     )
+    if homework["subject"] == "Информация":
+        await generate_mailing(homework, message)
+        return
     try:
         group = homework["group"]
     except KeyError:
@@ -249,19 +287,38 @@ async def publish_homework(data: dict, telegram_id: int) -> tuple[int, int]:
             )
     except KeyError:
         pass
-    response = await asyncio.to_thread(
-        requests.post,
-        url=DOCKER_URL + "/api/v1/add_homework/",
-        json={
-            "api_key": os.getenv("API_KEY"),
-            "telegram_id": telegram_id,
-            "description": data["text"],
-            "subject": data["choose_subject"],
-            "images": images_list,
-            "files": files_list,
-        },
-    )
-    return response.status_code, response.json()["homework_id"]
+    mailing = False
+    if data["choose_subject"] == "Информация":
+        mailing = True
+    if not mailing:
+        response = await asyncio.to_thread(
+            requests.post,
+            url=DOCKER_URL + "/api/v1/add_homework/",
+            json={
+                "api_key": os.getenv("API_KEY"),
+                "telegram_id": telegram_id,
+                "description": data["text"],
+                "subject": data["choose_subject"],
+                "images": images_list,
+                "files": files_list,
+            },
+        )
+        homework_id = response.json()["homework_id"]
+    else:
+        response = await asyncio.to_thread(
+            requests.post,
+            url=DOCKER_URL + "/api/v1/add_mailing/",
+            json={
+                "api_key": os.getenv("API_KEY"),
+                "telegram_id": telegram_id,
+                "description": data["text"],
+                "level": "class",
+                "images": images_list,
+                "files": files_list,
+            },
+        )
+        homework_id = -1
+    return response.status_code, homework_id
 
 
 async def get_homework_from_id(telegram_id: int, homework_id: int) -> dict:

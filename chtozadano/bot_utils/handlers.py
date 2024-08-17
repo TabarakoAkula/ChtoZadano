@@ -726,10 +726,12 @@ async def get_subject_hw_handler(
     state: FSMContext,
 ) -> None:
     await state.set_state(Homework.subject)
+    subjects = await get_user_subjects(message.chat.id)
+    subjects.append("информация")
     await message.answer(
         text="Выбери предмет, по которому хочешь увидеть последнюю домашку",
         reply_markup=keyboards.homework_subject_in_kb(
-            subjects=await get_user_subjects(message.chat.id),
+            subjects=subjects,
             add=False,
         ),
     )
@@ -742,17 +744,30 @@ async def callback_homework_subject(
 ) -> None:
     await state.set_state(Homework.subject)
     subject = call.data.split("_")[-1]
-    response = await asyncio.to_thread(
-        requests.post,
-        url=DOCKER_URL + "/api/v1/get_homework_for_subject/",
-        json={
-            "api_key": os.getenv("API_KEY"),
-            "telegram_id": call.from_user.id,
-            "subject": subject.lower(),
-        },
-    )
-    response_data = response.json()
-    await generate_homework(response_data, 0, call.message)
+    if subject != "Информация":
+        response = await asyncio.to_thread(
+            requests.post,
+            url=DOCKER_URL + "/api/v1/get_homework_for_subject/",
+            json={
+                "api_key": os.getenv("API_KEY"),
+                "telegram_id": call.from_user.id,
+                "subject": subject.lower(),
+            },
+        )
+        response_data = response.json()
+        await generate_homework(response_data, 0, call.message)
+    else:
+        response = await asyncio.to_thread(
+            requests.post,
+            url=DOCKER_URL + "/api/v1/get_mailing/",
+            json={
+                "api_key": os.getenv("API_KEY"),
+                "telegram_id": call.from_user.id,
+            },
+        )
+        response_data = response.json()
+        response_data["subject"] = "Информация"
+        await generate_homework(response_data, 0, call.message)
 
 
 @rp.message(Command("subject"))
@@ -767,20 +782,33 @@ async def command_redirect_homework_subject(
 async def enter_subject_handler(
     message: Message,
 ) -> None:
-    response = await asyncio.to_thread(
-        requests.post,
-        url=DOCKER_URL + "/api/v1/get_homework_for_subject/",
-        json={
-            "api_key": os.getenv("API_KEY"),
-            "telegram_id": message.from_user.id,
-            "subject": SUBJECTS[message.text.lower()],
-            "use_abbreviation": True,
-        },
-    )
-    if response.status_code == 406:
-        await message.answer("В твоем классе нет такого предмета")
-        return
-    response_data = response.json()
+    subject = SUBJECTS[message.text.lower()]
+    if subject != "info":
+        response = await asyncio.to_thread(
+            requests.post,
+            url=DOCKER_URL + "/api/v1/get_homework_for_subject/",
+            json={
+                "api_key": os.getenv("API_KEY"),
+                "telegram_id": message.chat.id,
+                "subject": subject,
+                "use_abbreviation": True,
+            },
+        )
+        response_data = response.json()
+        if response.status_code == 406:
+            await message.answer("В твоем классе нет такого предмета")
+            return
+    else:
+        response = await asyncio.to_thread(
+            requests.post,
+            url=DOCKER_URL + "/api/v1/get_mailing/",
+            json={
+                "api_key": os.getenv("API_KEY"),
+                "telegram_id": message.chat.id,
+            },
+        )
+        response_data = response.json()
+        response_data["subject"] = "Информация"
     await generate_homework(homework=response_data, record=0, message=message)
 
 
@@ -790,10 +818,12 @@ async def add_homework_handler(
     state: FSMContext,
 ) -> None:
     await state.set_state(AddHomework.choose_subject)
+    subjects = await get_user_subjects(message.chat.id)
+    subjects.append("информация")
     await message.answer(
         text="Выбери предмет, по которому хочешь добавить домашку",
         reply_markup=keyboards.homework_subject_in_kb(
-            subjects=await get_user_subjects(message.chat.id),
+            subjects=subjects,
             add=True,
         ),
     )
@@ -893,10 +923,13 @@ async def publish_hw_handler(
         telegram_id=call.message.chat.id,
     )
     if status_code == 200:
-        await call.message.answer(
-            text="Домашнее задание успешно опубликовано",
-            reply_markup=keyboards.to_edit_homework_in_kb(homework_id),
-        )
+        if homework_id != -1:
+            await call.message.answer(
+                text="Домашнее задание успешно опубликовано",
+                reply_markup=keyboards.to_edit_homework_in_kb(homework_id),
+            )
+        else:
+            await call.message.answer(text="Информация успешно опубликована")
     await state.clear()
     await command_menu_handler(call.message)
 
@@ -912,10 +945,13 @@ async def command_publish_hw_handler(
         telegram_id=message.chat.id,
     )
     if status_code == 200:
-        await message.answer(
-            text="Домашнее задание успешно опубликовано",
-            reply_markup=keyboards.to_edit_homework_in_kb(homework_id),
-        )
+        if homework_id != -1:
+            await message.answer(
+                text="Домашнее задание успешно опубликовано",
+                reply_markup=keyboards.to_edit_homework_in_kb(homework_id),
+            )
+        else:
+            await message.answer(text="Информация успешно опубликована")
     await state.clear()
     await command_menu_handler(message)
 
@@ -1052,7 +1088,7 @@ async def save_edit_hw_handler(
 
 
 @rp.callback_query(F.data == "edit_hw_delete", EditHomeworkStateFilter)
-async def delte_edit_hw_handler(
+async def delete_edit_hw_handler(
     call: CallbackQuery,
     state: FSMContext,
 ):
