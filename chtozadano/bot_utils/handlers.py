@@ -34,6 +34,7 @@ from bot_utils.utils import (
     delete_homework,
     edit_hw_description,
     generate_homework,
+    get_homework_from_date,
     get_homework_from_id,
     get_user_subjects,
     publish_homework,
@@ -813,6 +814,60 @@ async def enter_subject_handler(
     await generate_homework(homework=response_data, record=0, message=message)
 
 
+@rp.message(F.text == "Найти домашку🔎", HomeworkStateFilter)
+async def search_homework_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await state.set_state(Homework.find)
+    await message.answer(
+        text="Ты можешь найти домашнее задание, если оно было"
+        " опубликовано меньше чем 2 недели назад."
+        "\n\nЧтобы посмотреть всю домашку за определенную дату,"
+        " введи ее формате год.месяц.день",
+        reply_markup=keyboards.return_to_homework_rp_kb(),
+    )
+
+
+@rp.message(F.text == "Назад", HomeworkStateFilter)
+async def return_to_homework(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    await homework_handler(message, state)
+
+
+@rp.message(Homework.find)
+async def search_hw_function_handler(
+    message: Message,
+):
+    if len(message.text.split(".")) != 3:
+        return
+    homeworks = await get_homework_from_date(message.chat.id, message.text)
+    if not homeworks:
+        await message.answer(
+            f"Сохраненных домашних заданий на"
+            f" {html.italic(message.text)} нет.\n\n"
+            f"Проверь корректность ввода даты",
+        )
+        return
+    await message.answer(
+        f"Домашние задания, опубликованные {html.italic(message.text)}:",
+    )
+    counter = 1
+    for homework in homeworks:
+        await generate_homework(homework, counter, message)
+        counter += 1
+
+
+@rp.message(Command("date"))
+async def command_search_hw_handler(
+    message: Message,
+    state: FSMContext,
+):
+    await search_homework_handler(message, state)
+
+
 @rp.message(F.text == "Добавить📋", HomeworkStateFilter)
 async def add_homework_handler(
     message: Message,
@@ -1104,7 +1159,7 @@ async def save_edit_hw_handler(
 async def delete_edit_hw_handler(
     call: CallbackQuery,
     state: FSMContext,
-):
+) -> None:
     data = await state.get_data()
     status_code = await delete_homework(
         telegram_id=call.message.chat.id,
@@ -1120,7 +1175,7 @@ async def delete_edit_hw_handler(
 async def add_mailing(
     message: Message,
     state: FSMContext,
-):
+) -> None:
     if await check_for_admin(message.chat.id) == "superuser":
         await add_homework_handler(message, state, mailing=True)
 
@@ -1128,7 +1183,7 @@ async def add_mailing(
 @rp.callback_query(F.data == "delete_mailing")
 async def delete_mailing_handler(
     call: CallbackQuery,
-):
+) -> None:
     await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/delete_mailing/",

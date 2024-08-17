@@ -390,3 +390,8 @@ def delete_mailing_in_kb() -> InlineKeyboardMarkup:
         inline_keyboard=buttons_list,
         resize_keyboard=True,
     )
+
+
+def return_to_homework_rp_kb() -> ReplyKeyboardMarkup:
+    buttons_list = [[KeyboardButton(text="Назад")]]
+    return ReplyKeyboardMarkup(keyboard=buttons_list, resize_keyboard=True)

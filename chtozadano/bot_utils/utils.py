@@ -376,3 +376,16 @@ async def delete_homework(
         },
     )
     return response.status_code
+
+
+async def get_homework_from_date(telegram_id: int, date: int) -> dict:
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_homework_from_date/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": telegram_id,
+            "date": date,
+        },
+    )
+    return response.json()

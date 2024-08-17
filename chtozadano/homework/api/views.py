@@ -127,28 +127,15 @@ class GetAllHomeworkFromDateAPI(viewsets.ReadOnlyModelViewSet):
             year, month, day = list(map(int, date))
         except (KeyError, ValueError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        latest_homework_ids = (
-            Homework.objects.filter(Q(group=0) | Q(group=user_obj.group))
-            .filter(
+        data = (
+            Homework.objects.filter(
+                created_at__date=datetime(year, month, day),
                 grade=user_obj.grade,
                 letter=user_obj.letter,
-                subject=OuterRef("subject"),
-                created_at=Subquery(
-                    Homework.objects.filter(
-                        subject=OuterRef("subject"),
-                    )
-                    .values("created_at")
-                    .order_by("-created_at")[:1],
-                ),
             )
-            .values("id")
-        )
-        data = (
-            Homework.objects.filter(id__in=latest_homework_ids)
-            .filter(created_at__date=datetime(year, month, day))
+            .filter(Q(group=user_obj.group) | Q(group=0))
             .order_by("subject")
             .prefetch_related("images", "files")
-            .defer("grade", "letter", "group")
         )
         for homework_obj in data:
             homework_obj.subject = get_name_from_abbreviation(
