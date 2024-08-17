@@ -10,7 +10,14 @@ from aiogram.webhook.aiohttp_server import (
 )
 from aiohttp import web
 from bot_utils.bot import bot
-from bot_utils.handlers import rp
+from bot_utils.handlers import (
+    account_handlers,
+    help_handler,
+    homework_handlers,
+    menu_handlers,
+    register_handlers,
+    schedule_handlers,
+)
 import dotenv
 
 dotenv.load_dotenv()
@@ -23,7 +30,14 @@ WEBHOOK_SECRET = os.getenv("SECRET_KEY")
 BASE_WEBHOOK_URL = os.getenv("DOMAIN_URL")
 
 dp = Dispatcher()
-dp.include_router(rp)
+dp.include_routers(
+    help_handler.rp_help_router,
+    register_handlers.rp_register_router,
+    menu_handlers.rp_menu_router,
+    schedule_handlers.rp_schedule_router,
+    account_handlers.rp_account_router,
+    homework_handlers.rp_homework_router,
+)
 
 
 async def on_startup() -> None:

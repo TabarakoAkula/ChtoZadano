@@ -1,5 +1,12 @@
-from aiogram import html
+import os
 
+from aiogram import html
+import dotenv
+
+dotenv.load_dotenv()
+
+DOMAIN_URL = os.getenv("DOMAIN_URL")
+DOCKER_URL = os.getenv("DOCKER_URL")
 MENU_MESSAGES = [
     "Какой сегодня чудный день🔮",
     f"″Мы все учились понемногу чему-нибудь и как-нибудь.″\n"
