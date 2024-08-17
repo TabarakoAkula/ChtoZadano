@@ -541,7 +541,13 @@ class AddMailingAPI(APIView):
             homework_obj.save()
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        return response.Response({"success": "Successful"})
+        homework_id = homework_obj.id
+        return response.Response(
+            {
+                "success": "Successful",
+                "homework_id": homework_id,
+            },
+        )
 
 
 class EditMailingAPI(APIView):

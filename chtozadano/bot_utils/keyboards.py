@@ -252,6 +252,24 @@ def homework_subject_in_kb(subjects: list, add: bool) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
 
 
+def get_mailings() -> InlineKeyboardMarkup:
+    inline_list = [
+        [
+            InlineKeyboardButton(
+                text="Информация для школы",
+                callback_data="add_hw_subject_schoolinfo",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="Информация для админов",
+                callback_data="add_hw_subject_adminsinfo",
+            ),
+        ],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=inline_list)
+
+
 def add_homework_in_kb() -> InlineKeyboardMarkup:
     buttons_list = [
         [
@@ -266,7 +284,7 @@ def add_homework_in_kb() -> InlineKeyboardMarkup:
                 callback_data="add_homework_files",
             ),
             InlineKeyboardButton(
-                text="Сбросить",
+                text="Сбросить❌",
                 callback_data="back_to_menu",
             ),
         ],
@@ -302,7 +320,7 @@ def add_homework_maximum_in_kb() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton(
-                text="Сбросить",
+                text="Сбросить❌",
                 callback_data="back_to_menu",
             ),
         ],
@@ -338,7 +356,7 @@ def edit_homework_in_kb() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton(
-                text="Удалить запись❌",
+                text="Удалить запись🗑️",
                 callback_data="edit_hw_delete",
             ),
         ],
@@ -348,8 +366,23 @@ def edit_homework_in_kb() -> InlineKeyboardMarkup:
                 callback_data="edit_hw_save",
             ),
             InlineKeyboardButton(
-                text="Сбросить",
+                text="Сбросить❌",
                 callback_data="back_to_menu",
+            ),
+        ],
+    ]
+    return InlineKeyboardMarkup(
+        inline_keyboard=buttons_list,
+        resize_keyboard=True,
+    )
+
+
+def delete_mailing_in_kb() -> InlineKeyboardMarkup:
+    buttons_list = [
+        [
+            InlineKeyboardButton(
+                text="Удалить запись🗑️",
+                callback_data="delete_mailing",
             ),
         ],
     ]

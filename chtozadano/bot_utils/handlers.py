@@ -70,6 +70,7 @@ async def command_help_handler(message: Message) -> None:
 
 
 # /show_become_admin - просмотр заявок на администратора
+# /add_mailing - добавить информацию
 
 
 @rp.message(Command("start"))
@@ -816,16 +817,22 @@ async def enter_subject_handler(
 async def add_homework_handler(
     message: Message,
     state: FSMContext,
+    mailing: bool = False,
 ) -> None:
     await state.set_state(AddHomework.choose_subject)
     subjects = await get_user_subjects(message.chat.id)
     subjects.append("информация")
+    keyboard = keyboards.homework_subject_in_kb(
+        subjects=subjects,
+        add=True,
+    )
+    text = "Выбери предмет, по которому хочешь добавить домашку"
+    if mailing:
+        keyboard = keyboards.get_mailings()
+        text = "Выбери уровень рассылки"
     await message.answer(
-        text="Выбери предмет, по которому хочешь добавить домашку",
-        reply_markup=keyboards.homework_subject_in_kb(
-            subjects=subjects,
-            add=True,
-        ),
+        text=text,
+        reply_markup=keyboard,
     )
 
 
@@ -929,7 +936,10 @@ async def publish_hw_handler(
                 reply_markup=keyboards.to_edit_homework_in_kb(homework_id),
             )
         else:
-            await call.message.answer(text="Информация успешно опубликована")
+            await call.message.answer(
+                text="Информация успешно опубликована",
+                reply_markup=keyboards.delete_mailing_in_kb(),
+            )
     await state.clear()
     await command_menu_handler(call.message)
 
@@ -951,7 +961,10 @@ async def command_publish_hw_handler(
                 reply_markup=keyboards.to_edit_homework_in_kb(homework_id),
             )
         else:
-            await message.answer(text="Информация успешно опубликована")
+            await message.answer(
+                text="Информация успешно опубликована",
+                reply_markup=keyboards.delete_mailing_in_kb(),
+            )
     await state.clear()
     await command_menu_handler(message)
 
@@ -1098,6 +1111,32 @@ async def delete_edit_hw_handler(
         homework_id=data["homework_id"],
     )
     if status_code == 200:
-        await call.message.answer("Запись успешно удалена❌")
+        await call.message.answer("Запись успешно удалена🗑️")
     await state.clear()
+    await command_menu_handler(call.message)
+
+
+@rp.message(Command("add_mailing"))
+async def add_mailing(
+    message: Message,
+    state: FSMContext,
+):
+    if await check_for_admin(message.chat.id) == "superuser":
+        await add_homework_handler(message, state, mailing=True)
+
+
+@rp.callback_query(F.data == "delete_mailing")
+async def delete_mailing_handler(
+    call: CallbackQuery,
+):
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/delete_mailing/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": call.message.chat.id,
+        },
+    )
+    await call.message.answer("Запись успешно удалена🗑️")
+    await call.message.delete()
     await command_menu_handler(call.message)
