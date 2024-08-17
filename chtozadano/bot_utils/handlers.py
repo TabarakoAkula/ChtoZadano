@@ -7,7 +7,6 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
-from bot_utils import keyboards
 from bot_utils.bot import bot
 from bot_utils.filters import (
     AccountStateFilter,
@@ -16,6 +15,19 @@ from bot_utils.filters import (
     HomeworkStateFilter,
     PublishHomeworkStateFilter,
     ScheduleStateFilter,
+)
+from bot_utils.keyboards import kb_menu, kb_schedule, kb_start
+from bot_utils.keyboards.account import (
+    account_menu,
+    account_settings,
+    become_admin,
+    change_contacts,
+)
+from bot_utils.keyboards.homework import (
+    homework_add,
+    homework_edit,
+    homework_menu,
+    homework_subject,
 )
 from bot_utils.message_texts import MENU_MESSAGES, SUBJECTS, WEEK_DAYS
 from bot_utils.states import (
@@ -94,7 +106,7 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
         await message.answer(
             "Привет!\nЧтобы начать работу, выбери класс,"
             " в котором ты учишься в этом году",
-            reply_markup=keyboards.choose_gr_let_in_kb(),
+            reply_markup=kb_start.choose_gr_let_in_kb(),
         )
 
 
@@ -109,14 +121,14 @@ async def command_reset_handler(message: Message, state: FSMContext) -> None:
             "Если ты больше не хочешь быть администратором -"
             " напиши одному из главных администраторов:\n"
             "· @alex010407\n· @tabara_bulkala",
-            reply_markup=keyboards.menu_rp_kb(),
+            reply_markup=kb_menu.menu_rp_kb(),
         )
     else:
         await delete_become_admin(message.from_user.id)
         await state.set_state(Register.choose_class)
         await message.answer(
             "Выбери класс, в котором ты учишься в этом году",
-            reply_markup=keyboards.choose_gr_let_in_kb(),
+            reply_markup=kb_start.choose_gr_let_in_kb(),
         )
 
 
@@ -127,7 +139,7 @@ async def choose_group_handler(call: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(Register.choose_group)
     await call.message.answer(
         "Теперь выберите группу в которой вы учитесь",
-        reply_markup=keyboards.choose_group_in_kb(),
+        reply_markup=kb_start.choose_group_in_kb(),
     )
 
 
@@ -186,12 +198,12 @@ async def command_menu_handler(message: Message) -> None:
     if response.json()["quotes_status"]:
         await message.answer(
             text=random.choice(MENU_MESSAGES),
-            reply_markup=keyboards.menu_rp_kb(),
+            reply_markup=kb_menu.menu_rp_kb(),
         )
     else:
         await message.answer(
             text="Ты находишься в основном меню",
-            reply_markup=keyboards.menu_rp_kb(),
+            reply_markup=kb_menu.menu_rp_kb(),
         )
 
 
@@ -220,7 +232,7 @@ async def site_register_handler(message: Message) -> None:
     if response.status_code == 200:
         await message.answer(
             f"Ваш код для входа: {html.code(confirmation_code)}",
-            reply_markup=keyboards.open_site_in_kb(DOMAIN_URL),
+            reply_markup=kb_start.open_site_in_kb(DOMAIN_URL),
         )
     else:
         await message.answer("Ошибка сервера")
@@ -231,7 +243,7 @@ async def schedule_handler(message: Message, state: FSMContext) -> None:
     await state.set_state(Schedule.start)
     await message.answer(
         "Выбери какое расписание ты хочешь посмотреть",
-        reply_markup=keyboards.schedule_rp_kb(),
+        reply_markup=kb_schedule.schedule_rp_kb(),
     )
 
 
@@ -248,7 +260,7 @@ async def schedule_week_handler(message: Message, state: FSMContext) -> None:
     )
     await message.answer(
         "Расписание на неделю для твоей группы:",
-        reply_markup=keyboards.schedule_rp_kb(),
+        reply_markup=kb_schedule.schedule_rp_kb(),
     )
     schedule = response.json()
     weekday_now = 0
@@ -262,7 +274,7 @@ async def schedule_week_handler(message: Message, state: FSMContext) -> None:
             weekday_now = i["weekday"]
     await message.answer(
         result_message,
-        reply_markup=keyboards.schedule_rp_kb(),
+        reply_markup=kb_schedule.schedule_rp_kb(),
     )
 
 
@@ -282,7 +294,7 @@ async def schedule_tomorrow_handler(
     )
     await message.answer(
         "Расписание на завтра для твоей группы:",
-        reply_markup=keyboards.schedule_rp_kb(),
+        reply_markup=kb_schedule.schedule_rp_kb(),
     )
     schedule = response.json()
     result_message = WEEK_DAYS[schedule[0]["weekday"]] + ":"
@@ -290,7 +302,7 @@ async def schedule_tomorrow_handler(
         result_message += f"\n{i['lesson']}. {i['subject']}"
     await message.answer(
         result_message,
-        reply_markup=keyboards.schedule_rp_kb(),
+        reply_markup=kb_schedule.schedule_rp_kb(),
     )
 
 
@@ -332,12 +344,12 @@ async def account_handler(
     if await check_for_admin(message.from_user.id) == "admin":
         await message.answer(
             "Ты находишься в меню аккаунта",
-            reply_markup=keyboards.account_admin_page_rp_kb(),
+            reply_markup=kb_menu.account_admin_page_rp_kb(),
         )
     else:
         await message.answer(
             "Ты находишься в меню аккаунта",
-            reply_markup=keyboards.account_user_page_rp_kb(),
+            reply_markup=account_menu.account_user_page_rp_kb(),
         )
 
 
@@ -374,7 +386,7 @@ async def change_contacts_account_handler(
     )
     await message.answer(
         text=answer_message,
-        reply_markup=keyboards.change_contacts_rp_kb(),
+        reply_markup=change_contacts.change_contacts_rp_kb(),
     )
 
 
@@ -387,12 +399,12 @@ async def redirect_to_account_handler(
     if await check_for_admin(message.from_user.id) == "admin":
         await message.answer(
             "Ты находишься в меню аккаунта",
-            reply_markup=keyboards.account_admin_page_rp_kb(),
+            reply_markup=kb_menu.account_admin_page_rp_kb(),
         )
     else:
         await message.answer(
             "Ты находишься в меню аккаунта",
-            reply_markup=keyboards.account_user_page_rp_kb(),
+            reply_markup=account_menu.account_user_page_rp_kb(),
         )
 
 
@@ -476,7 +488,7 @@ async def become_admin_account_handler(
         await state.set_state(Account.start)
         await message.answer(
             "Ты уже являешься администратором😉",
-            reply_markup=keyboards.account_admin_page_rp_kb(),
+            reply_markup=kb_menu.account_admin_page_rp_kb(),
         )
     else:
         response = response.json()
@@ -491,7 +503,7 @@ async def become_admin_account_handler(
             f"Данные можно изменить в меню {html.bold('Имя и фамилия✏️')},"
             f" или введя команду /change_contacts\n"
             f"Для отправки заявки нажми кнопку ниже👇",
-            reply_markup=keyboards.become_admin_rp_kb(),
+            reply_markup=become_admin.become_admin_rp_kb(),
         )
 
 
@@ -568,7 +580,9 @@ async def command_show_become_admin_handler(
                 f"Фамилия: {request['last_name']}\n"
                 f"Дата: {created_at}\n"
                 f"tg://openmessage?user_id={request['telegram_id']}\n",
-                reply_markup=keyboards.show_become_admin_in_kb(user_id),
+                reply_markup=become_admin.show_become_admin_in_kb(
+                    user_id,
+                ),
             )
 
 
@@ -631,7 +645,7 @@ async def settings_handler(
         text=f"Текущие настройки:\n"
         f"· Режим чата: {html.bold(chat_mode)}\n"
         f"· Режим цитат: {html.bold(quotes_status)}",
-        reply_markup=keyboards.settings_rp_kb(),
+        reply_markup=account_settings.settings_rp_kb(),
     )
 
 
@@ -682,9 +696,9 @@ async def homework_handler(
 ) -> None:
     await state.set_state(Homework.start)
     if await check_for_admin(message.chat.id) in ["admin", "superuser"]:
-        keyboard = keyboards.homework_main_admin_rp_kb()
+        keyboard = homework_menu.homework_main_admin_rp_kb()
     else:
-        keyboard = keyboards.homework_main_user_rp_kb()
+        keyboard = homework_menu.homework_main_user_rp_kb()
     await message.answer(
         text="Список доступных опций:",
         reply_markup=keyboard,
@@ -732,7 +746,7 @@ async def get_subject_hw_handler(
     subjects.append("информация")
     await message.answer(
         text="Выбери предмет, по которому хочешь увидеть последнюю домашку",
-        reply_markup=keyboards.homework_subject_in_kb(
+        reply_markup=homework_subject.homework_subject_in_kb(
             subjects=subjects,
             add=False,
         ),
@@ -825,7 +839,7 @@ async def search_homework_handler(
         " опубликовано меньше чем 2 недели назад."
         "\n\nЧтобы посмотреть всю домашку за определенную дату,"
         " введи ее формате год.месяц.день",
-        reply_markup=keyboards.return_to_homework_rp_kb(),
+        reply_markup=homework_menu.return_to_homework_rp_kb(),
     )
 
 
@@ -877,13 +891,13 @@ async def add_homework_handler(
     await state.set_state(AddHomework.choose_subject)
     subjects = await get_user_subjects(message.chat.id)
     subjects.append("информация")
-    keyboard = keyboards.homework_subject_in_kb(
+    keyboard = homework_subject.homework_subject_in_kb(
         subjects=subjects,
         add=True,
     )
     text = "Выбери предмет, по которому хочешь добавить домашку"
     if mailing:
-        keyboard = keyboards.get_mailings()
+        keyboard = homework_add.get_mailings()
         text = "Выбери уровень рассылки"
     await message.answer(
         text=text,
@@ -923,7 +937,7 @@ async def add_homework_files_handler(
         " (размер файла не должен превышать 20Мб)\n"
         "Для корректного добавления - дождись уведомления о том,"
         " что файл добавлен",
-        reply_markup=keyboards.add_homework_maximum_in_kb(),
+        reply_markup=homework_add.add_homework_maximum_in_kb(),
     )
     await state.set_state(AddHomework.add_files)
 
@@ -988,12 +1002,14 @@ async def publish_hw_handler(
         if homework_id != -1:
             await call.message.answer(
                 text="Домашнее задание успешно опубликовано",
-                reply_markup=keyboards.to_edit_homework_in_kb(homework_id),
+                reply_markup=homework_edit.to_edit_homework_in_kb(
+                    homework_id,
+                ),
             )
         else:
             await call.message.answer(
                 text="Информация успешно опубликована",
-                reply_markup=keyboards.delete_mailing_in_kb(),
+                reply_markup=homework_edit.delete_mailing_in_kb(),
             )
     await state.clear()
     await command_menu_handler(call.message)
@@ -1013,12 +1029,14 @@ async def command_publish_hw_handler(
         if homework_id != -1:
             await message.answer(
                 text="Домашнее задание успешно опубликовано",
-                reply_markup=keyboards.to_edit_homework_in_kb(homework_id),
+                reply_markup=homework_edit.to_edit_homework_in_kb(
+                    homework_id,
+                ),
             )
         else:
             await message.answer(
                 text="Информация успешно опубликована",
-                reply_markup=keyboards.delete_mailing_in_kb(),
+                reply_markup=homework_edit.delete_mailing_in_kb(),
             )
     await state.clear()
     await command_menu_handler(message)
@@ -1046,18 +1064,18 @@ async def add_description_images_handler(
         if len(state_message_id) == 1:
             await message.answer(
                 text="Фотографии и текст успешно загружены",
-                reply_markup=keyboards.add_homework_in_kb(),
+                reply_markup=homework_add.add_homework_in_kb(),
             )
     elif message.photo:
         if len(state_message_id) == 1:
             await message.answer(
                 text="Фотографии успешно загружены",
-                reply_markup=keyboards.add_homework_in_kb(),
+                reply_markup=homework_add.add_homework_in_kb(),
             )
     elif not message.photo and message.text:
         await message.answer(
             text="Текст успешно добавлен",
-            reply_markup=keyboards.add_homework_in_kb(),
+            reply_markup=homework_add.add_homework_in_kb(),
         )
     await state.set_state(AddHomework.add_descriptions_images)
     if message.photo:
@@ -1098,7 +1116,7 @@ async def edit_homework_handler(
     await state.update_data({"homework_id": call.data.split("_")[-1]})
     await call.message.answer(
         text="Выберите действие:",
-        reply_markup=keyboards.edit_homework_in_kb(),
+        reply_markup=homework_edit.edit_homework_in_kb(),
     )
 
 
@@ -1131,7 +1149,7 @@ async def save_edited_text_handler(
     await state.update_data({"description": message.text})
     await message.answer(
         text="Выберите действие:",
-        reply_markup=keyboards.edit_homework_in_kb(),
+        reply_markup=homework_edit.edit_homework_in_kb(),
     )
 
 
@@ -1149,7 +1167,9 @@ async def save_edit_hw_handler(
     if response[0] == 200:
         await call.message.answer(
             text="Домашнее задание успешно обновлено",
-            reply_markup=keyboards.to_edit_homework_in_kb(response[1]),
+            reply_markup=homework_edit.to_edit_homework_in_kb(
+                response[1],
+            ),
         )
     await state.clear()
     await command_menu_handler(call.message)
