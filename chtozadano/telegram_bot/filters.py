@@ -1,5 +1,5 @@
 from aiogram.filters import StateFilter
-from bot_launcher.states import (
+from telegram_bot.states import (
     Account,
     AddHomework,
     EditHomework,

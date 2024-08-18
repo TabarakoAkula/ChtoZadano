@@ -6,12 +6,12 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from bot_launcher.constants import DOCKER_URL, DOMAIN_URL
-from bot_launcher.handlers.menu_handlers import command_menu_handler
-from bot_launcher.keyboards import kb_menu, kb_start
-from bot_launcher.states import Register
-from bot_launcher.utils import check_for_admin, delete_become_admin
 import requests
+from telegram_bot.constants import DOCKER_URL, DOMAIN_URL
+from telegram_bot.handlers.menu_handlers import command_menu_handler
+from telegram_bot.keyboards import kb_menu, kb_start
+from telegram_bot.states import Register
+from telegram_bot.utils import check_for_admin, delete_become_admin
 
 rp_register_router = Router()
 

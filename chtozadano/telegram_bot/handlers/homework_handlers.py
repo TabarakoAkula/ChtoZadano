@@ -5,23 +5,24 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
-from bot_launcher.bot import bot
-from bot_launcher.constants import DOCKER_URL, SUBJECTS
-from bot_launcher.filters import (
+import requests
+from telegram_bot.bot_instance import bot
+from telegram_bot.constants import DOCKER_URL, SUBJECTS
+from telegram_bot.filters import (
     AddHomeworkStateFilter,
     EditHomeworkStateFilter,
     HomeworkStateFilter,
     PublishHomeworkStateFilter,
 )
-from bot_launcher.handlers.menu_handlers import command_menu_handler
-from bot_launcher.keyboards.homework import (
+from telegram_bot.handlers.menu_handlers import command_menu_handler
+from telegram_bot.keyboards.homework import (
     homework_add,
     homework_edit,
     homework_menu,
     homework_subject,
 )
-from bot_launcher.states import AddHomework, EditHomework, Homework
-from bot_launcher.utils import (
+from telegram_bot.states import AddHomework, EditHomework, Homework
+from telegram_bot.utils import (
     bot_save_files,
     check_for_admin,
     delete_homework,
@@ -32,7 +33,6 @@ from bot_launcher.utils import (
     get_user_subjects,
     publish_homework,
 )
-import requests
 
 rp_homework_router = Router()
 
