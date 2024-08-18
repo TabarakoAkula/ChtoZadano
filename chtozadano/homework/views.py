@@ -322,6 +322,8 @@ class AddHomeworkPage(View):
                     f" литеры {response_list['letter']}",
                 )
                 return redirect("homework:homework_page")
+
+            response_list = [f"{i[0].upper()}{i[1:]}" for i in response_list]
             return render(
                 request,
                 "homework/add_homework.html",
@@ -414,6 +416,7 @@ class EditHomework(View):
                 )
                 return redirect("homework:homework_page")
             group = request.user.server_user.group
+            user_subjects = [f"{i[0].upper()}{i[1:]}" for i in user_subjects]
             try:
                 hw_info = (
                     Homework.objects.filter(Q(group=0) | Q(group=group)).get(
@@ -457,9 +460,9 @@ class EditHomework(View):
             )
             if files_list_for_model[0] == "Error":
                 messages.error(request, "Неподходящий формат файла")
-                return render(
-                    request,
-                    "homework/add_homework.html",
+                return redirect(
+                    "homework:edit_homework",
+                    homework_id=homework_id,
                 )
             files_list_for_model = files_list_for_model[1]
             server_user = request.user.server_user

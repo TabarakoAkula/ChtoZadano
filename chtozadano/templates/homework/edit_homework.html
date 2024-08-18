@@ -9,7 +9,7 @@
 				<label for="subject" class="form-label">Выберите предмет</label>
 				<select id="subject" class="form-select chtozadano-object" name="subject">
 					{% for subject in subjects %}
-						{% if subject == subject_now %}
+						{% if subject|lower == subject_now|lower %}
 							<option value="{{ subject }}" selected>{{ subject }}</option>
 						{% else %}
 							<option value="{{ subject }}">{{ subject }}</option>

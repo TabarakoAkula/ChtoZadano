@@ -50,10 +50,13 @@ services:
     build: .
     volumes:
       - .:/code
-    command: python bot.py
+    command: bash -c "cd chtozadano &&
+                      python bot_launcher.py"
     depends_on:
       - web
     restart: always
+    expose:
+      - "8000"
     networks:
       - django-network
 
