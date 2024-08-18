@@ -251,3 +251,24 @@ def check_grade_letter(request: type_request) -> tuple[str, list]:
             )
             return "Error", redirect("homework:choose_grad_let")
     return "Successful", [grade, letter, group]
+
+
+def add_documents_file_id(
+    homework_id: int,
+    document_type: str,
+    document_ids: list[str],
+    grade: int,
+) -> None:
+    homework_obj = (
+        homework.models.Homework.objects.filter(id=homework_id, grade=grade)
+        .prefetch_related("images", "files")
+        .first()
+    )
+    if document_type == "img":
+        document_objects = homework_obj.images.all()
+    else:
+        document_objects = homework_obj.files.all()
+    for index, document in enumerate(document_objects):
+        document.telegram_file_id = document_ids[index]
+        document.save()
+    return

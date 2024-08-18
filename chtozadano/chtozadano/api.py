@@ -176,4 +176,8 @@ urlpatterns = [
         "get_abbreviation/",
         homework.api.views.CreatePathAPI.as_view(),
     ),
+    path(
+        "add_files_ids/",
+        homework.api.views.AddFileIdAPI.as_view(),
+    ),
 ]

@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from homework.api.serializers import HomeworkSerializer, ScheduleSerializer
 from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
+    add_documents_file_id,
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
@@ -878,3 +879,24 @@ class CreatePathAPI(APIView):
                 "letter": user.letter,
             },
         )
+
+
+class AddFileIdAPI(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            user = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+            homework_id = request.data["homework_id"]
+            document_type = request.data["document_type"]
+            document_ids = request.data["document_ids"]
+        except (KeyError, users.models.User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        add_documents_file_id(
+            homework_id,
+            document_type,
+            document_ids,
+            user.grade,
+        )
+        return response.Response({"success": "Successful"})

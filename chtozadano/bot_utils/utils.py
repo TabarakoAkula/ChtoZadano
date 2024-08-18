@@ -51,46 +51,83 @@ async def delete_become_admin(telegram_id: int) -> None:
     return
 
 
-async def send_images(images: list, caption: str, message: Message) -> None:
+async def send_images(
+    images: list,
+    caption: str,
+    message: Message,
+    telegram_id: int,
+    homework_id: int,
+) -> None:
     photo_media_group = MediaGroupBuilder(caption=caption)
+    all_images_id, images_with_id = set(), set()
     for image in images:
         image_path = image["path"]
         tg_id = image["telegram_file_id"]
         try:
             if tg_id:
                 photo_media_group.add_photo(media=tg_id)
+                images_with_id.add(tg_id)
             else:
                 path = urllib.parse.unquote(image_path[1:])
                 abs_path = pathlib.Path(path).resolve()
                 photo_media_group.add_photo(FSInputFile(abs_path))
         except aiogram.exceptions.TelegramBadRequest:
             continue
-    await message.answer_media_group(photo_media_group.build())
+    response = await message.answer_media_group(photo_media_group.build())
+    for message in response:
+        all_images_id.add(message.photo[-1].file_id)
+    images_without_id = all_images_id - images_with_id
+    await add_documents_file_id(
+        telegram_id,
+        homework_id,
+        "img",
+        list(images_without_id),
+    )
 
 
-async def send_files(files: list, caption: str, message: Message) -> None:
+async def send_files(
+    files: list,
+    caption: str,
+    message: Message,
+    telegram_id: int,
+    homework_id: int,
+) -> None:
     files_media_group = MediaGroupBuilder(caption=caption)
+    all_files_id, files_with_id = set(), set()
     for file in files:
         file_path = file["path"]
         tg_id = file["telegram_file_id"]
         try:
             if tg_id:
                 files_media_group.add_document(media=tg_id)
+                files_with_id.add(tg_id)
             else:
                 path = urllib.parse.unquote(file_path[1:])
                 abs_path = pathlib.Path(path).resolve()
                 files_media_group.add_document(FSInputFile(abs_path))
         except aiogram.exceptions.TelegramBadRequest:
             continue
-    await message.answer_media_group(files_media_group.build())
+    response = await message.answer_media_group(files_media_group.build())
+    for message in response:
+        all_files_id.add(message.document.file_id)
+    files_without_id = all_files_id - files_with_id
+    await add_documents_file_id(
+        telegram_id,
+        homework_id,
+        "file",
+        list(files_without_id),
+    )
 
 
-async def generate_mailing(homework: dict, message: Message) -> None:
+async def generate_mailing(
+    homework: dict,
+    message: Message,
+) -> None:
     counter = 0
     for row in homework:
-        i = homework[row]
+        mailing = homework[row]
         try:
-            if not i["group"]:
+            if not mailing["group"]:
                 continue
         except TypeError:
             continue
@@ -102,18 +139,30 @@ async def generate_mailing(homework: dict, message: Message) -> None:
             level = "Информация для администрации"
         elif row == "school":
             level = "Информация для школы"
-        text = f"{level}, {i['author']}:\n{i['description']}"
-        images = i["images"]
-        files = i["files"]
+        text = f"{level}, {mailing['author']}:\n{mailing['description']}"
+        images = mailing["images"]
+        files = mailing["files"]
         if images or files:
             if images:
-                await send_images(images, text, message)
+                await send_images(
+                    images,
+                    text,
+                    message,
+                    message.chat.id,
+                    mailing["id"],
+                )
             if files:
                 if not images:
                     caption = text
                 else:
-                    caption = f"{i['subject']}, добавленные файлы"
-                await send_files(files, caption, message)
+                    caption = f"{mailing['subject']}, добавленные файлы"
+                await send_files(
+                    files,
+                    caption,
+                    message,
+                    message.chat.id,
+                    mailing["id"],
+                )
         else:
             await message.answer(text)
     if counter == 0:
@@ -161,13 +210,25 @@ async def generate_homework(
     files = homework["files"]
     if images or files:
         if images:
-            await send_images(images, text, message)
+            await send_images(
+                images,
+                text,
+                message,
+                message.chat.id,
+                homework["id"],
+            )
         if files:
             if not images:
                 caption = text
             else:
                 caption = f"{homework['subject']}, добавленные файлы"
-            await send_files(files, caption, message)
+            await send_files(
+                files,
+                caption,
+                message,
+                message.chat.id,
+                homework["id"],
+            )
     else:
         await message.answer(text)
 
@@ -389,3 +450,23 @@ async def get_homework_from_date(telegram_id: int, date: int) -> dict:
         },
     )
     return response.json()
+
+
+async def add_documents_file_id(
+    telegram_id: int,
+    homework_id: int,
+    document_type: str,
+    document_ids: list[str],
+) -> None:
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/add_files_ids/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": telegram_id,
+            "homework_id": homework_id,
+            "document_type": document_type,
+            "document_ids": document_ids,
+        },
+    )
+    return
