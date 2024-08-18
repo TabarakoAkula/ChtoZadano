@@ -17,7 +17,7 @@ def confirmation_code_expired(db_time):
     return delta.total_seconds() / 60 > 60
 
 
-def validate_password(password):
+def validate_password(password: str) -> tuple[bool, str]:
     special_symbols = ["$", "@", "#", "%"]
     if len(password) < 6:
         return False, "Длина пароля должна быть более 5 символов"

@@ -63,8 +63,12 @@ class User(django.db.models.Model):
     )
     notebook_color = colorfield.fields.ColorField(default="#FF0000")
     chat_mode = django.db.models.BooleanField(
-        default=False,
+        default=True,
         verbose_name="Режим чата",
+    )
+    show_quotes = django.db.models.BooleanField(
+        default=True,
+        verbose_name="Режим цитат",
     )
     todo = django.db.models.ManyToManyField(
         homework.models.Todo,
@@ -142,6 +146,12 @@ class BecomeAdmin(django.db.models.Model):
         null=True,
         blank=True,
         verbose_name="Телеграм id",
+    )
+    created_at = DateTimeWithoutTZField(
+        auto_now_add=True,
+        verbose_name="Дата создания",
+        null=True,
+        blank=True,
     )
 
     def __str__(self):

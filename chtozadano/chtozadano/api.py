@@ -21,6 +21,14 @@ urlpatterns = [
         users.api.views.ChangeContactsAPI.as_view(),
     ),
     path(
+        "get_quotes_status/",
+        users.api.views.GetQuotesAPI.as_view(),
+    ),
+    path(
+        "change_quotes/",
+        users.api.views.ChangeQuotesAPI.as_view(),
+    ),
+    path(
         "change_grade_letter/",
         users.api.views.ChangeGradeLetterAPI.as_view(),
     ),
@@ -43,6 +51,10 @@ urlpatterns = [
     path(
         "become_admin_accept_decline/",
         users.api.views.AcceptDeclineBecomeAdminAPI.as_view(),
+    ),
+    path(
+        "become_admin_delete_user/",
+        users.api.views.DeleteUserBecomeAdminAPI.as_view(),
     ),
     path(
         "is_user_in_system/",
@@ -155,5 +167,17 @@ urlpatterns = [
         homework.api.views.GetWeekScheduleAPI.as_view(
             {"post": "get_schedule"},
         ),
+    ),
+    path(
+        "get_user_subjects/",
+        homework.api.views.GetUserSubjects.as_view(),
+    ),
+    path(
+        "get_abbreviation/",
+        homework.api.views.CreatePathAPI.as_view(),
+    ),
+    path(
+        "add_files_ids/",
+        homework.api.views.AddFileIdAPI.as_view(),
     ),
 ]
