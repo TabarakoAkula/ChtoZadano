@@ -6,11 +6,11 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from bot_utils.constants import DOCKER_URL, DOMAIN_URL
-from bot_utils.handlers.menu_handlers import command_menu_handler
-from bot_utils.keyboards import kb_menu, kb_start
-from bot_utils.states import Register
-from bot_utils.utils import check_for_admin, delete_become_admin
+from bot_launcher.constants import DOCKER_URL, DOMAIN_URL
+from bot_launcher.handlers.menu_handlers import command_menu_handler
+from bot_launcher.keyboards import kb_menu, kb_start
+from bot_launcher.states import Register
+from bot_launcher.utils import check_for_admin, delete_become_admin
 import requests
 
 rp_register_router = Router()

@@ -9,8 +9,9 @@ from aiogram.webhook.aiohttp_server import (
     SimpleRequestHandler,
 )
 from aiohttp import web
-from bot_utils.bot import bot
-from bot_utils.handlers import (
+import dotenv
+from telegram_bot.bot_instance import bot
+from telegram_bot.handlers import (
     account_handlers,
     help_handler,
     homework_handlers,
@@ -18,7 +19,6 @@ from bot_utils.handlers import (
     register_handlers,
     schedule_handlers,
 )
-import dotenv
 
 dotenv.load_dotenv()
 

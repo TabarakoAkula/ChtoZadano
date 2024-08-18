@@ -51,7 +51,7 @@ services:
     volumes:
       - .:/code
     command: bash -c "cd chtozadano &&
-                      python telegram_bot.py"
+                      python bot_launcher.py"
     depends_on:
       - web
     restart: always

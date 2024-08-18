@@ -6,8 +6,8 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from bot_utils.constants import DOCKER_URL, MENU_MESSAGES
-from bot_utils.keyboards import kb_menu
+from bot_launcher.constants import DOCKER_URL, MENU_MESSAGES
+from bot_launcher.keyboards import kb_menu
 import requests
 
 rp_menu_router = Router()

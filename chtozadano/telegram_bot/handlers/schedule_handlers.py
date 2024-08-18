@@ -5,10 +5,10 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from bot_utils.constants import DOCKER_URL, WEEK_DAYS
-from bot_utils.filters import ScheduleStateFilter
-from bot_utils.keyboards import kb_schedule
-from bot_utils.states import Schedule
+from bot_launcher.constants import DOCKER_URL, WEEK_DAYS
+from bot_launcher.filters import ScheduleStateFilter
+from bot_launcher.keyboards import kb_schedule
+from bot_launcher.states import Schedule
 import requests
 
 rp_schedule_router = Router()

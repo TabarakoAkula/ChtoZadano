@@ -5,23 +5,23 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
-from bot_utils.bot import bot
-from bot_utils.constants import DOCKER_URL, SUBJECTS
-from bot_utils.filters import (
+from bot_launcher.bot import bot
+from bot_launcher.constants import DOCKER_URL, SUBJECTS
+from bot_launcher.filters import (
     AddHomeworkStateFilter,
     EditHomeworkStateFilter,
     HomeworkStateFilter,
     PublishHomeworkStateFilter,
 )
-from bot_utils.handlers.menu_handlers import command_menu_handler
-from bot_utils.keyboards.homework import (
+from bot_launcher.handlers.menu_handlers import command_menu_handler
+from bot_launcher.keyboards.homework import (
     homework_add,
     homework_edit,
     homework_menu,
     homework_subject,
 )
-from bot_utils.states import AddHomework, EditHomework, Homework
-from bot_utils.utils import (
+from bot_launcher.states import AddHomework, EditHomework, Homework
+from bot_launcher.utils import (
     bot_save_files,
     check_for_admin,
     delete_homework,

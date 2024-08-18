@@ -1,5 +1,5 @@
 from aiogram.filters import StateFilter
-from bot_utils.states import (
+from bot_launcher.states import (
     Account,
     AddHomework,
     EditHomework,
