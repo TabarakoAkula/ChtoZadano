@@ -10,8 +10,8 @@ from aiogram.webhook.aiohttp_server import (
 )
 from aiohttp import web
 import dotenv
-from telegram_bot.bot_instance import bot
-from telegram_bot.handlers import (
+from bot_instance import bot
+from handlers import (
     account_handlers,
     help_handler,
     homework_handlers,

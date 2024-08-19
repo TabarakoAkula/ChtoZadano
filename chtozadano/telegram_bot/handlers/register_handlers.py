@@ -7,11 +7,11 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 import requests
-from telegram_bot.constants import DOCKER_URL, DOMAIN_URL
-from telegram_bot.handlers.menu_handlers import command_menu_handler
-from telegram_bot.keyboards import kb_menu, kb_start
-from telegram_bot.states import Register
-from telegram_bot.utils import check_for_admin, delete_become_admin
+from constants import DOCKER_URL, DOMAIN_URL
+from handlers.menu_handlers import command_menu_handler
+from keyboards import kb_menu, kb_start
+from states import Register
+from utils import check_for_admin, delete_become_admin
 
 rp_register_router = Router()
 

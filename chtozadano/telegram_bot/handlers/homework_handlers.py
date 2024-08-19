@@ -6,23 +6,23 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
 import requests
-from telegram_bot.bot_instance import bot
-from telegram_bot.constants import DOCKER_URL, SUBJECTS
-from telegram_bot.filters import (
+from bot_instance import bot
+from constants import DOCKER_URL, SUBJECTS
+from filters import (
     AddHomeworkStateFilter,
     EditHomeworkStateFilter,
     HomeworkStateFilter,
     PublishHomeworkStateFilter,
 )
-from telegram_bot.handlers.menu_handlers import command_menu_handler
-from telegram_bot.keyboards.homework import (
+from handlers.menu_handlers import command_menu_handler
+from keyboards.homework import (
     homework_add,
     homework_edit,
     homework_menu,
     homework_subject,
 )
-from telegram_bot.states import AddHomework, EditHomework, Homework
-from telegram_bot.utils import (
+from states import AddHomework, EditHomework, Homework
+from utils import (
     bot_save_files,
     check_for_admin,
     delete_homework,

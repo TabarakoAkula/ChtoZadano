@@ -7,8 +7,8 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 import requests
-from telegram_bot.constants import DOCKER_URL, MENU_MESSAGES
-from telegram_bot.keyboards import kb_menu
+from constants import DOCKER_URL, MENU_MESSAGES
+from keyboards import kb_menu
 
 rp_menu_router = Router()
 
