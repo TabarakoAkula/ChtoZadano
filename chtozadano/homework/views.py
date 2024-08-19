@@ -51,9 +51,11 @@ class HomeworkPage(View):
         data_subjects = []
         for homework_obj in data:
             abbreviation = get_name_from_abbreviation(homework_obj.subject)
+            abbreviation = f"{abbreviation[0].upper()}{abbreviation[1:]}"
             homework_obj.subject = abbreviation
             data_subjects.append(abbreviation)
         real_subjects = get_user_subjects(grade, letter, group)
+        real_subjects = [f"{i[0].upper()}{i[1:]}" for i in real_subjects]
         if isinstance(real_subjects, dict):
             messages.error(
                 request,

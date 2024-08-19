@@ -6,19 +6,19 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-import requests
-from telegram_bot.constants import DOCKER_URL
-from telegram_bot.filters import AccountStateFilter
-from telegram_bot.handlers.register_handlers import command_reset_handler
-from telegram_bot.keyboards import kb_menu
-from telegram_bot.keyboards.account import (
+from constants import DOCKER_URL
+from filters import AccountStateFilter
+from handlers.register_handlers import command_reset_handler
+from keyboards import kb_menu
+from keyboards.account import (
     account_become_admin,
     account_change_contacts,
     account_menu,
     account_settings,
 )
-from telegram_bot.states import Account, ChangeContacts
-from telegram_bot.utils import check_for_admin
+import requests
+from states import Account, ChangeContacts
+from utils import check_for_admin
 
 rp_account_router = Router()
 
