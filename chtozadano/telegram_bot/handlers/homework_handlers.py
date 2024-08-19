@@ -5,7 +5,6 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
-import requests
 from bot_instance import bot
 from constants import DOCKER_URL, SUBJECTS
 from filters import (
@@ -21,6 +20,7 @@ from keyboards.homework import (
     homework_menu,
     homework_subject,
 )
+import requests
 from states import AddHomework, EditHomework, Homework
 from utils import (
     bot_save_files,

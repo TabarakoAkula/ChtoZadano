@@ -6,10 +6,10 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-import requests
 from constants import DOCKER_URL, DOMAIN_URL
 from handlers.menu_handlers import command_menu_handler
 from keyboards import kb_menu, kb_start
+import requests
 from states import Register
 from utils import check_for_admin, delete_become_admin
 

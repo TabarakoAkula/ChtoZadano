@@ -9,8 +9,8 @@ from aiogram.webhook.aiohttp_server import (
     SimpleRequestHandler,
 )
 from aiohttp import web
-import dotenv
 from bot_instance import bot
+import dotenv
 from handlers import (
     account_handlers,
     help_handler,

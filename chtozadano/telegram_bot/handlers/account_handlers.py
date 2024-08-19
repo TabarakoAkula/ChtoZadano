@@ -6,7 +6,6 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-import requests
 from constants import DOCKER_URL
 from filters import AccountStateFilter
 from handlers.register_handlers import command_reset_handler
@@ -17,6 +16,7 @@ from keyboards.account import (
     account_menu,
     account_settings,
 )
+import requests
 from states import Account, ChangeContacts
 from utils import check_for_admin
 
