@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta
 
 from django.db.models import OuterRef, Q, Subquery
@@ -8,6 +9,7 @@ from homework.api.serializers import HomeworkSerializer, ScheduleSerializer
 from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
     add_documents_file_id,
+    add_notification,
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
@@ -245,8 +247,10 @@ class AddHomeWorkAPI(APIView):
             files = request.data["files"]
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
+        use_groups = False
         if subject not in ["eng1", "eng2", "ger1", "ger2", "ikt1", "ikt2"]:
             group = 0
+            use_groups = True
         else:
             group = user_obj.group
         hw_object = Homework.objects.create(
@@ -277,6 +281,13 @@ class AddHomeWorkAPI(APIView):
                     file_name=path.split("/")[-1],
                 ),
             )
+        asyncio.run(
+            add_notification(
+                hw_object,
+                user_obj,
+                use_groups,
+            ),
+        )
         return response.Response(
             {
                 "success": "Successful",
@@ -530,6 +541,13 @@ class AddMailingAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         homework_id = homework_obj.id
+        asyncio.run(
+            add_notification(
+                homework_obj,
+                user_obj,
+                False,
+            ),
+        )
         return response.Response(
             {
                 "success": "Successful",

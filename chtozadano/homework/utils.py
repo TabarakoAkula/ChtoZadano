@@ -2,6 +2,7 @@ import datetime
 import json
 import random
 
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -11,7 +12,10 @@ from django.db.models import Q
 from django.http import request as type_request
 from django.shortcuts import redirect
 
+from homework.api.serializers import HomeworkSerializer
 import homework.models
+from homework.notifier import homework_notifier
+import users.models
 
 BASE_DIR = settings.BASE_DIR
 
@@ -257,8 +261,12 @@ def add_documents_file_id(
     homework_id: int,
     document_type: str,
     document_ids: list[str],
-    grade: int,
+    grade: int = None,
+    telegram_id: int = None,
 ) -> None:
+    if telegram_id:
+        user = users.models.User.objects.get(telegram_id=telegram_id)
+        grade = user.grade
     homework_obj = (
         homework.models.Homework.objects.filter(id=homework_id, grade=grade)
         .prefetch_related("images", "files")
@@ -272,3 +280,30 @@ def add_documents_file_id(
         document.telegram_file_id = document_ids[index]
         document.save()
     return
+
+
+async def add_notification(
+    model_object,
+    user,
+    use_groups: bool = False,
+) -> None:
+    if use_groups:
+        users_ids = await sync_to_async(list)(
+            users.models.User.objects.filter(
+                grade=user.grade,
+                letter=user.letter,
+                group=user.group,
+            ).values("telegram_id"),
+        )
+    else:
+        users_ids = await sync_to_async(list)(
+            users.models.User.objects.filter(
+                grade=user.grade,
+                letter=user.letter,
+            ).values("telegram_id"),
+        )
+    model_object.subject = get_name_from_abbreviation(model_object.subject)
+    users_ids = [i["telegram_id"] for i in users_ids]
+    serializer = HomeworkSerializer(model_object)
+    serialized_data = await sync_to_async(lambda: serializer.data)()
+    await homework_notifier(users_ids, user.telegram_id, serialized_data)

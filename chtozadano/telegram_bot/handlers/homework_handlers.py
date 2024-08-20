@@ -538,7 +538,7 @@ async def save_edit_hw_handler(
             ),
         )
     await state.clear()
-    await command_menu_handler(call.message)
+    await command_menu_handler(call.message, False)
 
 
 @rp_homework_router.callback_query(
@@ -557,7 +557,7 @@ async def delete_edit_hw_handler(
     if status_code == 200:
         await call.message.answer("Запись успешно удалена🗑️")
     await state.clear()
-    await command_menu_handler(call.message)
+    await command_menu_handler(call.message, False)
 
 
 @rp_homework_router.message(Command("add_mailing"))
@@ -583,4 +583,4 @@ async def delete_mailing_handler(
     )
     await call.message.answer("Запись успешно удалена🗑️")
     await call.message.delete()
-    await command_menu_handler(call.message)
+    await command_menu_handler(call.message, False)

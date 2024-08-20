@@ -14,7 +14,10 @@ rp_menu_router = Router()
 
 
 @rp_menu_router.message(Command("menu"))
-async def command_menu_handler(message: Message) -> None:
+async def command_menu_handler(
+    message: Message,
+    show_quotes: bool = True,
+) -> None:
     response = await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/get_quotes_status/",
@@ -23,12 +26,12 @@ async def command_menu_handler(message: Message) -> None:
             "telegram_id": message.chat.id,
         },
     )
-    if response.json()["quotes_status"]:
+    if response.json()["quotes_status"] and show_quotes:
         await message.answer(
             text=random.choice(MENU_MESSAGES),
             reply_markup=kb_menu.menu_rp_kb(),
         )
-    else:
+    elif show_quotes:
         await message.answer(
             text="Ты находишься в основном меню",
             reply_markup=kb_menu.menu_rp_kb(),
