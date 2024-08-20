@@ -11,7 +11,6 @@ from asgiref.sync import sync_to_async
 from dotenv import load_dotenv
 
 import homework.models
-import users.models
 
 load_dotenv()
 
@@ -63,7 +62,6 @@ async def homework_notifier(
                 text,
                 notify_bot,
                 users_ids,
-                telegram_id,
                 homework_data["id"],
             )
         if files:
@@ -76,7 +74,6 @@ async def homework_notifier(
                 caption,
                 notify_bot,
                 users_ids,
-                telegram_id,
                 homework_data["id"],
             )
     else:
@@ -111,7 +108,6 @@ async def mailing_generator(
                 text,
                 bot,
                 users_ids,
-                telegram_id,
                 mailing["id"],
             )
         if files:
@@ -124,7 +120,6 @@ async def mailing_generator(
                 caption,
                 bot,
                 users_ids,
-                telegram_id,
                 mailing["id"],
             )
     else:
@@ -141,7 +136,6 @@ async def send_images(
     caption: str,
     bot: Bot,
     users_ids: list,
-    telegram_id: int,
     homework_id: int,
 ) -> None:
     photo_media_group = MediaGroupBuilder(caption=caption)
@@ -173,7 +167,6 @@ async def send_images(
         homework_id=homework_id,
         document_type="img",
         document_ids=list(images_without_id),
-        telegram_id=telegram_id,
     )
 
 
@@ -182,7 +175,6 @@ async def send_files(
     caption: str,
     bot: Bot,
     user_ids: list,
-    telegram_id: int,
     homework_id: int,
 ) -> None:
     files_media_group = MediaGroupBuilder(caption=caption)
@@ -214,7 +206,6 @@ async def send_files(
         homework_id=homework_id,
         document_type="file",
         document_ids=list(files_without_id),
-        telegram_id=telegram_id,
     )
 
 
@@ -222,17 +213,9 @@ async def add_documents_file_id(
     homework_id: int,
     document_type: str,
     document_ids: list[str],
-    grade: int = None,
-    telegram_id: int = None,
 ) -> None:
-    if telegram_id:
-        user = await sync_to_async(users.models.User.objects.get)(
-            telegram_id=telegram_id,
-        )
-        grade = user.grade
-
     homework_obj = await sync_to_async(
-        homework.models.Homework.objects.filter(id=homework_id, grade=grade)
+        homework.models.Homework.objects.filter(id=homework_id)
         .prefetch_related("images", "files")
         .first,
     )()
