@@ -5,6 +5,7 @@ import random
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.files.storage import default_storage
 import django.db.models
@@ -14,10 +15,11 @@ from django.shortcuts import redirect
 
 from homework.api.serializers import HomeworkSerializer
 import homework.models
-from homework.notifier import homework_notifier
+from homework.notifier import custom_notification, homework_notifier
 import users.models
 
 BASE_DIR = settings.BASE_DIR
+DjangoUser = get_user_model()
 
 
 def get_user_subjects(grade: int, letter: str, group: int) -> list:
@@ -312,3 +314,17 @@ async def add_notification(
         telegram_id = 0
     users_ids = [i for i in users_ids if i]
     await homework_notifier(users_ids, telegram_id, serialized_data)
+
+
+async def cron_notifier(text):
+    users_ids = await sync_to_async(list)(
+        DjangoUser.objects.filter(is_superuser=True).values(
+            "server_user__telegram_id",
+        ),
+    )
+    users_ids = [
+        int(i["server_user__telegram_id"])
+        for i in users_ids
+        if i["server_user__telegram_id"]
+    ]
+    await custom_notification(users_ids, text, False)

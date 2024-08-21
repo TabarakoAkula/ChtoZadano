@@ -230,3 +230,20 @@ async def add_documents_file_id(
         await sync_to_async(document.save)()
 
     return
+
+
+async def custom_notification(
+    users_ids: list,
+    message_text: str,
+    notification: bool,
+) -> None:
+    bot_session = AiohttpSession()
+    notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
+    for user_id in users_ids:
+        await notify_bot.send_message(
+            chat_id=user_id,
+            text=message_text,
+            disable_notification=not notification,
+        )
+    await bot_session.close()
+    return

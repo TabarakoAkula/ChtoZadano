@@ -10,6 +10,7 @@ from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
     add_documents_file_id,
     add_notification,
+    cron_notifier,
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
@@ -800,13 +801,22 @@ class DeleteOldHomeworkAPI(APIView):
         todo_objects = Todo.objects.filter(created_at__lt=two_weeks_ago)
         hw_objects = Homework.objects.filter(created_at__lt=two_weeks_ago)
         response_message = (
-            f"Successful delete {todo_objects.count()}"
-            f" Todo and {hw_objects.count()}"
-            f" Homework rows",
+            f"Cron🗑️: Успешно удалено {todo_objects.count()}"
+            f" Todo и {hw_objects.count()}"
+            f" Homework записей"
         )
         todo_objects.delete()
         hw_objects.delete()
-        return response.Response({"success": response_message})
+        asyncio.run(
+            cron_notifier(
+                response_message,
+            ),
+        )
+        return response.Response(
+            {
+                "success": "Successfully delete old HW and ToDo",
+            },
+        )
 
 
 class AddScheduleAPI(APIView):
