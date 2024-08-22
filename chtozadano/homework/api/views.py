@@ -500,7 +500,20 @@ class AddMailingAPI(APIView):
                 homework_obj.description = request.data["description"]
                 homework_obj.subject = "info"
                 homework_obj.save()
-                return response.Response({"success": "Successful"})
+                homework_id = homework_obj.id
+                asyncio.run(
+                    add_notification(
+                        homework_obj,
+                        user_obj,
+                        False,
+                    ),
+                )
+                return response.Response(
+                    {
+                        "success": "Successful",
+                        "homework_id": homework_id,
+                    },
+                )
             if not django_user.is_superuser:
                 return response.Response({"error": "Not allowed"}, status=403)
             grade = 0
