@@ -308,12 +308,8 @@ async def add_notification(
     users_ids = [i["telegram_id"] for i in users_ids]
     serializer = HomeworkSerializer(model_object)
     serialized_data = await sync_to_async(lambda: serializer.data)()
-    if user.telegram_id:
-        telegram_id = user.telegram_id
-    else:
-        telegram_id = 0
     users_ids = [i for i in users_ids if i]
-    await homework_notifier(users_ids, telegram_id, serialized_data)
+    await homework_notifier(users_ids, serialized_data)
 
 
 async def cron_notifier(text):

@@ -2,7 +2,7 @@ import os
 import pathlib
 import urllib
 
-from aiogram import Bot, html
+from aiogram import Bot
 from aiogram.client.session.aiohttp import AiohttpSession
 import aiogram.exceptions
 from aiogram.types import FSInputFile
@@ -17,7 +17,6 @@ load_dotenv()
 
 async def homework_notifier(
     users_ids: list[int],
-    telegram_id: int,
     homework_data: dict,
 ) -> None:
     bot_session = AiohttpSession()
@@ -30,7 +29,6 @@ async def homework_notifier(
             homework_data,
             notify_bot,
             users_ids,
-            telegram_id,
         )
         await bot_session.close()
         return
@@ -90,14 +88,13 @@ async def mailing_generator(
     mailing: dict,
     bot: Bot,
     users_ids: list,
-    telegram_id: int,
 ) -> None:
     if mailing["group"] == -1:
-        level = html.bold("Информация для класса")
+        level = "Информация для класса"
     elif mailing["group"] == -2:
-        level = html.bold("Информация для администрации")
+        level = "Информация для администрации"
     else:
-        level = html.bold("Информация для школы")
+        level = "Информация для школы"
     text = f"{level}, {mailing['author']}:\n{mailing['description']}"
     images = mailing["images"]
     files = mailing["files"]
