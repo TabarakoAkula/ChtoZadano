@@ -280,6 +280,11 @@ async def command_show_become_admin_handler(
             )
 
 
+@rp_account_router.callback_query(F.data == "become_admin_requests")
+async def redirect_show_become_admin_handler(call: CallbackQuery) -> None:
+    await command_show_become_admin_handler(call.message)
+
+
 @rp_account_router.callback_query(
     F.data.startswith("decision_show_become_admin_"),
 )
