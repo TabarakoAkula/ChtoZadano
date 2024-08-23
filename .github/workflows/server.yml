@@ -58,6 +58,7 @@ jobs:
           POSTGRES_PORT: 5432
           API_KEY: 52ED8xBwcZ1PTykbQy
           SECRET_KEY: secret_key
+          TEST: True
     - name: Django tests homework
       run: |
         cd chtozadano
@@ -70,6 +71,7 @@ jobs:
         POSTGRES_PORT: 5432
         API_KEY: 52ED8xBwcZ1PTykbQy
         SECRET_KEY: secret_key
+        TEST: True
     - name: Linting | Black
       run: |
         black --check chtozadano/

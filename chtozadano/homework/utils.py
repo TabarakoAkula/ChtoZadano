@@ -1,5 +1,6 @@
 import datetime
 import json
+import os
 import random
 
 from asgiref.sync import sync_to_async
@@ -12,11 +13,14 @@ import django.db.models
 from django.db.models import Q
 from django.http import request as type_request
 from django.shortcuts import redirect
+import dotenv
 
 from homework.api.serializers import HomeworkSerializer
 import homework.models
 from homework.notifier import custom_notification, homework_notifier
 import users.models
+
+dotenv.load_dotenv()
 
 BASE_DIR = settings.BASE_DIR
 DjangoUser = get_user_model()
@@ -311,6 +315,8 @@ async def add_notification(
     serializer = HomeworkSerializer(model_object)
     serialized_data = await sync_to_async(lambda: serializer.data)()
     users_ids = [i for i in users_ids if i]
+    if os.getenv("TEST"):
+        return
     await homework_notifier(users_ids, serialized_data)
 
 
@@ -325,4 +331,6 @@ async def cron_notifier(text):
         for i in users_ids
         if i["server_user__telegram_id"]
     ]
+    if os.getenv("TEST"):
+        return
     await custom_notification(users_ids, text, False)
