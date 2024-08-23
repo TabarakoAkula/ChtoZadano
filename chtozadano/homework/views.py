@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from django.contrib import messages
@@ -8,6 +9,7 @@ from django.views import generic, View
 from homework.forms import ChooseGradLetForm
 from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
+    add_notification,
     check_grade_letter,
     get_abbreviation_from_name,
     get_list_of_dates,
@@ -51,9 +53,11 @@ class HomeworkPage(View):
         data_subjects = []
         for homework_obj in data:
             abbreviation = get_name_from_abbreviation(homework_obj.subject)
+            abbreviation = f"{abbreviation[0].upper()}{abbreviation[1:]}"
             homework_obj.subject = abbreviation
             data_subjects.append(abbreviation)
         real_subjects = get_user_subjects(grade, letter, group)
+        real_subjects = [f"{i[0].upper()}{i[1:]}" for i in real_subjects]
         if isinstance(real_subjects, dict):
             messages.error(
                 request,
@@ -359,6 +363,7 @@ class AddHomeworkPage(View):
         )
         files_list_for_model = files_list_for_model[1]
         server_user = request.user.server_user
+        use_groups = False
         if subject not in [
             "eng1",
             "eng2",
@@ -367,6 +372,7 @@ class AddHomeworkPage(View):
             "ikt1",
             "ikt2",
         ]:
+            use_groups = True
             group = 0
         else:
             group = server_user.group
@@ -395,6 +401,13 @@ class AddHomeworkPage(View):
                 )
                 homework_object.files.add(file_object)
         messages.success(request, "Домашнее задание успешно добавлено")
+        asyncio.run(
+            add_notification(
+                homework_object,
+                request.user.server_user,
+                use_groups,
+            ),
+        )
         return redirect("homework:homework_page")
 
 
@@ -687,6 +700,13 @@ class AddMailingPage(View):
                 )
                 homework_object.files.add(file_object)
         messages.success(request, "Рассылка успешно добавлена")
+        asyncio.run(
+            add_notification(
+                homework_object,
+                request.user.server_user,
+                False,
+            ),
+        )
         return redirect("homework:homework_page")
 
 

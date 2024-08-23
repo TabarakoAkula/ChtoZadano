@@ -55,13 +55,13 @@ class HomeworkAPITests(APITestCase):
                     "telegram_id": 1,
                     "subject": "rus",
                 },
-                404,
+                406,
             ),
             (
                 {
                     "api_key": settings.API_KEY,
                     "telegram_id": 1,
-                    "subject": "Русский язык",
+                    "subject": "русский язык",
                 },
                 200,
             ),
@@ -191,8 +191,26 @@ class HomeworkAPITests(APITestCase):
                     "telegram_id": 2,
                     "subject": "Русский язык",
                     "description": "Описание",
-                    "images": ["test_path/test_image.jpg"],
-                    "files": ["test_path/test_file.jpg"],
+                    "images": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
+                    "files": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                     "author": "test_system",
                 },
                 200,
@@ -279,7 +297,16 @@ class HomeworkAPITests(APITestCase):
                     "api_key": settings.API_KEY,
                     "telegram_id": 2,
                     "homework_id": 1,
-                    "images": ["new_path_1", "new_path_2"],
+                    "images": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 200,
             ),
@@ -306,8 +333,14 @@ class HomeworkAPITests(APITestCase):
                     id=data["homework_id"],
                 ).images.values_list("image")
             ]
-            self.assertNotEquals(data["images"], first_description)
-            self.assertEquals(data["images"], second_description)
+            self.assertNotEquals(
+                [i["path"] for i in data["images"]],
+                first_description,
+            )
+            self.assertEquals(
+                [i["path"] for i in data["images"]],
+                second_description,
+            )
 
     @parameterized.expand(
         [
@@ -322,7 +355,16 @@ class HomeworkAPITests(APITestCase):
                     "api_key": settings.API_KEY,
                     "telegram_id": 2,
                     "homework_id": 1,
-                    "files": ["new_path_1", "new_path_2"],
+                    "files": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 200,
             ),
@@ -349,8 +391,14 @@ class HomeworkAPITests(APITestCase):
                     id=data["homework_id"],
                 ).files.values_list("file")
             ]
-            self.assertNotEquals(data["files"], first_description)
-            self.assertEquals(data["files"], second_description)
+            self.assertNotEquals(
+                [i["path"] for i in data["files"]],
+                first_description,
+            )
+            self.assertEquals(
+                [i["path"] for i in data["files"]],
+                second_description,
+            )
 
     @parameterized.expand(
         [
@@ -432,8 +480,26 @@ class HomeworkAPITests(APITestCase):
                     "telegram_id": 2,
                     "description": "Описание",
                     "level": "class",
-                    "images": ["test_path/test_image.jpg"],
-                    "files": ["test_path/test_file.jpg"],
+                    "images": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
+                    "files": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 200,
             ),
@@ -443,8 +509,26 @@ class HomeworkAPITests(APITestCase):
                     "telegram_id": 2,
                     "description": "Описание",
                     "level": "school",
-                    "images": ["test_path/test_image.jpg"],
-                    "files": ["test_path/test_file.jpg"],
+                    "images": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
+                    "files": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 403,
             ),
@@ -584,7 +668,16 @@ class HomeworkAPITests(APITestCase):
                     "api_key": settings.API_KEY,
                     "telegram_id": 2,
                     "homework_id": 6,
-                    "images": ["new_path_1", "new_path_2"],
+                    "images": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 200,
             ),
@@ -593,7 +686,16 @@ class HomeworkAPITests(APITestCase):
                     "api_key": settings.API_KEY,
                     "telegram_id": 2,
                     "homework_id": 7,
-                    "images": ["new_path_1", "new_path_2"],
+                    "images": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 404,
             ),
@@ -602,7 +704,16 @@ class HomeworkAPITests(APITestCase):
                     "api_key": settings.API_KEY,
                     "telegram_id": 3,
                     "homework_id": 7,
-                    "images": ["new_path_1", "new_path_2"],
+                    "images": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 200,
             ),
@@ -629,8 +740,14 @@ class HomeworkAPITests(APITestCase):
                     id=data["homework_id"],
                 ).images.values_list("image")
             ]
-            self.assertNotEquals(data["images"], first_description)
-            self.assertEquals(data["images"], second_description)
+            self.assertNotEquals(
+                [i["path"] for i in data["images"]],
+                first_description,
+            )
+            self.assertEquals(
+                [i["path"] for i in data["images"]],
+                second_description,
+            )
 
     @parameterized.expand(
         [
@@ -645,7 +762,16 @@ class HomeworkAPITests(APITestCase):
                     "api_key": settings.API_KEY,
                     "telegram_id": 2,
                     "homework_id": 6,
-                    "files": ["new_path_1", "new_path_2"],
+                    "files": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 200,
             ),
@@ -654,7 +780,16 @@ class HomeworkAPITests(APITestCase):
                     "api_key": settings.API_KEY,
                     "telegram_id": 2,
                     "homework_id": 7,
-                    "files": ["new_path_1", "new_path_2"],
+                    "files": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 404,
             ),
@@ -663,7 +798,16 @@ class HomeworkAPITests(APITestCase):
                     "api_key": settings.API_KEY,
                     "telegram_id": 3,
                     "homework_id": 7,
-                    "files": ["new_path_1", "new_path_2"],
+                    "files": [
+                        {
+                            "path": "new_path_1",
+                            "telegram_file_id": "test_file_id",
+                        },
+                        {
+                            "path": "new_path_2",
+                            "telegram_file_id": "test_file_id",
+                        },
+                    ],
                 },
                 200,
             ),
@@ -690,8 +834,14 @@ class HomeworkAPITests(APITestCase):
                     id=data["homework_id"],
                 ).files.values_list("file")
             ]
-            self.assertNotEquals(data["files"], first_description)
-            self.assertEquals(data["files"], second_description)
+            self.assertNotEquals(
+                [i["path"] for i in data["files"]],
+                first_description,
+            )
+            self.assertEquals(
+                [i["path"] for i in data["files"]],
+                second_description,
+            )
 
     @parameterized.expand(
         [

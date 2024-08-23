@@ -5,24 +5,24 @@ from aiogram import F, html, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
-import requests
-from telegram_bot.bot_instance import bot
-from telegram_bot.constants import DOCKER_URL, SUBJECTS
-from telegram_bot.filters import (
+from bot_instance import bot
+from constants import DOCKER_URL, SUBJECTS
+from filters import (
     AddHomeworkStateFilter,
     EditHomeworkStateFilter,
     HomeworkStateFilter,
     PublishHomeworkStateFilter,
 )
-from telegram_bot.handlers.menu_handlers import command_menu_handler
-from telegram_bot.keyboards.homework import (
+from handlers.menu_handlers import command_menu_handler
+from keyboards.homework import (
     homework_add,
     homework_edit,
     homework_menu,
     homework_subject,
 )
-from telegram_bot.states import AddHomework, EditHomework, Homework
-from telegram_bot.utils import (
+import requests
+from states import AddHomework, EditHomework, Homework
+from utils import (
     bot_save_files,
     check_for_admin,
     delete_homework,
@@ -538,7 +538,7 @@ async def save_edit_hw_handler(
             ),
         )
     await state.clear()
-    await command_menu_handler(call.message)
+    await command_menu_handler(call.message, False)
 
 
 @rp_homework_router.callback_query(
@@ -557,7 +557,7 @@ async def delete_edit_hw_handler(
     if status_code == 200:
         await call.message.answer("Запись успешно удалена🗑️")
     await state.clear()
-    await command_menu_handler(call.message)
+    await command_menu_handler(call.message, False)
 
 
 @rp_homework_router.message(Command("add_mailing"))
@@ -583,4 +583,4 @@ async def delete_mailing_handler(
     )
     await call.message.answer("Запись успешно удалена🗑️")
     await call.message.delete()
-    await command_menu_handler(call.message)
+    await command_menu_handler(call.message, False)

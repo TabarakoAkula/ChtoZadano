@@ -5,11 +5,11 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
+from constants import DOCKER_URL, WEEK_DAYS
+from filters import ScheduleStateFilter
+from keyboards import kb_schedule
 import requests
-from telegram_bot.constants import DOCKER_URL, WEEK_DAYS
-from telegram_bot.filters import ScheduleStateFilter
-from telegram_bot.keyboards import kb_schedule
-from telegram_bot.states import Schedule
+from states import Schedule
 
 rp_schedule_router = Router()
 
