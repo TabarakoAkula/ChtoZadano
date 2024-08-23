@@ -49,7 +49,7 @@ jobs:
     - name: Django tests users
       run: |
         cd chtozadano
-        python manage.py test users --debug-mode
+        python manage.py test users --debug-mode --keepdb
       env:
           POSTGRES_NAME: postgres
           POSTGRES_USER: postgres
@@ -62,7 +62,7 @@ jobs:
     - name: Django tests homework
       run: |
         cd chtozadano
-        python manage.py test homework --debug-mode
+        python manage.py test homework --debug-mode --keepdb
       env:
         POSTGRES_NAME: postgres
         POSTGRES_USER: postgres
