@@ -295,6 +295,7 @@ async def add_notification(
                 grade=user.grade,
                 letter=user.letter,
                 group=user.group,
+                chat_mode=True,
             ).values("telegram_id"),
         )
     else:
@@ -302,6 +303,7 @@ async def add_notification(
             users.models.User.objects.filter(
                 grade=user.grade,
                 letter=user.letter,
+                chat_mode=True,
             ).values("telegram_id"),
         )
     model_object.subject = get_name_from_abbreviation(model_object.subject)
