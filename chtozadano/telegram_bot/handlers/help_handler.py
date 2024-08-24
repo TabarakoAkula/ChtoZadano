@@ -10,7 +10,7 @@ rp_help_router = Router()
 @rp_help_router.message(Command("help"))
 async def command_help_handler(message: Message) -> None:
     text = [
-        "Давай расскажу о доступных тебе командах \"А что задано?\"",
+        'Давай расскажу о доступных тебе командах "А что задано?"',
         "",
         "/tomorrow - посмотреть дз на завтра",
         "/get_week_schedule - посмотреть расписание на неделю",
@@ -20,17 +20,17 @@ async def command_help_handler(message: Message) -> None:
         "/settings - изменить настройки",
         "/date - искать домашнее задание по дате",
         "/stop - прекратить добавление домашнего задания",
-        "/reset - сменить класс"
+        "/reset - сменить класс",
     ]
     if await check_for_admin(message.chat.id) in ["admin", "superuser"]:
         text.extend([
             "",
             "Команды для администраторов:",
             "/new - добавить домашнее задание",
-            "/add_mailing - добавить информацию"
-            "/show_become_admin - просмотр заявок на администратора"
+            "/add_mailing - добавить информацию",
+            "/show_become_admin - просмотр заявок на администратора",
         ])
     else:
-        text.append("/become_admin - стать администратором",)
+        text.append("/become_admin - стать администратором")
 
     await message.answer("\n".join(text))
