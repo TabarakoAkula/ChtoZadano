@@ -22,12 +22,22 @@ async def command_help_handler(message: Message) -> None:
         "/stop - прекратить добавление домашнего задания",
         "/reset - сменить класс",
     ]
-    if await check_for_admin(message.chat.id) in ["admin", "superuser"]:
+    if await check_for_admin(message.chat.id) == "admin":
         text.extend(
             [
                 "",
                 "Команды для администраторов:",
                 "/new - добавить домашнее задание",
+            ],
+        )
+    elif await check_for_admin(message.chat.id) == "superuser":
+        text.extend(
+            [
+                "",
+                "Команды для администраторов:",
+                "/new - добавить домашнее задание",
+                "",
+                "Команды для суперпользователей:",
                 "/add_mailing - добавить информацию",
                 "/show_become_admin - просмотр заявок на администратора",
             ],
