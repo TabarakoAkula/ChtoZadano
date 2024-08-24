@@ -1,6 +1,7 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
+from utils import check_for_admin
 
 
 rp_help_router = Router()
@@ -8,24 +9,40 @@ rp_help_router = Router()
 
 @rp_help_router.message(Command("help"))
 async def command_help_handler(message: Message) -> None:
-    await message.answer(
-        "/start - инициализировать бота\n"
-        "/reset - сменить класс\n"
-        "/menu - меню\n"
-        "/code - код верификации\n"
-        "/get_week_schedule - расписание на неделю\n"
-        "/get_tomorrow_schedule - расписание на завтра\n"
-        "/change_contacts - изменить имя или фамилию\n"
-        "/become_admin - стать администратором\n"
-        "/settings - настройки\n"
-        "/tomorrow - посмотреть дз на завтра\n"
-        "/subject - посмотреть дз по конкретному предмету\n"
-        "/new - добавить домашнее задание\n"
-        "/publish - опубликовать домашнее задание\n"
-        "/stop - прекратить добавление домашнего задания\n"
-        "/date - поиск домашки по дате\n",
-    )
+    text = [
+        'Давай расскажу о доступных тебе командах "А что задано?"',
+        "",
+        "/tomorrow - посмотреть дз на завтра",
+        "/get_week_schedule - посмотреть расписание на неделю",
+        "/get_tomorrow_schedule - посмотреть расписание на завтра",
+        "/code - сгенерировать код верификации для регистрации на сайте",
+        "/change_contacts - изменить имя или фамилию",
+        "/settings - изменить настройки",
+        "/date - искать домашнее задание по дате",
+        "/stop - прекратить добавление домашнего задания",
+        "/reset - сменить класс",
+    ]
+    if await check_for_admin(message.chat.id) == "admin":
+        text.extend(
+            [
+                "",
+                "Команды для администраторов:",
+                "/new - добавить домашнее задание",
+            ],
+        )
+    elif await check_for_admin(message.chat.id) == "superuser":
+        text.extend(
+            [
+                "",
+                "Команды для администраторов:",
+                "/new - добавить домашнее задание",
+                "",
+                "Команды для суперпользователей:",
+                "/add_mailing - добавить информацию",
+                "/show_become_admin - просмотр заявок на администратора",
+            ],
+        )
+    else:
+        text.append("/become_admin - стать администратором")
 
-
-# /show_become_admin - просмотр заявок на администратора
-# /add_mailing - добавить рассылку
+    await message.answer("\n".join(text))
