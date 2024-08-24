@@ -23,13 +23,15 @@ async def command_help_handler(message: Message) -> None:
         "/reset - сменить класс",
     ]
     if await check_for_admin(message.chat.id) in ["admin", "superuser"]:
-        text.extend([
-            "",
-            "Команды для администраторов:",
-            "/new - добавить домашнее задание",
-            "/add_mailing - добавить информацию",
-            "/show_become_admin - просмотр заявок на администратора",
-        ])
+        text.extend(
+            [
+                "",
+                "Команды для администраторов:",
+                "/new - добавить домашнее задание",
+                "/add_mailing - добавить информацию",
+                "/show_become_admin - просмотр заявок на администратора",
+            ]
+        )
     else:
         text.append("/become_admin - стать администратором")
 
