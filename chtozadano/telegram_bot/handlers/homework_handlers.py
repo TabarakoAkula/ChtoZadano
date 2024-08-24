@@ -151,40 +151,6 @@ async def command_redirect_homework_subject(
     await get_subject_hw_handler(message, state)
 
 
-@rp_homework_router.message(F.text.lower().in_(SUBJECTS))
-async def enter_subject_handler(
-    message: Message,
-) -> None:
-    subject = SUBJECTS[message.text.lower()]
-    if subject != "info":
-        response = await asyncio.to_thread(
-            requests.post,
-            url=DOCKER_URL + "/api/v1/get_homework_for_subject/",
-            json={
-                "api_key": os.getenv("API_KEY"),
-                "telegram_id": message.chat.id,
-                "subject": subject,
-                "use_abbreviation": True,
-            },
-        )
-        response_data = response.json()
-        if response.status_code == 406:
-            await message.answer("В твоем классе нет такого предмета")
-            return
-    else:
-        response = await asyncio.to_thread(
-            requests.post,
-            url=DOCKER_URL + "/api/v1/get_mailing/",
-            json={
-                "api_key": os.getenv("API_KEY"),
-                "telegram_id": message.chat.id,
-            },
-        )
-        response_data = response.json()
-        response_data["subject"] = "Информация"
-    await generate_homework(homework=response_data, record=0, message=message)
-
-
 @rp_homework_router.message(F.text == "Найти домашку🔎", HomeworkStateFilter)
 async def search_homework_handler(
     message: Message,
@@ -475,7 +441,7 @@ async def edit_homework_handler(
     await state.set_state(EditHomework.start)
     await state.update_data({"homework_id": call.data.split("_")[-1]})
     await call.message.answer(
-        text="Выберите действие:",
+        text="Выбери действие:",
         reply_markup=homework_edit.edit_homework_in_kb(),
     )
 
@@ -511,7 +477,7 @@ async def save_edited_text_handler(
     await message.answer(f"Новое описание:\n{message.text}")
     await state.update_data({"description": message.text})
     await message.answer(
-        text="Выберите действие:",
+        text="Выбери действие:",
         reply_markup=homework_edit.edit_homework_in_kb(),
     )
 
@@ -584,3 +550,46 @@ async def delete_mailing_handler(
     await call.message.answer("Запись успешно удалена🗑️")
     await call.message.delete()
     await command_menu_handler(call.message, False)
+
+
+@rp_homework_router.message()
+async def enter_subject_handler(
+    message: Message,
+) -> None:
+    mess_text = message.text.lower()
+    subject = str()
+    for sub in SUBJECTS:
+        if sub in mess_text:
+            subject = sub
+            break
+
+    if subject == "":
+        await message.answer("Я не знаю такого предмета")
+        return
+    elif subject != "info":
+        response = await asyncio.to_thread(
+            requests.post,
+            url=DOCKER_URL + "/api/v1/get_homework_for_subject/",
+            json={
+                "api_key": os.getenv("API_KEY"),
+                "telegram_id": message.chat.id,
+                "subject": subject,
+                "use_abbreviation": True,
+            },
+        )
+        response_data = response.json()
+        if response.status_code == 406:
+            await message.answer("В твоем классе нет такого предмета")
+            return
+    else:
+        response = await asyncio.to_thread(
+            requests.post,
+            url=DOCKER_URL + "/api/v1/get_mailing/",
+            json={
+                "api_key": os.getenv("API_KEY"),
+                "telegram_id": message.chat.id,
+            },
+        )
+        response_data = response.json()
+        response_data["subject"] = "Информация"
+    await generate_homework(homework=response_data, record=0, message=message)
