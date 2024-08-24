@@ -432,7 +432,11 @@ class GetMailingAPI(viewsets.ReadOnlyModelViewSet):
             django_user = user_obj.user
             data = {}
             info_obj_one = (
-                Homework.objects.filter(group=-1)
+                Homework.objects.filter(
+                    group=-1,
+                    grade=user_obj.grade,
+                    letter=user_obj.letter,
+                )
                 .order_by("-created_at")
                 .first()
             )
