@@ -30,7 +30,7 @@ async def command_help_handler(message: Message) -> None:
                 "/new - добавить домашнее задание",
                 "/add_mailing - добавить информацию",
                 "/show_become_admin - просмотр заявок на администратора",
-            ]
+            ],
         )
     else:
         text.append("/become_admin - стать администратором")

@@ -566,7 +566,7 @@ async def enter_subject_handler(
     if subject == "":
         await message.answer("Я не знаю такого предмета")
         return
-    elif subject != "info":
+    if subject != "info":
         response = await asyncio.to_thread(
             requests.post,
             url=DOCKER_URL + "/api/v1/get_homework_for_subject/",

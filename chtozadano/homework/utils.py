@@ -248,7 +248,7 @@ def check_grade_letter(request: type_request) -> tuple[str, list]:
         except TypeError:
             messages.error(
                 request,
-                "Сначала необходимо выбрать в каком тыклассе",
+                "Сначала необходимо выбрать в каком ты классе",
             )
             return "Error", redirect("homework:choose_grad_let")
         grade = data["grade"]
@@ -257,7 +257,7 @@ def check_grade_letter(request: type_request) -> tuple[str, list]:
         if not grade or not letter:
             messages.error(
                 request,
-                "Сначала необходимо выбрать в каком тыклассе",
+                "Сначала необходимо выбрать в каком ты классе",
             )
             return "Error", redirect("homework:choose_grad_let")
     return "Successful", [grade, letter, group]

@@ -309,7 +309,7 @@ async def bot_save_files(
     except KeyError:
         await message.answer(
             f"Файл {html.italic(file_name)} не был"
-            f" добавлен т.к. тыне дождались его отправки",
+            f" добавлен т.к. ты не дождались его отправки",
         )
         return
     else:
