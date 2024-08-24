@@ -37,6 +37,21 @@ from utils import (
 rp_homework_router = Router()
 
 
+@rp_homework_router.message(Command("new"))
+async def command_add_homework_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    await add_homework_handler(message, state)
+
+
+@rp_homework_router.message(Command("stop"), AddHomeworkStateFilter)
+async def command_stop_add_homework_handler(
+    message: Message,
+) -> None:
+    await command_menu_handler(message)
+
+
 @rp_homework_router.message(F.text == "Домашка📝")
 async def homework_handler(
     message: Message,
@@ -416,21 +431,6 @@ async def add_description_images_handler(
                     subject,
                     state,
                 )
-
-
-@rp_homework_router.message(Command("new"))
-async def command_add_homework_handler(
-    message: Message,
-    state: FSMContext,
-) -> None:
-    await add_homework_handler(message, state)
-
-
-@rp_homework_router.message(Command("stop"), AddHomeworkStateFilter)
-async def command_stop_add_homework_handler(
-    message: Message,
-) -> None:
-    await command_menu_handler(message)
 
 
 @rp_homework_router.callback_query(F.data.startswith("edit_homework_"))
