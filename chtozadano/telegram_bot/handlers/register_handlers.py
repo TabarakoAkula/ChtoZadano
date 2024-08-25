@@ -103,7 +103,7 @@ async def start_redirect_to_menu_handler(
             "grade": grade,
             "letter": letter,
             "group": group,
-            "name": call.from_user.username,
+            "name": call.from_user.first_name,
         },
     )
     await state.clear()
