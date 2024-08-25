@@ -27,7 +27,7 @@
     + ``name`` - ``str``  текущее имя пользователя в Telegram
     + ``grade`` - ``int`` номера класса
     + ``letter`` - ``str`` литера класса
-    + ``group`` - ``int`` группа класса
+    + ``group`` - ``int`` номер группы | имя учителя  
   + Возвращает:
     + ``HttpResponse``:
       + ``Successful``
@@ -71,6 +71,7 @@
     + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
     + ``grade`` - ``int`` класс
     + ``letter`` - ``int`` литера
+    + ``group`` - ``str`` номер группы | имя учителя  
   + Возвращает:
       + ``HttpResponse``:
         + ``Successful``
@@ -214,6 +215,19 @@
       + ``JSON``:   
       ``is_admin`` - ``bool``  
       ``is_superuser`` - ``bool``  
++ GetUserEngTeachersAPI:
+  + Путь: ``api/v1/get_user_eng_teachers/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: вернуть учителей английского для того, чтобы узнать в какой группе ученик
+  + Действие: получает из ``json/grades_subjects.json`` учителей определенного класса
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ  
+    + ``grade`` - ``int`` класс
+    + ``letter`` - ``str`` литера
+  + Возвращает:  
+      + ``JSON``:   
+      ``teachers``: list[str]  
 </details>
 <details><summary><h2>Homework:</h2></summary>
 

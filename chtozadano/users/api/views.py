@@ -8,6 +8,7 @@ from django.http import HttpResponse
 from rest_framework import response, viewsets
 from rest_framework.views import APIView
 
+from homework.utils import get_group_from_teacher
 from users.api.serializers import (
     BecomeAdminSerializer,
     DefaultUserNameSerializer,
@@ -18,6 +19,7 @@ from users.utils import (
     become_admin_decision_notify,
     create_password,
     get_randomized_name,
+    get_user_teachers,
     new_become_admin_notify,
 )
 
@@ -48,9 +50,20 @@ class CreateUserAPI(APIView):
         all_users = User.objects.filter(telegram_id=telegram_id).all()
         if all_users:
             user = all_users[0]
-            user.grade = request.data["grade"]
-            user.letter = request.data["letter"]
-            user.group = request.data["group"]
+            grade = request.data["grade"]
+            letter = request.data["letter"]
+            group = request.data["group"]
+            if not isinstance(group, int):
+                group = get_group_from_teacher(
+                    group.replace("_"),
+                    grade,
+                    letter,
+                )
+                if group == 0:
+                    return response.Response({"error": "Bad teacher data"})
+            user.grade = grade
+            user.letter = letter
+            user.group = group
             user.save()
             return response.Response({"success": "Successful"})
         name = request.data["name"]
@@ -127,9 +140,22 @@ class ChangeGradeLetterAPI(APIView):
         telegram_id = request.data["telegram_id"]
         grade = request.data["grade"]
         letter = request.data["letter"]
-        user_obj = User.objects.get(telegram_id=telegram_id)
+        group = request.data["group"]
+        try:
+            user_obj = User.objects.get(telegram_id=telegram_id)
+        except User.DoesNotExist:
+            return response.Response({"error": "User does not exist"})
+        if not isinstance(group, int):
+            group = get_group_from_teacher(
+                group.replace("_"),
+                grade,
+                letter,
+            )
+            if group == 0:
+                return response.Response({"error": "Bad teacher data"})
         user_obj.grade = grade
         user_obj.letter = letter
+        user_obj.group = group
         user_obj.save()
         return response.Response({"success": "Successful"})
 
@@ -281,3 +307,17 @@ class IsUserAdminAPI(APIView):
                 ),
             )
         return response.Response({"error": "User does not exist"})
+
+
+class GetUserEngTeachersAPI(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            grade = request.data["grade"]
+            letter = request.data["letter"]
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        teachers = get_user_teachers(grade, letter)
+        if teachers:
+            return response.Response({"teachers": teachers})
+        return response.Response({"error": "Unknown grade|letter"}, status=400)
