@@ -573,7 +573,7 @@ async def enter_subject_handler(
             json={
                 "api_key": os.getenv("API_KEY"),
                 "telegram_id": message.chat.id,
-                "subject": subject,
+                "subject": SUBJECTS[subject],
                 "use_abbreviation": True,
             },
         )
