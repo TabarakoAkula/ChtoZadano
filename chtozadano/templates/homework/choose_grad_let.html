@@ -7,7 +7,7 @@
 		<form method="POST" enctype="multipart/form-data" class="chtozadano-form">
 			{% csrf_token %}
 			<div class="mb-3">
-				<label for="grade" class="form-label">Выберите класс</label>
+				<label for="grade" class="form-label">Выбери класс</label>
 				<select id="grade" class="form-select" name="grade">
 					<option value="4">4</option>
 					<option value="5">5</option>
@@ -20,7 +20,7 @@
 				</select>
 			</div>
 			<div class="mb-3">
-				<label for="letter" class="form-label">Выберите литеру</label>
+				<label for="letter" class="form-label">Выбери литеру</label>
 				<select id="letter" class="form-select" name="letter">
 					<option value="А">А</option>
 					<option value="Б">Б</option>
@@ -29,10 +29,11 @@
 				</select>
 			</div>
 			<div class="mb-3">
-				<label for="group" class="form-label">Выберите группу</label>
-				<select id="group" class="form-select" name="group">
-					<option value="1">1</option>
-					<option value="2">2</option>
+				<label for="group" class="form-label">Выбери своего учителя английского</label>
+				<select id="group" class="form-select" name="group" style="display: inline-block;">
+					{% for value, label in form.group.field.choices %}
+					<option value={{ value }}>{{ label }}</option>
+					{% endfor %}
 				</select>
 			</div>
 			<button data-mdb-ripple-init type="submit" class="btn btn-dark btn-block form-button" style="background-color: #272727">Сохранить</button>
