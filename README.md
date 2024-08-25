@@ -117,6 +117,24 @@ python telegram_bot
   python manage.py createsuperuser
   ```
 
+## 📁Data customization
+If you want to upload another data about teachers/subjects/group - change data in this files:
+### JSON
++ ``/chtozadano/static_dev/json/subjects.json``
++ ``/chtozadano/static_dev/json/grades_subjects.json``
++ ``/chtozadano/static_dev/json/eng_teachers.json``
+### Models
+``/chtozadano/users/models.py``:  
++ ``GRADE_CHOICES``  
++ ``LETTER_CHOICES``  
+
+``/chtozadano/homework/models.py``:  
++ ``GRADE_CHOICES``  
++ ``LETTER_CHOICES``
+
+``/chtozadano/homework/forms.py``:  
++ ``GROUP_CHOICES``  
+
 
 ## 🧾Make scripts:
 Some scripts which can make your experience easier  
