@@ -17,6 +17,7 @@ from users.models import BecomeAdmin, SignIn, User
 from users.utils import (
     become_admin_decision_notify,
     create_password,
+    get_randomized_name,
     new_become_admin_notify,
 )
 
@@ -52,11 +53,20 @@ class CreateUserAPI(APIView):
             user.group = request.data["group"]
             user.save()
             return response.Response({"success": "Successful"})
-        django_user = django.contrib.auth.models.User.objects.create_user(
-            username=request.data["name"],
-            first_name=request.data["name"],
-            password=create_password(telegram_id, os.getenv("SECRET_KEY")),
-        )
+        name = request.data["name"]
+        try:
+            django_user = django.contrib.auth.models.User.objects.create_user(
+                username=name,
+                first_name=name,
+                password=create_password(telegram_id, os.getenv("SECRET_KEY")),
+            )
+        except django.db.utils.IntegrityError:
+            name = get_randomized_name(name)
+            django_user = django.contrib.auth.models.User.objects.create_user(
+                username=name,
+                first_name=name,
+                password=create_password(telegram_id, os.getenv("SECRET_KEY")),
+            )
         User.objects.create(
             user=django_user,
             grade=request.data["grade"],

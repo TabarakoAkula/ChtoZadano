@@ -1,5 +1,7 @@
 import datetime
 import hashlib
+import random
+import string
 
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
@@ -80,3 +82,10 @@ async def become_admin_decision_notify(
         text,
         True,
     )
+
+
+def get_randomized_name(name: str) -> str:
+    random_chars = "".join(
+        random.choices(string.ascii_letters + string.digits, k=5),
+    )
+    return f"{name}_{random_chars}"

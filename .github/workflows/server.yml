@@ -46,6 +46,7 @@ jobs:
         POSTGRES_PASSWORD: postgres
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
+        CSRF_TRUSTED_ORIGINS: http://bot:8000
     - name: Django tests users
       run: |
         cd chtozadano
@@ -59,6 +60,7 @@ jobs:
           API_KEY: 52ED8xBwcZ1PTykbQy
           SECRET_KEY: secret_key
           TEST: True
+          CSRF_TRUSTED_ORIGINS: http://bot:8000
     - name: Django tests homework
       run: |
         cd chtozadano
@@ -72,6 +74,7 @@ jobs:
         API_KEY: 52ED8xBwcZ1PTykbQy
         SECRET_KEY: secret_key
         TEST: True
+        CSRF_TRUSTED_ORIGINS: http://bot:8000
     - name: Linting | Black
       run: |
         black --check chtozadano/
