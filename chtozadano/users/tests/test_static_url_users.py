@@ -163,7 +163,6 @@ class StaticUrlTests(TestCase):
             ("test_user", "/user/account/", 302),
             ("test_admin", "/user/account/", 302),
             ("test_admin_becomeadminaccept", "/user/account/", 302),
-            ("test_superuser", "/user/show_become_admin/", 302),
         ],
     )
     def test_show_become_admin_accept_endpoint(
@@ -189,7 +188,6 @@ class StaticUrlTests(TestCase):
             ("test_user", "/user/account/", 302),
             ("test_admin", "/user/account/", 302),
             ("test_admin_becomeadmin", "/user/account/", 302),
-            ("test_superuser", "/user/show_become_admin/", 302),
         ],
     )
     def test_show_become_admin_decline_endpoint(

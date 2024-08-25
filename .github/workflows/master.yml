@@ -46,10 +46,11 @@ jobs:
         POSTGRES_PASSWORD: postgres
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
+        CSRF_TRUSTED_ORIGINS: http://bot:8000
     - name: Django tests users
       run: |
         cd chtozadano
-        python manage.py test users --debug-mode
+        python manage.py test users --debug-mode --keepdb
       env:
           POSTGRES_NAME: postgres
           POSTGRES_USER: postgres
@@ -58,10 +59,12 @@ jobs:
           POSTGRES_PORT: 5432
           API_KEY: 52ED8xBwcZ1PTykbQy
           SECRET_KEY: secret_key
+          TEST: True
+          CSRF_TRUSTED_ORIGINS: http://bot:8000
     - name: Django tests homework
       run: |
         cd chtozadano
-        python manage.py test homework --debug-mode
+        python manage.py test homework --debug-mode --keepdb
       env:
         POSTGRES_NAME: postgres
         POSTGRES_USER: postgres
@@ -70,6 +73,8 @@ jobs:
         POSTGRES_PORT: 5432
         API_KEY: 52ED8xBwcZ1PTykbQy
         SECRET_KEY: secret_key
+        TEST: True
+        CSRF_TRUSTED_ORIGINS: http://bot:8000
     - name: Linting | Black
       run: |
         black --check chtozadano/

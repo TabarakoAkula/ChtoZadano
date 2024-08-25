@@ -28,7 +28,7 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
     )
     if response.text.lower() == "true":
         await message.answer(
-            "Вы уже выбрали класс, для смены класса введите /reset",
+            "Ты уже выбрал класс, для смены класса введи /reset",
         )
         await command_menu_handler(message)
     else:
@@ -67,11 +67,11 @@ async def command_reset_handler(message: Message, state: FSMContext) -> None:
     F.data.startswith("ch_gr_let_"),
 )
 async def choose_group_handler(call: CallbackQuery, state: FSMContext) -> None:
-    await call.answer(f"Вы выбрали {call.data.split('_')[-1]}")
+    await call.answer(f"Ты выбрал {call.data.split('_')[-1]}")
     await state.update_data(choose_class=call.data.split("_")[-1])
     await state.set_state(Register.choose_group)
     await call.message.answer(
-        "Теперь выберите группу в которой вы учитесь",
+        "Теперь выбери группу в которой ты учишься",
         reply_markup=kb_start.choose_group_in_kb(),
     )
 
@@ -91,7 +91,7 @@ async def start_redirect_to_menu_handler(
     group = user_data["choose_group"]
 
     await call.message.answer(
-        f"Вы в {html.italic(grade)}{html.italic(letter)}"
+        f"Ты в {html.italic(grade)}{html.italic(letter)}"
         f" классе, группа {html.italic(group)}",
     )
     await asyncio.to_thread(
@@ -103,7 +103,7 @@ async def start_redirect_to_menu_handler(
             "grade": grade,
             "letter": letter,
             "group": group,
-            "name": call.from_user.username,
+            "name": call.from_user.first_name,
         },
     )
     await state.clear()
@@ -148,7 +148,7 @@ async def site_register_handler(message: Message) -> None:
     )
     if response.status_code == 200:
         await message.answer(
-            f"Ваш код для входа: {html.code(confirmation_code)}",
+            f"Твой код для входа: {html.code(confirmation_code)}",
             reply_markup=kb_start.open_site_in_kb(DOMAIN_URL),
         )
     else:

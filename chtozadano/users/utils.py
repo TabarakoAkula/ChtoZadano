@@ -1,5 +1,15 @@
 import datetime
 import hashlib
+import random
+import string
+
+from asgiref.sync import sync_to_async
+from django.contrib.auth import get_user_model
+
+import users.models
+from users.notifier import become_admin_notify, custom_notification
+
+DjangoUser = get_user_model()
 
 
 def create_password(a, b):
@@ -32,3 +42,50 @@ def validate_password(password: str) -> tuple[bool, str]:
     if not any(char in special_symbols for char in password):
         return False, "Пароль должен содержать специальные символы"
     return True, ""
+
+
+async def new_become_admin_notify() -> None:
+    superusers = await sync_to_async(list)(
+        DjangoUser.objects.filter(is_superuser=True).values(
+            "server_user__telegram_id",
+        ),
+    )
+    users_ids = [
+        int(i["server_user__telegram_id"])
+        for i in superusers
+        if i["server_user__telegram_id"]
+    ]
+    number_of_requests = await sync_to_async(
+        users.models.BecomeAdmin.objects.count,
+    )()
+    await become_admin_notify(
+        number_of_requests=number_of_requests,
+        users_ids=users_ids,
+    )
+
+
+async def become_admin_decision_notify(
+    new_admin_id: int,
+    accept: bool,
+) -> None:
+    text = (
+        "Уведомление:\n"
+        "Твоя заявка на становление администратором была отклонена❌"
+    )
+    if accept:
+        text = (
+            "Уведомление:\n"
+            "Твоя заявка на становление администратором была одобрена✅"
+        )
+    await custom_notification(
+        [new_admin_id],
+        text,
+        True,
+    )
+
+
+def get_randomized_name(name: str) -> str:
+    random_chars = "".join(
+        random.choices(string.ascii_letters + string.digits, k=5),
+    )
+    return f"{name}_{random_chars}"

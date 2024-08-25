@@ -2,6 +2,7 @@
 
 {% block content %}
 	{% load static %}
+	<title>Вход</title>
 	<div class="container">
 		<form method="POST" enctype="multipart/form-data" class="chtozadano-form">
 			{% csrf_token %}
@@ -9,7 +10,7 @@
 				<label for="exampleInputEmail1" class="form-label">Код подтверждения</label>
 				<input type="text" name="confirmation_code" class="form-control" id="exampleInputEmail1"
 				       aria-describedby="emailHelp" required>
-				<div id="emailHelp" class="form-text">Отправьте сообщение "код" в наш <a
+				<div id="emailHelp" class="form-text">Отправьте /code в наш <a
 					style="text-decoration: none;"
 					href="https://t.me/ChtoZadano_bot">бот</a>
 				</div>
