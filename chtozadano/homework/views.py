@@ -12,6 +12,7 @@ from homework.utils import (
     add_notification,
     check_grade_letter,
     get_abbreviation_from_name,
+    get_group_from_teacher,
     get_list_of_dates,
     get_name_from_abbreviation,
     get_schedule_from_weekday,
@@ -278,7 +279,14 @@ class ChooseGrLePage(View):
             return redirect("homework:homework_page")
         grade = int(request.POST.get("grade"))
         letter = request.POST.get("letter")
-        group = int(request.POST.get("group"))
+        teacher = request.POST.get("group").replace("_", " ")
+        group = get_group_from_teacher(teacher, grade, letter)
+        if group == 0:
+            messages.error(
+                request,
+                f"{teacher} не ведет в {grade}{letter} классе",
+            )
+            return redirect("homework:choose_grad_let")
         data = {
             "grade": grade,
             "letter": letter,
