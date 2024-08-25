@@ -51,11 +51,20 @@ def choose_gr_let_in_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
 
 
-def choose_group_in_kb() -> InlineKeyboardMarkup:
+def choose_group_in_kb(
+    first_teacher: str,
+    second_teacher: str,
+) -> InlineKeyboardMarkup:
     inline_list = [
         [
-            InlineKeyboardButton(text="1", callback_data="ch_group_1"),
-            InlineKeyboardButton(text="2", callback_data="ch_group_2"),
+            InlineKeyboardButton(
+                text=first_teacher,
+                callback_data="ch_group_" + first_teacher.replace(" ", "_"),
+            ),
+            InlineKeyboardButton(
+                text=second_teacher,
+                callback_data="ch_group_" + second_teacher.replace(" ", "_"),
+            ),
         ],
         [
             InlineKeyboardButton(
