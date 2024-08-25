@@ -99,6 +99,16 @@ def get_name_from_abbreviation(abbreviation: str) -> str:
         return response_object
 
 
+def get_group_from_teacher(teacher_name: str, grade: int, letter: str) -> int:
+    eng_teachers_url = staticfiles_storage.url("json/eng_teachers.json")
+    with open(str(BASE_DIR) + eng_teachers_url, encoding="utf-8") as data:
+        json_data = json.loads(data.read())
+        try:
+            return json_data[teacher_name]["grades"][f"{grade}{letter}"]
+        except KeyError:
+            return 0
+
+
 def save_files(
     request_files_list: list,
     grade: int,

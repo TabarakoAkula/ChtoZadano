@@ -1,14 +1,18 @@
 import datetime
 import hashlib
+import json
 import random
 import string
 
 from asgiref.sync import sync_to_async
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 import users.models
 from users.notifier import become_admin_notify, custom_notification
 
+BASE_DIR = settings.BASE_DIR
 DjangoUser = get_user_model()
 
 
@@ -89,3 +93,13 @@ def get_randomized_name(name: str) -> str:
         random.choices(string.ascii_letters + string.digits, k=5),
     )
     return f"{name}_{random_chars}"
+
+
+def get_user_teachers(grade: int, letter: str) -> list | None:
+    eng_teachers_url = staticfiles_storage.url("json/grades_subjects.json")
+    with open(str(BASE_DIR) + eng_teachers_url, encoding="utf-8") as data:
+        json_data = json.loads(data.read())
+        try:
+            return json_data[str(grade)][letter]["teachers"]
+        except KeyError:
+            return None
