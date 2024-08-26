@@ -136,6 +136,32 @@ If you want to upload another data about teachers/subjects/group - change data i
 + ``GROUP_CHOICES``  
 
 
+## 📆Adding schedule
+You can fast upload your schedule using script in ``/chtozadano/scripts/add_schedule_script.py``
+### Fill data
+Fill file ``/chtozadano/scripts/timetable.csv`` according to the template:
++ ``grade`` (f.e. ``10А``)
++ lessons in format ``weekday``_``lesson``, where 0 - Monday (f.e. ``1_2`` = ``Thuesday_Second lesson``)
++ Determine the maximum number of lessons and specify it for each day of the week!
+If the maximum number of lessons is 4, then the headers will look like this: ``grades;0_1;0_2;0_3;0_4;1_1;1_2;1_3;1_4....``
+### Preparation
+There are come required fields:
++ Request url - ``DOMAIN_URL`` (``.env``file)
++ Superuser id - ``SUPERUSER_ID`` (``.env`` file)
++ Api key - ``API_KEY`` (``.env`` file)
+
+If you want you can change:
++ Filename - ``FILENAME`` (``script`` file)
++ CSV delimiter - ``DELIMITER`` (``script`` file)
++ CSV encoding format - ``ENCONDING`` (``script`` file)
+
+### Launch
++ Go to ``/chtozadano/scripts`` directory
++ Launch ``script`` file
+  ```bash
+  python add_schedule_script.py
+  ```
+
 ## 🧾Make scripts:
 Some scripts which can make your experience easier  
 ```bash
