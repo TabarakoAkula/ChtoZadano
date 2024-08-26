@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://github.com/TabarakoAkula/ChtoZadano">
 <picture>
-    <img width="300px" height="300px" alt="AChtoZadano" src="https://github.com/user-attachments/assets/559b5c28-5df0-45ba-9c1c-dc9d0a49f516">
+    <img width="300px" height="300px" alt="AChtoZadano" src="./chtozadano/static_dev/img/favicon.ico">
 </picture>  
 </a>
 <h1 align="center">
@@ -117,6 +117,14 @@ python telegram_bot
   python manage.py createsuperuser
   ```
 
+## 📟Admin panel
+The site allows you to work with database through its admin panel. 
+To enter it, you need to:
++ Create superuser
++ Go to the address ``/admin/`` and enter superuser data
+#### OR
++ Go to ``/user/account/`` and press ``Админ панель``
+
 ## 📁Data customization
 If you want to upload another data about teachers/subjects/group - change data in this files:
 ### JSON
@@ -134,7 +142,12 @@ If you want to upload another data about teachers/subjects/group - change data i
 
 ``/chtozadano/homework/forms.py``:  
 + ``GROUP_CHOICES``  
+### HTML
+``/chtozadano/templates/users/sign_in.html``
++ ``line 15`` - href to bot
 
+``/chtozadano/templates/users/sign_up.html``
++ ``line 16`` - href to bot
 
 ## 📆Adding schedule
 You can fast upload your schedule using script in ``/chtozadano/scripts/add_schedule_script.py``
@@ -190,4 +203,5 @@ If ``True`` - site will be available only for superusers. Other users will see `
 ### API_TECHNICAL_WOR
 If ``True`` - site API will be blocked -> bot will stop working & custom API requests will be unavailable
 
-## The API documentation is in the file <a href="https://github.com/TabarakoAkula/ChtoZadano/blob/814ed9a3d8940f272863eeaae8cc39a04b7fda7c/API.md">API.md</a>
+## API
+#### API documentation is in the file API.md
