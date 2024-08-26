@@ -858,7 +858,7 @@ class AddScheduleAPI(APIView):
             letter=letter,
             group=group,
             weekday=weekday,
-            subject=subject,
+            subject=get_abbreviation_from_name(subject),
             lesson=lesson,
         )
         return response.Response({"success": "Successful"})
