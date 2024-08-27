@@ -48,19 +48,22 @@ class CreateUserAPI(APIView):
     def post(request):
         telegram_id = request.data["telegram_id"]
         all_users = User.objects.filter(telegram_id=telegram_id).all()
-        if all_users:
-            user = all_users[0]
+        try:
+            group = request.data["group"]
             grade = request.data["grade"]
             letter = request.data["letter"]
-            group = request.data["group"]
-            if not isinstance(group, int):
-                group = get_group_from_teacher(
-                    group.replace("_"),
-                    grade,
-                    letter,
-                )
-                if group == 0:
-                    return response.Response({"error": "Bad teacher data"})
+        except KeyError:
+            return response.Response({"error": "Bad request data"}, status=400)
+        if not isinstance(group, int):
+            group = get_group_from_teacher(
+                group.replace("_", " "),
+                grade,
+                letter,
+            )
+            if group == 0:
+                return response.Response({"error": "Bad teacher data"})
+        if all_users:
+            user = all_users[0]
             user.grade = grade
             user.letter = letter
             user.group = group
@@ -84,7 +87,7 @@ class CreateUserAPI(APIView):
             user=django_user,
             grade=request.data["grade"],
             letter=request.data["letter"],
-            group=request.data["group"],
+            group=group,
             telegram_id=telegram_id,
         )
         return response.Response({"success": "Successful"})
@@ -147,7 +150,7 @@ class ChangeGradeLetterAPI(APIView):
             return response.Response({"error": "User does not exist"})
         if not isinstance(group, int):
             group = get_group_from_teacher(
-                group.replace("_"),
+                group.replace("_", " "),
                 grade,
                 letter,
             )
