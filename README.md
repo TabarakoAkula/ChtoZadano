@@ -190,4 +190,14 @@ If ``True`` - site will be available only for superusers. Other users will see `
 ### API_TECHNICAL_WOR
 If ``True`` - site API will be blocked -> bot will stop working & custom API requests will be unavailable
 
+## 🕛Cron
+In the project, there is an auto-deletion of old homework (for more than 2 weeks) using cron. 
+It will be automatically launched in the Docker container. To set up:
++ Open /cron/delete)old_hw_script.sh
++ Change ``{your_api_key}`` and ``{superuser_tg_id}`` to your values
++ Restart docker container
+  ```bash
+  docker restart chtozadano-cron-1
+  ```
+
 ## The API documentation is in the file <a href="https://github.com/TabarakoAkula/ChtoZadano/blob/814ed9a3d8940f272863eeaae8cc39a04b7fda7c/API.md">API.md</a>
