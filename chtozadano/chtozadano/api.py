@@ -184,4 +184,8 @@ urlpatterns = [
         "add_files_ids/",
         homework.api.views.AddFileIdAPI.as_view(),
     ),
+    path(
+        "add_notification/",
+        homework.api.views.CustomNotificationAPI.as_view(),
+    ),
 ]

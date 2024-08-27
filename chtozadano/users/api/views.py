@@ -297,9 +297,12 @@ class GetAdminsAPI(viewsets.ReadOnlyModelViewSet):
 class IsUserAdminAPI(APIView):
     @staticmethod
     def post(request):
-        user_obj = User.objects.filter(
-            telegram_id=request.data["telegram_id"],
-        ).first()
+        try:
+            user_obj = User.objects.filter(
+                telegram_id=request.data["telegram_id"],
+            ).first()
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         if user_obj:
             return response.Response(
                 json.dumps(
