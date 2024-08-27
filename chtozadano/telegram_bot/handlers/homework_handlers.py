@@ -256,6 +256,7 @@ async def choose_subject_handler(
     await state.update_data(images=[])
     await state.update_data(files=[])
     await state.update_data(message_id=[])
+    await state.update_data(text="")
     await state.set_state(AddHomework.add_descriptions_images)
     await call.answer(f"Выбранный предмет: {subject}")
     await call.message.answer(
