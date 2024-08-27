@@ -68,11 +68,24 @@ async def command_reset_handler(message: Message, state: FSMContext) -> None:
 )
 async def choose_group_handler(call: CallbackQuery, state: FSMContext) -> None:
     await call.answer(f"Ты выбрал {call.data.split('_')[-1]}")
-    await state.update_data(choose_class=call.data.split("_")[-1])
+    grade_letter = call.data.split("_")[-1]
+    await state.update_data(choose_class=grade_letter)
+    letter = grade_letter[-1]
+    grade = int(grade_letter[:-1])
+    teachers = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_user_eng_teachers/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "grade": grade,
+            "letter": letter,
+        },
+    )
+    teachers = teachers.json()["teachers"]
     await state.set_state(Register.choose_group)
     await call.message.answer(
-        "Теперь выбери группу в которой ты учишься",
-        reply_markup=kb_start.choose_group_in_kb(),
+        "Теперь выбери у какого учителя английского ты учишься",
+        reply_markup=kb_start.choose_group_in_kb(teachers[0], teachers[1]),
     )
 
 
@@ -84,15 +97,16 @@ async def start_redirect_to_menu_handler(
     call: CallbackQuery,
     state: FSMContext,
 ) -> None:
-    await state.update_data(choose_group=call.data.split("_")[-1])
     user_data = await state.get_data()
     grade = user_data["choose_class"][:-1]
     letter = user_data["choose_class"][-1]
-    group = user_data["choose_group"]
+    group = str(
+        call.data.split("_")[-2] + " " + call.data.split("_")[-1],
+    ).replace(" ", "_")
 
     await call.message.answer(
         f"Ты в {html.italic(grade)}{html.italic(letter)}"
-        f" классе, группа {html.italic(group)}",
+        f" классе, группа {html.italic(group.replace('_', ' '))}",
     )
     await asyncio.to_thread(
         requests.post,
