@@ -11,6 +11,7 @@ from homework.utils import (
     add_documents_file_id,
     add_notification,
     cron_notifier,
+    custom_notification,
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
@@ -945,3 +946,31 @@ class AddFileIdAPI(APIView):
             user.grade,
         )
         return response.Response({"success": "Successful"})
+
+
+class CustomNotificationAPI(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            user_obj = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+            notification_message = request.data["notification_message"]
+            users_id = request.data["users_id"]
+        except (KeyError, users.models.User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        if not user_obj.user.is_superuser:
+            return response.Response({"error": "Not allowed"}, status=403)
+        asyncio.run(
+            custom_notification(
+                users_ids=users_id,
+                message_text=notification_message,
+                notification=True,
+            ),
+        )
+        return response.Response(
+            {
+                "success": f"Successfully send messages to"
+                f" {len(users_id)} users",
+            },
+        )
