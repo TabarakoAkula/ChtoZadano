@@ -31,7 +31,14 @@ class Homework(StatesGroup):
     find = State()
 
 
-class AddHomework(StatesGroup):
+class AddHomeworkFast(StatesGroup):
+    choose_subject = State()
+    add_descriptions_images = State()
+    add_files = State()
+    message_id = State()
+
+
+class AddHomeworkSlow(StatesGroup):
     choose_subject = State()
     add_descriptions_images = State()
     add_files = State()

@@ -1,7 +1,8 @@
 from aiogram.filters import StateFilter
 from states import (
     Account,
-    AddHomework,
+    AddHomeworkFast,
+    AddHomeworkSlow,
     EditHomework,
     Homework,
     Schedule,
@@ -26,15 +27,21 @@ HomeworkStateFilter = StateFilter(
     Homework.find,
 )
 
-AddHomeworkStateFilter = StateFilter(
-    AddHomework.choose_subject,
-    AddHomework.add_descriptions_images,
-    AddHomework.add_files,
+AddHomeworkFastStateFilter = StateFilter(
+    AddHomeworkFast.choose_subject,
+    AddHomeworkFast.add_descriptions_images,
+    AddHomeworkFast.add_files,
+)
+
+AddHomeworkSlowStateFilter = StateFilter(
+    AddHomeworkSlow.choose_subject,
+    AddHomeworkSlow.add_descriptions_images,
+    AddHomeworkSlow.add_files,
 )
 
 PublishHomeworkStateFilter = StateFilter(
-    AddHomework.add_files,
-    AddHomework.add_descriptions_images,
+    AddHomeworkFast.add_files,
+    AddHomeworkFast.add_descriptions_images,
 )
 
 EditHomeworkStateFilter = StateFilter(

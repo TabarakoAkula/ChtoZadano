@@ -8,7 +8,7 @@ from aiogram.types import CallbackQuery, ContentType, Message
 from bot_instance import bot
 from constants import DOCKER_URL, SUBJECTS
 from filters import (
-    AddHomeworkStateFilter,
+    AddHomeworkSlowStateFilter,
     EditHomeworkStateFilter,
     HomeworkStateFilter,
     PublishHomeworkStateFilter,
@@ -21,13 +21,14 @@ from keyboards.homework import (
     homework_subject,
 )
 import requests
-from states import AddHomework, EditHomework, Homework
+from states import AddHomeworkSlow, EditHomework, Homework
 from utils import (
     bot_save_files,
     check_for_admin,
     delete_homework,
     edit_hw_description,
     generate_homework,
+    get_fast_add,
     get_homework_from_date,
     get_homework_from_id,
     get_user_subjects,
@@ -45,7 +46,7 @@ async def command_add_homework_handler(
     await add_homework_handler(message, state)
 
 
-@rp_homework_router.message(Command("stop"), AddHomeworkStateFilter)
+@rp_homework_router.message(Command("stop"), AddHomeworkSlowStateFilter)
 async def command_stop_add_homework_handler(
     message: Message,
 ) -> None:
@@ -220,13 +221,18 @@ async def command_search_hw_handler(
     await search_homework_handler(message, state)
 
 
+# START ADD HW
+
+
 @rp_homework_router.message(F.text == "Добавить📋", HomeworkStateFilter)
 async def add_homework_handler(
     message: Message,
     state: FSMContext,
     mailing: bool = False,
 ) -> None:
-    await state.set_state(AddHomework.choose_subject)
+    fast_add_bool = await get_fast_add(message.chat.id)
+    if fast_add_bool:
+        await state.set_state(AddHomeworkSlow.choose_subject)
     subjects = await get_user_subjects(message.chat.id)
     subjects.append("информация")
     keyboard = homework_subject.homework_subject_in_kb(
@@ -245,7 +251,7 @@ async def add_homework_handler(
 
 @rp_homework_router.callback_query(
     F.data.startswith("add_hw_subject_"),
-    AddHomeworkStateFilter,
+    AddHomeworkSlowStateFilter,
 )
 async def choose_subject_handler(
     call: CallbackQuery,
@@ -256,7 +262,7 @@ async def choose_subject_handler(
     await state.update_data(images=[])
     await state.update_data(files=[])
     await state.update_data(message_id=[])
-    await state.set_state(AddHomework.add_descriptions_images)
+    await state.set_state(AddHomeworkSlow.add_descriptions_images)
     await call.answer(f"Выбранный предмет: {subject}")
     await call.message.answer(
         text="Отлично, теперь отправь домашку\n(Ты можешь отправить"
@@ -264,9 +270,13 @@ async def choose_subject_handler(
     )
 
 
+# END ADD HW
+# START ADD FILES
+
+
 @rp_homework_router.callback_query(
     F.data == "add_homework_files",
-    AddHomeworkStateFilter,
+    AddHomeworkSlowStateFilter,
 )
 async def add_homework_files_handler(
     call: CallbackQuery,
@@ -280,11 +290,11 @@ async def add_homework_files_handler(
         " что файл добавлен",
         reply_markup=homework_add.add_homework_maximum_in_kb(),
     )
-    await state.set_state(AddHomework.add_files)
+    await state.set_state(AddHomeworkSlow.add_files)
 
 
 @rp_homework_router.message(
-    AddHomework.add_files,
+    AddHomeworkSlow.add_files,
     F.content_type.in_([ContentType.DOCUMENT, ContentType.AUDIO]),
 )
 async def add_files_handler(
@@ -327,6 +337,10 @@ async def add_files_handler(
                     state,
                     message.audio.file_name,
                 )
+
+
+# END ADD FILES
+# START PUBLISH HW
 
 
 @rp_homework_router.callback_query(F.data == "publish_hw")
@@ -383,8 +397,12 @@ async def command_publish_hw_handler(
     await command_menu_handler(message)
 
 
+# END PUBLISH HW
+# START ADD DESC + IMG
+
+
 @rp_homework_router.message(
-    AddHomework.add_descriptions_images,
+    AddHomeworkSlow.add_descriptions_images,
     F.content_type.in_([ContentType.TEXT, ContentType.PHOTO]),
 )
 async def add_description_images_handler(
@@ -398,7 +416,10 @@ async def add_description_images_handler(
         await state.update_data(text=text)
     data = await state.get_data()
     state_message_id = data["message_id"]
-    text = data["text"]
+    try:
+        text = data["text"]
+    except KeyError:
+        text = ""
     state_message_id.append(message.message_id)
     await state.update_data(message_id=state_message_id)
     if message.photo and text:
@@ -418,7 +439,7 @@ async def add_description_images_handler(
             text="Текст успешно добавлен",
             reply_markup=homework_add.add_homework_in_kb(),
         )
-    await state.set_state(AddHomework.add_descriptions_images)
+    await state.set_state(AddHomeworkSlow.add_descriptions_images)
     if message.photo:
         for idx, photo in enumerate(message.photo):
             if idx == len(message.photo) - 1:
@@ -431,6 +452,9 @@ async def add_description_images_handler(
                     subject,
                     state,
                 )
+
+
+# END OF ADD HW
 
 
 @rp_homework_router.callback_query(F.data.startswith("edit_homework_"))
