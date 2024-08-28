@@ -399,7 +399,10 @@ async def add_description_images_handler(
         await state.update_data(text=text)
     data = await state.get_data()
     state_message_id = data["message_id"]
-    text = data["text"]
+    try:
+        text = data["text"]
+    except KeyError:
+        text = ""
     state_message_id.append(message.message_id)
     await state.update_data(message_id=state_message_id)
     if message.photo and text:

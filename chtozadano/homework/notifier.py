@@ -221,11 +221,12 @@ async def add_documents_file_id(
         document_objects = await sync_to_async(list)(homework_obj.images.all())
     else:
         document_objects = await sync_to_async(list)(homework_obj.files.all())
-
-    for index, document in enumerate(document_objects):
-        document.telegram_file_id = document_ids[index]
-        await sync_to_async(document.save)()
-
+    try:
+        for index, document in enumerate(document_objects):
+            document.telegram_file_id = document_ids[index]
+            await sync_to_async(document.save)()
+    except IndexError:
+        pass
     return
 
 
