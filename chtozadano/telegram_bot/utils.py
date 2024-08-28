@@ -356,6 +356,10 @@ async def publish_homework(data: dict, telegram_id: int) -> tuple[int, int]:
         "schoolinfo",
     ]:
         mailing = True
+    try:
+        text = data["text"]
+    except KeyError:
+        text = ""
     if not mailing:
         response = await asyncio.to_thread(
             requests.post,
@@ -363,7 +367,7 @@ async def publish_homework(data: dict, telegram_id: int) -> tuple[int, int]:
             json={
                 "api_key": os.getenv("API_KEY"),
                 "telegram_id": telegram_id,
-                "description": data["text"],
+                "description": text,
                 "subject": subject,
                 "images": images_list,
                 "files": files_list,
@@ -382,7 +386,7 @@ async def publish_homework(data: dict, telegram_id: int) -> tuple[int, int]:
             json={
                 "api_key": os.getenv("API_KEY"),
                 "telegram_id": telegram_id,
-                "description": data["text"],
+                "description": text,
                 "level": level,
                 "images": images_list,
                 "files": files_list,
