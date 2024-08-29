@@ -324,3 +324,21 @@ class GetUserEngTeachersAPI(APIView):
         if teachers:
             return response.Response({"teachers": teachers})
         return response.Response({"error": "Unknown grade|letter"}, status=400)
+
+
+class GetFastAddAPI(APIView):
+    @staticmethod
+    def post(request):
+        telegram_id = request.data["telegram_id"]
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        return response.Response({"fast_hw": user_obj.fast_hw})
+
+
+class ChangeFastAddAPI(APIView):
+    @staticmethod
+    def post(request):
+        telegram_id = request.data["telegram_id"]
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        user_obj.fast_hw = not user_obj.fast_hw
+        user_obj.save()
+        return response.Response({"success": "Successful"})
