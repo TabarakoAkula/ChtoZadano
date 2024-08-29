@@ -106,10 +106,16 @@ async def send_message_after_delay(
     if not publish:
         data = await state.get_data()
         number_of_files = len(data["files"])
+        if number_of_files == 1:
+            files_text = "файл"
+        elif 4 <= number_of_files <= 2:
+            files_text = "файла"
+        else:
+            files_text = "файлов"
         await bot.send_message(
-            chat_id,
-            f"Ты добавил {number_of_files} файлов\n"
-            f"Теперь отправь описание | изображения",
+            chat_id=chat_id,
+            text=f"Ты добавил {number_of_files} {files_text}.\n"
+            f"Теперь отправь описание и, по необходимости, изображения",
         )
     else:
         await command_publish_hw_handler(message, state)
