@@ -3,8 +3,6 @@ from django.forms import Form
 
 from homework.forms import GRADE_CHOICES, GROUP_CHOICES, LETTER_CHOICES
 
-COLOR_CHOICES = ["#8b0000", "#ffff00", "#006400"]
-
 
 class SignUpForm(Form):
     confirmation_code = django.forms.IntegerField(
@@ -51,10 +49,3 @@ class SignInPasswordForm(Form):
 class ChangeContactsForm(Form):
     first_name = django.forms.CharField(label="Имя")
     last_name = django.forms.CharField(required=False, label="Фамилия")
-
-
-class EditNotebookForm(Form):
-    text = django.forms.CharField(
-        widget=django.forms.Textarea,
-        label="Текст",
-    )

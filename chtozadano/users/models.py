@@ -56,12 +56,6 @@ class User(django.db.models.Model):
         default=1,
         verbose_name="Группа",
     )
-    notebook = django.db.models.TextField(
-        null=True,
-        blank=True,
-        verbose_name="Заметки",
-    )
-    notebook_color = colorfield.fields.ColorField(default="#FF0000")
     chat_mode = django.db.models.BooleanField(
         default=True,
         verbose_name="Режим чата",

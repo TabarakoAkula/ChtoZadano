@@ -12,7 +12,6 @@ from django.views import View
 
 from users.forms import (
     ChangeContactsForm,
-    EditNotebookForm,
     SignInForm,
     SignInPasswordForm,
     SignUpForm,
@@ -469,35 +468,4 @@ class BecomeAdminDecline(View):
             asyncio.run(become_admin_decision_notify(telegram_id, False))
             return redirect("users:show_become_admin")
         messages.error(request, "У вас недостаточно прав для этого действия")
-        return redirect("users:account_page")
-
-
-class EditNotebook(View):
-    @staticmethod
-    def get(request):
-        if not request.user.is_authenticated:
-            messages.error(
-                request,
-                "Необходимо войти в аккаунт для этого действия",
-            )
-            return redirect("users:signin_page")
-        return render(
-            request,
-            "users/edit_notebook.html",
-            context={"form": EditNotebookForm},
-        )
-
-    @staticmethod
-    def post(request):
-        if not request.user.is_authenticated:
-            messages.error(
-                request,
-                "Необходимо войти в аккаунт для этого действия",
-            )
-            return redirect("users:signin_page")
-        form = EditNotebookForm(request.POST).data
-        user = User.objects.get(user=request.user)
-        user.notebook = form["text"]
-        user.notebook_color = form["color"]
-        user.save()
         return redirect("users:account_page")
