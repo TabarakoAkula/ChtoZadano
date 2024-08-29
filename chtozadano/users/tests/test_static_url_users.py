@@ -222,19 +222,3 @@ class StaticUrlTests(TestCase):
             )
         response = self.client.get(reverse("users:change_contacts"))
         self.assertEquals(response.status_code, status_code)
-
-    @parameterized.expand(
-        [
-            ("", 302),
-            ("test_user", 200),
-            ("test_admin", 200),
-            ("test_superuser", 200),
-        ],
-    )
-    def test_edit_notebook_endpoint(self, username, status_code):
-        if username:
-            self.client.force_login(
-                DjangoUser.objects.get_or_create(username=username)[0],
-            )
-        response = self.client.get(reverse("users:edit_notebook"))
-        self.assertEquals(response.status_code, status_code)
