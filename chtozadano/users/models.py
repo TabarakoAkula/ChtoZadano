@@ -1,4 +1,3 @@
-import colorfield.fields
 from django.contrib.auth import get_user_model
 import django.db.models
 
