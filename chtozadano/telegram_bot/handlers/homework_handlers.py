@@ -115,7 +115,7 @@ async def send_message_after_delay(
         await bot.send_message(
             chat_id=chat_id,
             text=f"Ты добавил {number_of_files} {files_text}.\n"
-            f"Теперь отправь описание и, по необходимости, изображения",
+            f"Теперь отправь описание и изображения, если нужно",
         )
     else:
         await command_publish_hw_handler(message, state)
