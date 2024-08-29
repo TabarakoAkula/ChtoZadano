@@ -15,6 +15,7 @@ from handlers import (
     account_handlers,
     help_handler,
     homework_handlers,
+    homework_menu_handlers,
     menu_handlers,
     register_handlers,
     schedule_handlers,
@@ -36,6 +37,7 @@ dp.include_routers(
     menu_handlers.rp_menu_router,
     schedule_handlers.rp_schedule_router,
     account_handlers.rp_account_router,
+    homework_menu_handlers.rp_homework_menu_router,
     homework_handlers.rp_homework_router,
 )
 

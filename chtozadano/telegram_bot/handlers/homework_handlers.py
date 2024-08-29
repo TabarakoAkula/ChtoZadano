@@ -8,7 +8,9 @@ from aiogram.types import CallbackQuery, ContentType, Message
 from bot_instance import bot
 from constants import DOCKER_URL, SUBJECTS
 from filters import (
-    AddHomeworkStateFilter,
+    AddHomeworkFastDescriptionStateFilter,
+    AddHomeworkSlowStateFilter,
+    AddHwChooseSubjectStateFilter,
     EditHomeworkStateFilter,
     HomeworkStateFilter,
     PublishHomeworkStateFilter,
@@ -17,18 +19,17 @@ from handlers.menu_handlers import command_menu_handler
 from keyboards.homework import (
     homework_add,
     homework_edit,
-    homework_menu,
     homework_subject,
 )
 import requests
-from states import AddHomework, EditHomework, Homework
+from states import AddHomeworkFast, AddHomeworkSlow, EditHomework
 from utils import (
     bot_save_files,
     check_for_admin,
     delete_homework,
     edit_hw_description,
     generate_homework,
-    get_homework_from_date,
+    get_fast_add,
     get_homework_from_id,
     get_user_subjects,
     publish_homework,
@@ -37,196 +38,18 @@ from utils import (
 rp_homework_router = Router()
 
 
-@rp_homework_router.message(Command("new"))
-async def command_add_homework_handler(
-    message: Message,
-    state: FSMContext,
-) -> None:
-    await add_homework_handler(message, state)
-
-
-@rp_homework_router.message(Command("stop"), AddHomeworkStateFilter)
-async def command_stop_add_homework_handler(
-    message: Message,
-) -> None:
-    await command_menu_handler(message)
-
-
-@rp_homework_router.message(F.text == "Домашка📝")
-async def homework_handler(
-    message: Message,
-    state: FSMContext,
-) -> None:
-    await state.set_state(Homework.start)
-    if await check_for_admin(message.chat.id) in ["admin", "superuser"]:
-        keyboard = homework_menu.homework_main_admin_rp_kb()
-    else:
-        keyboard = homework_menu.homework_main_user_rp_kb()
-    await message.answer(
-        text="Список доступных опций:",
-        reply_markup=keyboard,
-    )
-
-
-@rp_homework_router.message(
-    F.text == "Домашка на завтра⏰",
-    HomeworkStateFilter,
-)
-async def tomorrow_homework_handler(
-    message: Message,
-    state: FSMContext,
-) -> None:
-    response = await asyncio.to_thread(
-        requests.post,
-        url=DOCKER_URL + "/api/v1/get_tomorrow_homework/",
-        json={
-            "api_key": os.getenv("API_KEY"),
-            "telegram_id": message.chat.id,
-        },
-    )
-    response_data = response.json()
-    if response_data:
-        for record in response_data:
-            homework = response_data[record]
-            await generate_homework(homework, record, message)
-    else:
-        await message.answer("На завтра ничего не задано")
-    await homework_handler(message, state)
-
-
-@rp_homework_router.message(Command("tomorrow"))
-async def command_homework_handler(
-    message: Message,
-    state: FSMContext,
-) -> None:
-    await tomorrow_homework_handler(message, state)
-
-
-@rp_homework_router.message(
-    F.text == "Выбрать предмет📚",
-    HomeworkStateFilter,
-)
-async def get_subject_hw_handler(
-    message: Message,
-    state: FSMContext,
-) -> None:
-    await state.set_state(Homework.subject)
-    subjects = await get_user_subjects(message.chat.id)
-    subjects.append("информация")
-    await message.answer(
-        text="Выбери предмет, по которому хочешь увидеть последнюю домашку",
-        reply_markup=homework_subject.homework_subject_in_kb(
-            subjects=subjects,
-            add=False,
-        ),
-    )
-
-
-@rp_homework_router.callback_query(
-    F.data.startswith("homework_subject_"),
-    HomeworkStateFilter,
-)
-async def callback_homework_subject(
-    call: CallbackQuery,
-    state: FSMContext,
-) -> None:
-    await state.set_state(Homework.subject)
-    subject = call.data.split("_")[-1]
-    if subject != "Информация":
-        response = await asyncio.to_thread(
-            requests.post,
-            url=DOCKER_URL + "/api/v1/get_homework_for_subject/",
-            json={
-                "api_key": os.getenv("API_KEY"),
-                "telegram_id": call.from_user.id,
-                "subject": subject.lower(),
-            },
-        )
-        response_data = response.json()
-        await generate_homework(response_data, 0, call.message)
-    else:
-        response = await asyncio.to_thread(
-            requests.post,
-            url=DOCKER_URL + "/api/v1/get_mailing/",
-            json={
-                "api_key": os.getenv("API_KEY"),
-                "telegram_id": call.from_user.id,
-            },
-        )
-        response_data = response.json()
-        response_data["subject"] = "Информация"
-        await generate_homework(response_data, 0, call.message)
-
-
-@rp_homework_router.message(Command("subject"))
-async def command_redirect_homework_subject(
-    message: Message,
-    state: FSMContext,
-) -> None:
-    await get_subject_hw_handler(message, state)
-
-
-@rp_homework_router.message(F.text == "Найти домашку🔎", HomeworkStateFilter)
-async def search_homework_handler(
-    message: Message,
-    state: FSMContext,
-):
-    await state.set_state(Homework.find)
-    await message.answer(
-        text="Ты можешь найти домашнее задание, если оно было"
-        " опубликовано меньше чем 2 недели назад."
-        "\n\nЧтобы посмотреть всю домашку за определенную дату,"
-        " введи ее формате год.месяц.день",
-        reply_markup=homework_menu.return_to_homework_rp_kb(),
-    )
-
-
-@rp_homework_router.message(F.text == "Назад", HomeworkStateFilter)
-async def return_to_homework(
-    message: Message,
-    state: FSMContext,
-) -> None:
-    await homework_handler(message, state)
-
-
-@rp_homework_router.message(Homework.find)
-async def search_hw_function_handler(
-    message: Message,
-):
-    if len(message.text.split(".")) != 3:
-        return
-    homeworks = await get_homework_from_date(message.chat.id, message.text)
-    if not homeworks:
-        await message.answer(
-            f"Сохраненных домашних заданий на"
-            f" {html.italic(message.text)} нет.\n\n"
-            f"Проверь корректность ввода даты",
-        )
-        return
-    await message.answer(
-        f"Домашние задания, опубликованные {html.italic(message.text)}:",
-    )
-    counter = 1
-    for homework in homeworks:
-        await generate_homework(homework, counter, message)
-        counter += 1
-
-
-@rp_homework_router.message(Command("date"))
-async def command_search_hw_handler(
-    message: Message,
-    state: FSMContext,
-):
-    await search_homework_handler(message, state)
-
-
 @rp_homework_router.message(F.text == "Добавить📋", HomeworkStateFilter)
 async def add_homework_handler(
     message: Message,
     state: FSMContext,
     mailing: bool = False,
 ) -> None:
-    await state.set_state(AddHomework.choose_subject)
+    fast_add_bool = await get_fast_add(message.chat.id)
+    if fast_add_bool:
+        await state.set_state(AddHomeworkSlow.choose_subject)
+    else:
+        await state.set_state(AddHomeworkFast.choose_subject)
+    await state.update_data(fast_add_bool=fast_add_bool)
     subjects = await get_user_subjects(message.chat.id)
     subjects.append("информация")
     keyboard = homework_subject.homework_subject_in_kb(
@@ -245,7 +68,7 @@ async def add_homework_handler(
 
 @rp_homework_router.callback_query(
     F.data.startswith("add_hw_subject_"),
-    AddHomeworkStateFilter,
+    AddHwChooseSubjectStateFilter,
 )
 async def choose_subject_handler(
     call: CallbackQuery,
@@ -256,18 +79,144 @@ async def choose_subject_handler(
     await state.update_data(images=[])
     await state.update_data(files=[])
     await state.update_data(message_id=[])
-    await state.update_data(text="")
-    await state.set_state(AddHomework.add_descriptions_images)
     await call.answer(f"Выбранный предмет: {subject}")
-    await call.message.answer(
-        text="Отлично, теперь отправь домашку\n(Ты можешь отправить"
-        " изображения и описание, файлы можно будет отправить позже)",
+    data = await state.get_data()
+    if data["fast_add_bool"]:
+        await state.set_state(AddHomeworkFast.add_data)
+        await call.message.answer(
+            text="Отлично, теперь отправь домашку\n"
+            "(Если необходимо добавить файлы - отправь сначала их)",
+        )
+    else:
+        await state.set_state(AddHomeworkSlow.add_descriptions_images)
+        await call.message.answer(
+            text="Отлично, теперь отправь домашку\n(Ты можешь отправить"
+            " изображения и описание, файлы можно будет отправить позже)",
+        )
+
+
+async def send_message_after_delay(
+    chat_id: int,
+    state: FSMContext,
+    message: Message = "",
+    publish: bool = False,
+) -> None:
+    await asyncio.sleep(3)
+    await state.set_state(AddHomeworkFast.add_descriptions_images)
+    if not publish:
+        data = await state.get_data()
+        number_of_files = len(data["files"])
+        if number_of_files == 1:
+            files_text = "файл"
+        elif 4 <= number_of_files <= 2:
+            files_text = "файла"
+        else:
+            files_text = "файлов"
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"Ты добавил {number_of_files} {files_text}.\n"
+            f"Теперь отправь описание и изображения, если нужно",
+        )
+    else:
+        await command_publish_hw_handler(message, state)
+
+
+@rp_homework_router.message(
+    F.content_type.in_([ContentType.DOCUMENT, ContentType.AUDIO]),
+    AddHomeworkFast.add_data,
+)
+async def fast_add_homework_data_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    dp = await state.get_data()
+    try:
+        dp["delay_task"].cancel()
+    except KeyError:
+        pass
+    await state.update_data(
+        delay_task=asyncio.create_task(
+            send_message_after_delay(message.chat.id, state),
+        ),
     )
+
+    state_data = await state.get_data()
+    subject = state_data["choose_subject"]
+    if message.document:
+        for idx, document in enumerate(message.document):
+            if document[0] == "file_id":
+                await bot_save_files(
+                    bot,
+                    "files",
+                    "files",
+                    document,
+                    message,
+                    subject,
+                    state,
+                    message.document.file_name,
+                    show_message=False,
+                )
+    if message.audio:
+        for idx, music in enumerate(message.audio):
+            if music[0] == "file_id":
+                await bot_save_files(
+                    bot,
+                    "music",
+                    "files",
+                    music,
+                    message,
+                    subject,
+                    state,
+                    message.audio.file_name,
+                    show_message=False,
+                )
+
+
+@rp_homework_router.message(
+    F.content_type.in_([ContentType.PHOTO, ContentType.TEXT]),
+    AddHomeworkFastDescriptionStateFilter,
+)
+async def fast_add_homework_description_images_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    dp = await state.get_data()
+    try:
+        dp["delay_task"].cancel()
+    except KeyError:
+        pass
+    await state.update_data(
+        delay_task=asyncio.create_task(
+            send_message_after_delay(
+                message.chat.id,
+                state,
+                message,
+                publish=True,
+            ),
+        ),
+    )
+    text = message.caption or message.text
+    if text:
+        await state.update_data(text=text)
+    state_data = await state.get_data()
+    subject = state_data["choose_subject"]
+    if message.photo:
+        for idx, photo in enumerate(message.photo):
+            if idx == len(message.photo) - 1:
+                await bot_save_files(
+                    bot,
+                    "img",
+                    "images",
+                    photo,
+                    message,
+                    subject,
+                    state,
+                )
 
 
 @rp_homework_router.callback_query(
     F.data == "add_homework_files",
-    AddHomeworkStateFilter,
+    AddHomeworkSlowStateFilter,
 )
 async def add_homework_files_handler(
     call: CallbackQuery,
@@ -281,11 +230,11 @@ async def add_homework_files_handler(
         " что файл добавлен",
         reply_markup=homework_add.add_homework_maximum_in_kb(),
     )
-    await state.set_state(AddHomework.add_files)
+    await state.set_state(AddHomeworkSlow.add_files)
 
 
 @rp_homework_router.message(
-    AddHomework.add_files,
+    AddHomeworkSlow.add_files,
     F.content_type.in_([ContentType.DOCUMENT, ContentType.AUDIO]),
 )
 async def add_files_handler(
@@ -385,7 +334,7 @@ async def command_publish_hw_handler(
 
 
 @rp_homework_router.message(
-    AddHomework.add_descriptions_images,
+    AddHomeworkSlow.add_descriptions_images,
     F.content_type.in_([ContentType.TEXT, ContentType.PHOTO]),
 )
 async def add_description_images_handler(
@@ -422,7 +371,7 @@ async def add_description_images_handler(
             text="Текст успешно добавлен",
             reply_markup=homework_add.add_homework_in_kb(),
         )
-    await state.set_state(AddHomework.add_descriptions_images)
+    await state.set_state(AddHomeworkSlow.add_descriptions_images)
     if message.photo:
         for idx, photo in enumerate(message.photo):
             if idx == len(message.photo) - 1:

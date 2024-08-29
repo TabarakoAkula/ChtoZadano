@@ -286,6 +286,7 @@ async def bot_save_files(
     subject: str,
     state: FSMContext,
     file_name: str = "",
+    show_message: bool = True,
 ) -> None:
     if fs_type == "img":
         file_id = document.file_id
@@ -317,9 +318,10 @@ async def bot_save_files(
         if fs_type == "img":
             await state.update_data(images=documents)
         else:
-            await message.answer(
-                f"Файл {html.italic(file_name)} успешно добавлен",
-            )
+            if show_message:
+                await message.answer(
+                    f"Файл {html.italic(file_name)} успешно добавлен",
+                )
             await state.update_data(files=documents)
 
 
@@ -474,3 +476,18 @@ async def add_documents_file_id(
         },
     )
     return
+
+
+async def get_fast_add(telegram_id: int) -> bool | str:
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_fast_add/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": telegram_id,
+        },
+    )
+    try:
+        return response.json()["fast_hw"]
+    except KeyError:
+        return "Error"
