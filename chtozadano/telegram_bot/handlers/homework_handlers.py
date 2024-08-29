@@ -66,6 +66,34 @@ async def add_homework_handler(
     )
 
 
+@rp_homework_router.message(Command("info"))
+async def add_class_info_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    fast_add_bool = await get_fast_add(message.chat.id)
+
+    await state.update_data(choose_subject="информация")
+    await state.update_data(images=[])
+    await state.update_data(files=[])
+    await state.update_data(message_id=[])
+    await state.update_data(fast_add_bool=fast_add_bool)
+
+    if fast_add_bool:
+        await state.set_state(AddHomeworkFast.add_data)
+        await message.answer(
+            text="Отлично, теперь отправь информацию для своего класса\n"
+            "(Если необходимо добавить файлы - отправь сначала их)",
+        )
+    else:
+        await state.set_state(AddHomeworkSlow.add_descriptions_images)
+        await message.answer(
+            text="Отлично, теперь отправь информацию для своего класса\n"
+            "(Ты можешь отправить изображения и описание, "
+            "файлы можно будет отправить позже)",
+        )
+
+
 @rp_homework_router.callback_query(
     F.data.startswith("add_hw_subject_"),
     AddHwChooseSubjectStateFilter,

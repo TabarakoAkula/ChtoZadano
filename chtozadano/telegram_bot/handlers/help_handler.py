@@ -28,6 +28,7 @@ async def command_help_handler(message: Message) -> None:
                 "",
                 "Команды для администраторов:",
                 "/new - добавить домашнее задание",
+                "/info - опубликовать информацию для класса",
             ],
         )
     elif await check_for_admin(message.chat.id) == "superuser":
@@ -36,6 +37,7 @@ async def command_help_handler(message: Message) -> None:
                 "",
                 "Команды для администраторов:",
                 "/new - добавить домашнее задание",
+                "/info - опубликовать информацию для класса",
                 "",
                 "Команды для суперпользователей:",
                 "/add_mailing - добавить информацию",
