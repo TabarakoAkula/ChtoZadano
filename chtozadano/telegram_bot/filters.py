@@ -30,21 +30,39 @@ HomeworkStateFilter = StateFilter(
 AddHomeworkFastStateFilter = StateFilter(
     AddHomeworkFast.choose_subject,
     AddHomeworkFast.add_descriptions_images,
-    AddHomeworkFast.add_files,
+    AddHomeworkFast.add_data,
+)
+
+AddHomeworkFastDescriptionStateFilter = StateFilter(
+    AddHomeworkFast.add_descriptions_images,
+    AddHomeworkFast.add_data,
 )
 
 AddHomeworkSlowStateFilter = StateFilter(
     AddHomeworkSlow.choose_subject,
-    AddHomeworkSlow.add_descriptions_images,
     AddHomeworkSlow.add_files,
 )
 
 PublishHomeworkStateFilter = StateFilter(
-    AddHomeworkFast.add_files,
-    AddHomeworkFast.add_descriptions_images,
+    AddHomeworkSlow.add_descriptions_images,
+    AddHomeworkSlow.add_files,
 )
 
 EditHomeworkStateFilter = StateFilter(
     EditHomework.start,
     EditHomework.edit_text,
+)
+
+AddHwChooseSubjectStateFilter = StateFilter(
+    AddHomeworkSlow.choose_subject,
+    AddHomeworkFast.choose_subject,
+)
+
+StopAddHomeworkStateFilter = StateFilter(
+    AddHomeworkFast.add_data,
+    AddHomeworkFast.add_descriptions_images,
+    AddHomeworkFast.choose_subject,
+    AddHomeworkSlow.add_files,
+    AddHomeworkSlow.add_descriptions_images,
+    AddHomeworkSlow.choose_subject,
 )

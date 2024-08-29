@@ -33,8 +33,8 @@ class Homework(StatesGroup):
 
 class AddHomeworkFast(StatesGroup):
     choose_subject = State()
+    add_data = State()
     add_descriptions_images = State()
-    add_files = State()
     message_id = State()
 
 

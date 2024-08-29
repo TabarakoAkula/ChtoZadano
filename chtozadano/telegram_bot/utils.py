@@ -286,6 +286,7 @@ async def bot_save_files(
     subject: str,
     state: FSMContext,
     file_name: str = "",
+    show_message: bool = True,
 ) -> None:
     if fs_type == "img":
         file_id = document.file_id
@@ -317,9 +318,10 @@ async def bot_save_files(
         if fs_type == "img":
             await state.update_data(images=documents)
         else:
-            await message.answer(
-                f"Файл {html.italic(file_name)} успешно добавлен",
-            )
+            if show_message:
+                await message.answer(
+                    f"Файл {html.italic(file_name)} успешно добавлен",
+                )
             await state.update_data(files=documents)
 
 

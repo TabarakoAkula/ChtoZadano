@@ -18,7 +18,7 @@ from keyboards.account import (
 )
 import requests
 from states import Account, ChangeContacts
-from utils import check_for_admin
+from utils import check_for_admin, get_fast_add
 
 rp_account_router = Router()
 
@@ -310,6 +310,7 @@ async def settings_handler(
     state: FSMContext,
 ) -> None:
     await state.set_state(Account.settings)
+    is_admin = await check_for_admin(message.chat.id)
     chat_mode = await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/get_chat_mode/",
@@ -336,18 +337,40 @@ async def settings_handler(
         quotes_status = "Включен"
     else:
         quotes_status = "Выключен"
-    await message.answer(
-        text="Здесь ты сможешь настроить:\n· Режим чата - если включено, "
-        "то при добавлении новой домашки - ты увидишь ее\n"
-        "· Режим цитат - если включено, то при открытии меню (/menu)"
-        " ты увидишь случайную цитату",
-    )
-    await message.answer(
-        text=f"Текущие настройки:\n"
-        f"· Режим чата: {html.bold(chat_mode)}\n"
-        f"· Режим цитат: {html.bold(quotes_status)}",
-        reply_markup=account_settings.settings_rp_kb(),
-    )
+    if is_admin in ["admin", "superuser"]:
+        fast_add = await get_fast_add(message.chat.id)
+        if fast_add:
+            fast_add = "Включен"
+        else:
+            fast_add = "Выключен"
+        await message.answer(
+            text="Здесь ты сможешь настроить:\n· Режим чата - если включено, "
+            "то при добавлении новой домашки - ты увидишь ее\n"
+            "· Режим цитат - если включено, то при открытии меню (/menu)"
+            " ты увидишь случайную цитату\n· Режим быстрого добавление домашки"
+            " - если включено, то подтверждение отправки домашки"
+            " будет отсутствовать",
+        )
+        await message.answer(
+            text=f"Текущие настройки:\n"
+            f"· Режим чата: {html.bold(chat_mode)}\n"
+            f"· Режим цитат: {html.bold(quotes_status)}\n"
+            f"· Режим добавления домашки: {html.bold(fast_add)}",
+            reply_markup=account_settings.settings_admin_rp_kb(),
+        )
+    else:
+        await message.answer(
+            text="Здесь ты сможешь настроить:\n· Режим чата - если включено, "
+            "то при добавлении новой домашки - ты увидишь ее\n"
+            "· Режим цитат - если включено, то при открытии меню (/menu)"
+            " ты увидишь случайную цитату",
+        )
+        await message.answer(
+            text=f"Текущие настройки:\n"
+            f"· Режим чата: {html.bold(chat_mode)}\n"
+            f"· Режим цитат: {html.bold(quotes_status)}",
+            reply_markup=account_settings.settings_rp_kb(),
+        )
 
 
 @rp_account_router.message(
@@ -361,6 +384,25 @@ async def chat_mode_handler(
     await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/change_chat_mode/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": message.chat.id,
+        },
+    )
+    await settings_handler(message, state)
+
+
+@rp_account_router.message(
+    F.text == "Сменить режим добавления✏️",
+    AccountStateFilter,
+)
+async def fast_add_handler(
+    message: Message,
+    state: FSMContext,
+) -> None:
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/change_fast_add/",
         json={
             "api_key": os.getenv("API_KEY"),
             "telegram_id": message.chat.id,
