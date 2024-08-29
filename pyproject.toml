@@ -6,6 +6,9 @@ exclude = ".git,__pycache__,docs/source/conf.py,old,build,dist,migrations"
 import-order-style = "google"
 application-import-names = ["users", "homework"]
 max-line-length = 79
+per-file-ignores = [
+    "chtozadano/scripts/add_schedule_script.py: T201"
+]
 
 [tool.black]
 line-length = 79

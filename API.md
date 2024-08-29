@@ -600,7 +600,7 @@
   + Возвращает:
       + ``HttpResponse``
         + ``Successful``  
-+ GetWeekSchedule:
++ GetWeekScheduleAPI:
   + Путь: ``api/v1/get_week_schedule/`` 
   + Метод: ``POST``
   + Ограничение по доступности: ``нет``
@@ -615,7 +615,7 @@
           ``weekday`` - ``int`` день недели 
           ``lesson`` - ``int``  номер урока
           ``subject`` - ``str`` название предмета
-+ GetUserSubjects:
++ GetUserSubjectsAPI:
   + Путь: ``api/v1/get_user_subjects/``   
   + Метод: ``POST``  
   + Ограничение по доступности: ``нет``    
@@ -628,4 +628,18 @@
       + ``JSON``  
         + ``list`` with:  
           ``subject_name`` - ``str`` название предмет  
++ CustomNotificationAPI:
+  + Путь: ``api/v1/add_notification/``   
+  + Метод: ``POST``  
+  + Ограничение по доступности: ``superuser``    
+  + Суть: отправить заданное сообщение заданным юзерам    
+  + Действие: перебирает все переданные ``id`` и отправляет указанное сообщение      
+  + Параметры:   
+    + ``api_key`` - ``str`` апи ключ   
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+    + ``notification_message`` - ``str`` сообщение для отправки
+    + ``users_id`` - ``list[int]`` пользователи, которым надо отправить сообщение  
+  + Возвращает:  
+      + ``JSON``  
+        + ``success``: ``Successfully send messages to {number} users``    
 </details>
