@@ -63,6 +63,10 @@ class User(django.db.models.Model):
         default=True,
         verbose_name="Режим цитат",
     )
+    fast_hw = django.db.models.BooleanField(
+        default=True,
+        verbose_name="Режим быстрого добавления дз",
+    )
     todo = django.db.models.ManyToManyField(
         homework.models.Todo,
         blank=True,

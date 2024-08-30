@@ -73,6 +73,14 @@ urlpatterns = [
         users.api.views.GetUserEngTeachersAPI.as_view(),
     ),
     path(
+        "get_fast_add/",
+        users.api.views.GetFastAddAPI.as_view(),
+    ),
+    path(
+        "change_fast_add/",
+        users.api.views.ChangeFastAddAPI.as_view(),
+    ),
+    path(
         "get_last_homework_all_subjects/",
         homework.api.views.GetLastHomeworkAllSubjectsAPI.as_view(
             {"post": "get_homework"},
