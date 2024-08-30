@@ -41,6 +41,8 @@ Rename file to ``.env``:
 ```bash
 mv .env.template .env
 ```
+### Setup ssl certificates
+Change ``{path_to_ssl_fullchain}`` and ``{path_to_ssl_privkey}`` in ``docker-compose.yml`` file to your values
 ### Setup ``nginx.conf`` file
 Change ``{site_name}`` to IP-address or domain of your site
 ### Run containers 
