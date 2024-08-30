@@ -36,6 +36,8 @@ services:
                       gunicorn --config gunicorn_config.py chtozadano.wsgi:application"
     volumes:
       - .:/code
+      - ./chtozadano/logs:/code/chtozadano/logs
+
     expose:
       - "8000"
     depends_on:
