@@ -65,7 +65,10 @@ class CreateUserAPI(APIView):
                 letter,
             )
             if group == 0:
-                return response.Response({"error": "Bad teacher data"})
+                return response.Response(
+                    {"error": "Bad teacher data"},
+                    status=400,
+                )
         if all_users:
             user = all_users[0]
             user.grade = grade
@@ -154,7 +157,7 @@ class ChangeGradeLetterAPI(APIView):
     @staticmethod
     def post(request):
         if request.user.is_staff and not request.user.is_superuser:
-            return response.Response({"error": "Not allowed"})
+            return response.Response({"error": "Not allowed"}, status=403)
         try:
             telegram_id = request.data["telegram_id"]
             grade = request.data["grade"]
@@ -170,7 +173,10 @@ class ChangeGradeLetterAPI(APIView):
                 letter,
             )
             if group == 0:
-                return response.Response({"error": "Bad teacher data"})
+                return response.Response(
+                    {"error": "Bad teacher data"},
+                    status=400,
+                )
         user_obj.grade = grade
         user_obj.letter = letter
         user_obj.group = group
@@ -217,7 +223,7 @@ class ShowBecomeAdminAPI(APIView):
                 return response.Response(serialized_data)
         except (KeyError, User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        return response.Response({"error": "Not allowed"})
+        return response.Response({"error": "Not allowed"}, status=403)
 
 
 class BecomeAdminAPI(APIView):
@@ -230,13 +236,19 @@ class BecomeAdminAPI(APIView):
         except (KeyError, User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         if django_user.is_staff:
-            return response.Response({"error": "You are already admin"})
+            return response.Response(
+                {"error": "You are already admin"},
+                status=403,
+            )
         if django_user.is_superuser:
             return response.Response({"error": "You are superuser, damn"})
         try:
             BecomeAdmin.objects.get(telegram_id=telegram_id)
         except BecomeAdmin.MultipleObjectsReturned:
-            return response.Response({"error": "Already have request"})
+            return response.Response(
+                {"error": "Already have request"},
+                status=403,
+            )
         except BecomeAdmin.DoesNotExist:
             BecomeAdmin.objects.create(
                 grade=user_obj.grade,
@@ -264,6 +276,7 @@ class AcceptDeclineBecomeAdminAPI(APIView):
                 except BecomeAdmin.DoesNotExist:
                     return response.Response(
                         {"error": "Это кто? Я такого не знаю"},
+                        status=400,
                     )
                 decision = request.data["decision"]
                 if decision == "accept":
@@ -289,7 +302,7 @@ class AcceptDeclineBecomeAdminAPI(APIView):
                     )
         except (KeyError, User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        return response.Response({"error": "Not allowed"})
+        return response.Response({"error": "Not allowed"}, status=403)
 
 
 class IsUserInSystemAPI(APIView):
@@ -356,7 +369,7 @@ class IsUserAdminAPI(APIView):
                     },
                 ),
             )
-        return response.Response({"error": "User does not exist"})
+        return response.Response({"error": "User does not exist"}, status=400)
 
 
 class GetUserEngTeachersAPI(APIView):
