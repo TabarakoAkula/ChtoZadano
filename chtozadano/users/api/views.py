@@ -267,16 +267,26 @@ class AcceptDeclineBecomeAdminAPI(APIView):
                     )
                 decision = request.data["decision"]
                 if decision == "accept":
-                    candidat_user = User.objects.get(telegram_id=candidate_id).user
+                    candidat_user = User.objects.get(
+                        telegram_id=candidate_id,
+                    ).user
                     candidat_user.is_staff = True
                     candidat_user.save()
                     BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
-                    asyncio.run(become_admin_decision_notify(candidate_id, True))
-                    return response.Response({"success": "Successful accepted"})
+                    asyncio.run(
+                        become_admin_decision_notify(candidate_id, True),
+                    )
+                    return response.Response(
+                        {"success": "Successful accepted"},
+                    )
                 if decision == "decline":
                     BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
-                    asyncio.run(become_admin_decision_notify(candidate_id, False))
-                    return response.Response({"success": "Successful declined"})
+                    asyncio.run(
+                        become_admin_decision_notify(candidate_id, False),
+                    )
+                    return response.Response(
+                        {"success": "Successful declined"},
+                    )
         except (KeyError, User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         return response.Response({"error": "Not allowed"})
