@@ -59,6 +59,8 @@ async def new_become_admin_notify() -> None:
             "server_user__telegram_id",
         ),
     )
+    if os.getenv("TEST"):
+        return
     users_ids = [
         int(i["server_user__telegram_id"])
         for i in superusers
@@ -77,7 +79,7 @@ async def become_admin_decision_notify(
     new_admin_id: int,
     accept: bool,
 ) -> None:
-    if os.getenv("TEST").lower() == "true":
+    if os.getenv("TEST"):
         return
     text = (
         "Уведомление:\n"
