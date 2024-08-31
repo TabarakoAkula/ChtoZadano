@@ -186,7 +186,7 @@ urlpatterns = [
     ),
     path(
         "get_abbreviation/",
-        homework.api.views.CreatePathAPI.as_view(),
+        homework.api.views.GetAbbreviationAPI.as_view(),
     ),
     path(
         "add_files_ids/",

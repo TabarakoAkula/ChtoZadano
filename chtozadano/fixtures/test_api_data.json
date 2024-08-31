@@ -6,7 +6,9 @@
       "password": "test_password",
       "is_superuser": false,
       "username": "test_user",
-      "is_staff": false
+      "is_staff": false,
+      "first_name": "first_name",
+      "last_name": "last_name"
     }
   },
   {
@@ -37,6 +39,18 @@
       "is_superuser": false,
       "username": "test_admin_becomeadmin",
       "is_staff": true
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 5,
+    "fields": {
+      "password": "test_password",
+      "is_superuser": false,
+      "username": "test_user_two",
+      "is_staff": false,
+      "first_name": "first_name",
+      "last_name": "last_name"
     }
   },
   {
@@ -81,6 +95,17 @@
       "letter": "Б",
       "group": 1,
       "telegram_id": 4
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 5,
+    "fields": {
+      "user_id": 5,
+      "grade": 11,
+      "letter": "Б",
+      "group": 1,
+      "telegram_id": 5
     }
   },
   {
@@ -246,6 +271,18 @@
     "fields": {
       "is_done": false,
       "created_at": "2024-07-29 00:00:00.0000000"
+    }
+  },
+  {
+    "model": "users.becomeadmin",
+    "pk": 1,
+    "fields": {
+      "grade": 11,
+      "letter": "Б",
+      "group": 1,
+      "first_name": "test_last_name",
+      "last_name": "test_last_name",
+      "telegram_id": 1
     }
   }
 ]

@@ -1069,3 +1069,256 @@ class HomeworkAPITests(APITestCase):
                 lesson=data["lesson"],
             ).count()
             self.assertEquals(first_counter + 1, second_counter)
+
+    @parameterized.expand(
+        [
+            ({"api_key": "123"}, 403),
+            ({"telegram_id": 0}, 403),
+            ({"api_key": "123", "telegram_id": 0}, 403),
+            ({"api_key": settings.API_KEY}, 400),
+            ({"api_key": settings.API_KEY, "telegram_id": 0}, 400),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 0,
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 1,
+                },
+                200,
+            ),
+        ],
+    )
+    def test_get_week_schedule(self, data, status_code):
+        response = client.post(
+            "/api/v1/get_week_schedule/",
+            data=data,
+            format="json",
+        )
+        self.assertEquals(response.status_code, status_code)
+
+    @parameterized.expand(
+        [
+            ({"api_key": "123"}, 403),
+            ({"telegram_id": 0}, 403),
+            ({"api_key": "123", "telegram_id": 0}, 403),
+            ({"api_key": settings.API_KEY}, 400),
+            ({"api_key": settings.API_KEY, "telegram_id": 0}, 400),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 0,
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 1,
+                },
+                200,
+            ),
+        ],
+    )
+    def test_get_user_subjects(self, data, status_code):
+        response = client.post(
+            "/api/v1/get_user_subjects/",
+            data=data,
+            format="json",
+        )
+        self.assertEquals(response.status_code, status_code)
+
+    @parameterized.expand(
+        [
+            ({"api_key": "123"}, 403),
+            ({"telegram_id": 0}, 403),
+            ({"api_key": "123", "telegram_id": 0}, 403),
+            ({"api_key": settings.API_KEY}, 400),
+            ({"api_key": settings.API_KEY, "telegram_id": 0}, 400),
+            ({"api_key": settings.API_KEY, "subject": "rus"}, 400),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 0,
+                    "subject": "rus",
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 1,
+                    "subject": 0,
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 1,
+                    "subject": "rus",
+                },
+                200,
+            ),
+        ],
+    )
+    def test_get_abbreviation(self, data, status_code):
+        response = client.post(
+            "/api/v1/get_abbreviation/",
+            data=data,
+            format="json",
+        )
+        self.assertEquals(response.status_code, status_code)
+
+    @parameterized.expand(
+        [
+            ({"api_key": "123"}, 403),
+            ({"telegram_id": 0}, 403),
+            ({"api_key": "123", "telegram_id": 0}, 403),
+            ({"api_key": settings.API_KEY}, 400),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "homework_id": "rus",
+                    "document_type": "rus",
+                    "telegram_id": 0,
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "homework_id": "rus",
+                    "telegram_id": 0,
+                    "document_ids": "rus",
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 0,
+                    "document_type": "rus",
+                    "document_ids": "rus",
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "homework_id": "rus",
+                    "document_type": "rus",
+                    "document_ids": "rus",
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 1,
+                    "homework_id": "",
+                    "document_type": "img",
+                    "document_ids": [],
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 1,
+                    "homework_id": 1,
+                    "document_type": 12,
+                    "document_ids": [],
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 1,
+                    "homework_id": 1,
+                    "document_type": "img",
+                    "document_ids": 12,
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "telegram_id": 1,
+                    "homework_id": 1,
+                    "document_type": "img",
+                    "document_ids": [],
+                },
+                200,
+            ),
+        ],
+    )
+    def test_add_file_id(self, data, status_code):
+        response = client.post(
+            "/api/v1/add_files_ids/",
+            data=data,
+            format="json",
+        )
+        self.assertEquals(response.status_code, status_code)
+
+    @parameterized.expand(
+        [
+            ({"api_key": "123"}, 403),
+            ({"telegram_id": 0}, 403),
+            ({"api_key": "123", "telegram_id": 0}, 403),
+            ({"api_key": settings.API_KEY}, 400),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "users_id": 1,
+                    "telegram_id": 2,
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "notification_message": "",
+                    "telegram_id": [],
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "users_id": "",
+                    "notification_message": "",
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "users_id": [],
+                    "notification_message": "",
+                },
+                400,
+            ),
+            (
+                {
+                    "api_key": settings.API_KEY,
+                    "users_id": [],
+                    "telegram_id": 3,
+                    "notification_message": "",
+                },
+                200,
+            ),
+        ],
+    )
+    def test_add_notification(self, data, status_code):
+        response = client.post(
+            "/api/v1/add_notification/",
+            data=data,
+            format="json",
+        )
+        self.assertEquals(response.status_code, status_code)

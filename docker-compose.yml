@@ -65,7 +65,7 @@ services:
   cron:
     build: cron/
     volumes:
-      - .:/code/crone
+      - ./cron:/cron
     depends_on:
       - web
     networks:

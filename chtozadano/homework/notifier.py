@@ -235,6 +235,8 @@ async def custom_notification(
     message_text: str,
     notification: bool,
 ) -> None:
+    if os.getenv("TEST"):
+        return
     bot_session = AiohttpSession()
     notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
     for user_id in users_ids:
