@@ -12,8 +12,6 @@ services:
       - bot
     networks:
       - django-network
-    environment:
-      - SITE_ADDRESS=${SITE_ADDRESS}
 
   db:
     image: postgres:16
