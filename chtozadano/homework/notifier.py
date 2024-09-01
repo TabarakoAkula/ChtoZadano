@@ -221,11 +221,12 @@ async def add_documents_file_id(
         document_objects = await sync_to_async(list)(homework_obj.images.all())
     else:
         document_objects = await sync_to_async(list)(homework_obj.files.all())
-
-    for index, document in enumerate(document_objects):
-        document.telegram_file_id = document_ids[index]
-        await sync_to_async(document.save)()
-
+    try:
+        for index, document in enumerate(document_objects):
+            document.telegram_file_id = document_ids[index]
+            await sync_to_async(document.save)()
+    except IndexError:
+        pass
     return
 
 
@@ -234,6 +235,8 @@ async def custom_notification(
     message_text: str,
     notification: bool,
 ) -> None:
+    if os.getenv("TEST"):
+        return
     bot_session = AiohttpSession()
     notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
     for user_id in users_ids:

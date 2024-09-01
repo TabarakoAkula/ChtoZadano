@@ -1,7 +1,8 @@
 from aiogram.filters import StateFilter
 from states import (
     Account,
-    AddHomework,
+    AddHomeworkFast,
+    AddHomeworkSlow,
     EditHomework,
     Homework,
     Schedule,
@@ -26,18 +27,42 @@ HomeworkStateFilter = StateFilter(
     Homework.find,
 )
 
-AddHomeworkStateFilter = StateFilter(
-    AddHomework.choose_subject,
-    AddHomework.add_descriptions_images,
-    AddHomework.add_files,
+AddHomeworkFastStateFilter = StateFilter(
+    AddHomeworkFast.choose_subject,
+    AddHomeworkFast.add_descriptions_images,
+    AddHomeworkFast.add_data,
+)
+
+AddHomeworkFastDescriptionStateFilter = StateFilter(
+    AddHomeworkFast.add_descriptions_images,
+    AddHomeworkFast.add_data,
+)
+
+AddHomeworkSlowStateFilter = StateFilter(
+    AddHomeworkSlow.choose_subject,
+    AddHomeworkSlow.add_files,
 )
 
 PublishHomeworkStateFilter = StateFilter(
-    AddHomework.add_files,
-    AddHomework.add_descriptions_images,
+    AddHomeworkSlow.add_descriptions_images,
+    AddHomeworkSlow.add_files,
 )
 
 EditHomeworkStateFilter = StateFilter(
     EditHomework.start,
     EditHomework.edit_text,
+)
+
+AddHwChooseSubjectStateFilter = StateFilter(
+    AddHomeworkSlow.choose_subject,
+    AddHomeworkFast.choose_subject,
+)
+
+StopAddHomeworkStateFilter = StateFilter(
+    AddHomeworkFast.add_data,
+    AddHomeworkFast.add_descriptions_images,
+    AddHomeworkFast.choose_subject,
+    AddHomeworkSlow.add_files,
+    AddHomeworkSlow.add_descriptions_images,
+    AddHomeworkSlow.choose_subject,
 )

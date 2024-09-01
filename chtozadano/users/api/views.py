@@ -27,9 +27,12 @@ from users.utils import (
 class CodeConfirmationAPI(APIView):
     @staticmethod
     def post(request):
-        telegram_id = request.data["telegram_id"]
-        confirmation_code = request.data["confirmation_code"]
-        user_name = request.data["name"]
+        try:
+            telegram_id = request.data["telegram_id"]
+            confirmation_code = request.data["confirmation_code"]
+            user_name = request.data["name"]
+        except KeyError:
+            return response.Response({"error": "Bad request data"}, status=400)
         SignIn.objects.create(
             telegram_id=telegram_id,
             confirmation_code=confirmation_code,
@@ -46,13 +49,14 @@ class CodeConfirmationAPI(APIView):
 class CreateUserAPI(APIView):
     @staticmethod
     def post(request):
-        telegram_id = request.data["telegram_id"]
-        all_users = User.objects.filter(telegram_id=telegram_id).all()
         try:
+            telegram_id = request.data["telegram_id"]
+            all_users = User.objects.filter(telegram_id=telegram_id).all()
             group = request.data["group"]
             grade = request.data["grade"]
             letter = request.data["letter"]
-        except KeyError:
+            name = request.data["name"]
+        except (KeyError, User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         if not isinstance(group, int):
             group = get_group_from_teacher(
@@ -61,7 +65,10 @@ class CreateUserAPI(APIView):
                 letter,
             )
             if group == 0:
-                return response.Response({"error": "Bad teacher data"})
+                return response.Response(
+                    {"error": "Bad teacher data"},
+                    status=400,
+                )
         if all_users:
             user = all_users[0]
             user.grade = grade
@@ -69,7 +76,6 @@ class CreateUserAPI(APIView):
             user.group = group
             user.save()
             return response.Response({"success": "Successful"})
-        name = request.data["name"]
         try:
             django_user = django.contrib.auth.models.User.objects.create_user(
                 username=name,
@@ -85,8 +91,8 @@ class CreateUserAPI(APIView):
             )
         User.objects.create(
             user=django_user,
-            grade=request.data["grade"],
-            letter=request.data["letter"],
+            grade=grade,
+            letter=letter,
             group=group,
             telegram_id=telegram_id,
         )
@@ -97,8 +103,11 @@ class GetContactsAPI(viewsets.ReadOnlyModelViewSet):
     serializer_class = DefaultUserNameSerializer
 
     def get_contacts(self, request):
-        telegram_id = request.data["telegram_id"]
-        user_obj = User.objects.get(telegram_id=telegram_id)
+        try:
+            telegram_id = request.data["telegram_id"]
+            user_obj = User.objects.get(telegram_id=telegram_id)
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         django_user = user_obj.user
         return response.Response(self.get_serializer(django_user).data)
 
@@ -106,11 +115,14 @@ class GetContactsAPI(viewsets.ReadOnlyModelViewSet):
 class ChangeContactsAPI(APIView):
     @staticmethod
     def post(request):
-        telegram_id = request.data["telegram_id"]
-        user_obj = User.objects.get(telegram_id=telegram_id)
-        django_user = user_obj.user
-        first_name = request.data["first_name"]
-        last_name = request.data["last_name"]
+        try:
+            telegram_id = request.data["telegram_id"]
+            user_obj = User.objects.get(telegram_id=telegram_id)
+            django_user = user_obj.user
+            first_name = request.data["first_name"]
+            last_name = request.data["last_name"]
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         django_user.first_name = first_name
         django_user.last_name = last_name
         django_user.save()
@@ -120,16 +132,22 @@ class ChangeContactsAPI(APIView):
 class GetQuotesAPI(APIView):
     @staticmethod
     def post(request):
-        telegram_id = request.data["telegram_id"]
-        user_obj = User.objects.get(telegram_id=telegram_id)
+        try:
+            telegram_id = request.data["telegram_id"]
+            user_obj = User.objects.get(telegram_id=telegram_id)
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         return response.Response({"quotes_status": user_obj.show_quotes})
 
 
 class ChangeQuotesAPI(APIView):
     @staticmethod
     def post(request):
-        telegram_id = request.data["telegram_id"]
-        user_obj = User.objects.get(telegram_id=telegram_id)
+        try:
+            telegram_id = request.data["telegram_id"]
+            user_obj = User.objects.get(telegram_id=telegram_id)
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         user_obj.show_quotes = not user_obj.show_quotes
         user_obj.save()
         return response.Response({"quotes_status": user_obj.show_quotes})
@@ -139,15 +157,15 @@ class ChangeGradeLetterAPI(APIView):
     @staticmethod
     def post(request):
         if request.user.is_staff and not request.user.is_superuser:
-            return response.Response({"error": "Not allowed"})
-        telegram_id = request.data["telegram_id"]
-        grade = request.data["grade"]
-        letter = request.data["letter"]
-        group = request.data["group"]
+            return response.Response({"error": "Not allowed"}, status=403)
         try:
+            telegram_id = request.data["telegram_id"]
+            grade = request.data["grade"]
+            letter = request.data["letter"]
+            group = request.data["group"]
             user_obj = User.objects.get(telegram_id=telegram_id)
-        except User.DoesNotExist:
-            return response.Response({"error": "User does not exist"})
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         if not isinstance(group, int):
             group = get_group_from_teacher(
                 group.replace("_", " "),
@@ -155,7 +173,10 @@ class ChangeGradeLetterAPI(APIView):
                 letter,
             )
             if group == 0:
-                return response.Response({"error": "Bad teacher data"})
+                return response.Response(
+                    {"error": "Bad teacher data"},
+                    status=400,
+                )
         user_obj.grade = grade
         user_obj.letter = letter
         user_obj.group = group
@@ -166,16 +187,22 @@ class ChangeGradeLetterAPI(APIView):
 class GetChatModeAPI(APIView):
     @staticmethod
     def post(request):
-        telegram_id = request.data["telegram_id"]
-        user_obj = User.objects.get(telegram_id=telegram_id)
+        try:
+            telegram_id = request.data["telegram_id"]
+            user_obj = User.objects.get(telegram_id=telegram_id)
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         return response.Response({"chat_mode": user_obj.chat_mode})
 
 
 class ChangeChatModeAPI(APIView):
     @staticmethod
     def post(request):
-        telegram_id = request.data["telegram_id"]
-        user_obj = User.objects.get(telegram_id=telegram_id)
+        try:
+            telegram_id = request.data["telegram_id"]
+            user_obj = User.objects.get(telegram_id=telegram_id)
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         user_obj.chat_mode = not user_obj.chat_mode
         user_obj.save()
         return response.Response({"success": "Successful"})
@@ -184,33 +211,44 @@ class ChangeChatModeAPI(APIView):
 class ShowBecomeAdminAPI(APIView):
     @staticmethod
     def post(request):
-        if User.objects.get(
-            telegram_id=request.data["telegram_id"],
-        ).user.is_superuser:
-            request_data = BecomeAdmin.objects.all()
-            serialized_data = BecomeAdminSerializer(
-                request_data,
-                many=True,
-            ).data
-            return response.Response(serialized_data)
-        return response.Response({"error": "Not allowed"})
+        try:
+            if User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            ).user.is_superuser:
+                request_data = BecomeAdmin.objects.all()
+                serialized_data = BecomeAdminSerializer(
+                    request_data,
+                    many=True,
+                ).data
+                return response.Response(serialized_data)
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        return response.Response({"error": "Not allowed"}, status=403)
 
 
 class BecomeAdminAPI(APIView):
     @staticmethod
     def post(request):
-        telegram_id = request.data["telegram_id"]
-
-        user_obj = User.objects.get(telegram_id=telegram_id)
-        django_user = user_obj.user
+        try:
+            telegram_id = request.data["telegram_id"]
+            user_obj = User.objects.get(telegram_id=telegram_id)
+            django_user = user_obj.user
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         if django_user.is_staff:
-            return response.Response({"error": "You are already admin"})
+            return response.Response(
+                {"error": "You are already admin"},
+                status=403,
+            )
         if django_user.is_superuser:
             return response.Response({"error": "You are superuser, damn"})
         try:
             BecomeAdmin.objects.get(telegram_id=telegram_id)
         except BecomeAdmin.MultipleObjectsReturned:
-            return response.Response({"error": "Already have request"})
+            return response.Response(
+                {"error": "Already have request"},
+                status=403,
+            )
         except BecomeAdmin.DoesNotExist:
             BecomeAdmin.objects.create(
                 grade=user_obj.grade,
@@ -228,38 +266,55 @@ class BecomeAdminAPI(APIView):
 class AcceptDeclineBecomeAdminAPI(APIView):
     @staticmethod
     def post(request):
-        if User.objects.get(
-            telegram_id=request.data["telegram_id"],
-        ).user.is_superuser:
-            candidate_id = request.data["candidate_id"]
-            try:
-                BecomeAdmin.objects.get(telegram_id=candidate_id)
-            except BecomeAdmin.DoesNotExist:
-                return response.Response(
-                    {"error": "Это кто? Я такого не знаю"},
-                )
-            decision = request.data["decision"]
-            if decision == "accept":
-                candidat_user = User.objects.get(telegram_id=candidate_id).user
-                candidat_user.is_staff = True
-                candidat_user.save()
-                BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
-                asyncio.run(become_admin_decision_notify(candidate_id, True))
-                return response.Response({"success": "Successful accepted"})
-            if decision == "decline":
-                BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
-                asyncio.run(become_admin_decision_notify(candidate_id, False))
-                return response.Response({"success": "Successful declined"})
-        return response.Response({"error": "Not allowed"})
+        try:
+            if User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            ).user.is_superuser:
+                candidate_id = request.data["candidate_id"]
+                try:
+                    BecomeAdmin.objects.get(telegram_id=candidate_id)
+                except BecomeAdmin.DoesNotExist:
+                    return response.Response(
+                        {"error": "Это кто? Я такого не знаю"},
+                        status=400,
+                    )
+                decision = request.data["decision"]
+                if decision == "accept":
+                    candidat_user = User.objects.get(
+                        telegram_id=candidate_id,
+                    ).user
+                    candidat_user.is_staff = True
+                    candidat_user.save()
+                    BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
+                    asyncio.run(
+                        become_admin_decision_notify(candidate_id, True),
+                    )
+                    return response.Response(
+                        {"success": "Successful accepted"},
+                    )
+                if decision == "decline":
+                    BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
+                    asyncio.run(
+                        become_admin_decision_notify(candidate_id, False),
+                    )
+                    return response.Response(
+                        {"success": "Successful declined"},
+                    )
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        return response.Response({"error": "Not allowed"}, status=403)
 
 
 class IsUserInSystemAPI(APIView):
     @staticmethod
     def post(request):
-        if User.objects.filter(
-            telegram_id=request.data["telegram_id"],
-        ).first():
-            return HttpResponse(True)
+        try:
+            if User.objects.filter(
+                telegram_id=request.data["telegram_id"],
+            ).first():
+                return HttpResponse(True)
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         return HttpResponse(False)
 
 
@@ -273,6 +328,8 @@ class DeleteUserBecomeAdminAPI(APIView):
             become_admin_obj.delete()
         except BecomeAdmin.DoesNotExist:
             pass
+        except (KeyError, User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
         return response.Response({"success": "OK"})
 
 
@@ -312,7 +369,7 @@ class IsUserAdminAPI(APIView):
                     },
                 ),
             )
-        return response.Response({"error": "User does not exist"})
+        return response.Response({"error": "User does not exist"}, status=400)
 
 
 class GetUserEngTeachersAPI(APIView):
@@ -327,3 +384,21 @@ class GetUserEngTeachersAPI(APIView):
         if teachers:
             return response.Response({"teachers": teachers})
         return response.Response({"error": "Unknown grade|letter"}, status=400)
+
+
+class GetFastAddAPI(APIView):
+    @staticmethod
+    def post(request):
+        telegram_id = request.data["telegram_id"]
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        return response.Response({"fast_hw": user_obj.fast_hw})
+
+
+class ChangeFastAddAPI(APIView):
+    @staticmethod
+    def post(request):
+        telegram_id = request.data["telegram_id"]
+        user_obj = User.objects.get(telegram_id=telegram_id)
+        user_obj.fast_hw = not user_obj.fast_hw
+        user_obj.save()
+        return response.Response({"success": "Successful"})
