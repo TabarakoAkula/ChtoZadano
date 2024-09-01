@@ -908,7 +908,7 @@ class GetUserSubjects(APIView):
         return response.Response(user_subjects)
 
 
-class CreatePathAPI(APIView):
+class GetAbbreviationAPI(APIView):
     @staticmethod
     def post(request):
         try:
@@ -917,6 +917,8 @@ class CreatePathAPI(APIView):
             )
             subject = request.data["subject"]
         except (KeyError, users.models.User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        if not isinstance(subject, str):
             return response.Response({"error": "Bad request data"}, status=400)
         return response.Response(
             {
@@ -938,6 +940,15 @@ class AddFileIdAPI(APIView):
             document_type = request.data["document_type"]
             document_ids = request.data["document_ids"]
         except (KeyError, users.models.User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        if not all(
+            isinstance(i[0], i[1])
+            for i in [
+                (homework_id, int),
+                (document_type, str),
+                (document_ids, list),
+            ]
+        ):
             return response.Response({"error": "Bad request data"}, status=400)
         add_documents_file_id(
             homework_id,
@@ -961,6 +972,11 @@ class CustomNotificationAPI(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         if not user_obj.user.is_superuser:
             return response.Response({"error": "Not allowed"}, status=403)
+        if not isinstance(notification_message, str) or not isinstance(
+            users_id,
+            list,
+        ):
+            return response.Response({"error": "Bad request data"}, status=400)
         asyncio.run(
             custom_notification(
                 users_ids=users_id,

@@ -1,18 +1,15 @@
 FROM ubuntu:24.04
 
-RUN apt update && apt install cron -y
-RUN apt install curl -y
+RUN apt-get update && apt-get install -y cron curl
 
-RUN mkdir -p cron
+COPY script.sh /cron/script.sh
 
-ADD delete_old_hw_script.sh cron/delete_old_hw_script.sh
+COPY cron_task /etc/cron.d/cronjob
 
-RUN chmod 0755 cron/delete_old_hw_script.sh
+RUN chmod 0644 /etc/cron.d/cronjob
 
-ADD cron_task /etc/cron.d/cron_task
+RUN crontab /etc/cron.d/cronjob
 
-RUN chmod 0644 /etc/cron.d/cron_task
+RUN touch /var/log/cron.log
 
-RUN touch cron/cron_task.log
-
-CMD cron && tail -f cron/cron_task.log
+CMD cron && tail -f /var/log/cron.log

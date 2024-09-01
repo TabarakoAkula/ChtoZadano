@@ -41,6 +41,7 @@ Rename file to ``.env``:
 ```bash
 mv .env.template .env
 ```
+
 ### Setup ``nginx.conf`` file
 Change ``{site_name}`` to IP-address or domain of your site
 ### Run containers 

@@ -7,13 +7,51 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "logs" / "django.log",
+            "formatter": "verbose",
+        },
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file", "console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
+
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = str(os.getenv("DEBUG", "False")).lower() == "true"
 
 ALLOWED_HOSTS = str(os.getenv("ALLOWED_HOSTS")).split(",")
 
-CSRF_TRUSTED_ORIGINS = str(os.getenv("CSRF_TRUSTED_ORIGINS")).split(",")
+CSRF_TRUSTED_ORIGINS = str(
+    os.getenv("CSRF_TRUSTED_ORIGINS", ["http://bot:8000", "http://localhost"]),
+).split(",")
 
 SITE_TECHNICAL_WORKS = (
     str(os.getenv("SITE_TECHNICAL_WORKS", "False")).lower() == "true"

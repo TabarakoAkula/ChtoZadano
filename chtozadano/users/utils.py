@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import json
+import os
 import random
 import string
 
@@ -8,9 +9,13 @@ from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
+import dotenv
 
 import users.models
 from users.notifier import become_admin_notify, custom_notification
+
+
+dotenv.load_dotenv()
 
 BASE_DIR = settings.BASE_DIR
 DjangoUser = get_user_model()
@@ -54,6 +59,8 @@ async def new_become_admin_notify() -> None:
             "server_user__telegram_id",
         ),
     )
+    if os.getenv("TEST"):
+        return
     users_ids = [
         int(i["server_user__telegram_id"])
         for i in superusers
@@ -72,6 +79,8 @@ async def become_admin_decision_notify(
     new_admin_id: int,
     accept: bool,
 ) -> None:
+    if os.getenv("TEST"):
+        return
     text = (
         "Уведомление:\n"
         "Твоя заявка на становление администратором была отклонена❌"
