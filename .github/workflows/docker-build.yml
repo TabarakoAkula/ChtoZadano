@@ -43,7 +43,7 @@ jobs:
           chmod 600 ./nginx/certs/cert.pem
 
       - name: Reformat nginx.conf
-        run: find /path/to/directory -type f -name '*.conf' -exec sed -i 's/{ site_name }/${{ secrets.SITE_ADDRESS }}/g' {} +
+        run: find . -type f -name '*.conf' -exec sed -i 's/{ site_name }/${{ secrets.SITE_ADDRESS }}/g' {} +
 
       - name: Build and run Docker Compose
         env:
