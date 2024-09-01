@@ -49,7 +49,9 @@ DEBUG = str(os.getenv("DEBUG", "False")).lower() == "true"
 
 ALLOWED_HOSTS = str(os.getenv("ALLOWED_HOSTS")).split(",")
 
-CSRF_TRUSTED_ORIGINS = str(os.getenv("CSRF_TRUSTED_ORIGINS")).split(",")
+CSRF_TRUSTED_ORIGINS = str(
+    os.getenv("CSRF_TRUSTED_ORIGINS", ["http://bot:8000", "http://localhost"]),
+).split(",")
 
 SITE_TECHNICAL_WORKS = (
     str(os.getenv("SITE_TECHNICAL_WORKS", "False")).lower() == "true"

@@ -1,0 +1,61 @@
+name: Docker build
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker
+        options: --privileged
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Create SSL certificates
+        run: |
+          mkdir -p ./nginx/certs
+          
+          echo "${{ secrets.SSL_CERT }}" > ./nginx/certs/cert.pem
+          echo "${{ secrets.SSL_KEY }}" > ./nginx/certs/key.pem
+          
+          chmod 600 ./nginx/certs/key.pem
+          chmod 600 ./nginx/certs/cert.pem
+
+      - name: Reformat nginx.conf
+        run: sed -i 's/{site_name}/_/g' nginx.conf
+
+      - name: Build and run Docker Compose
+        env:
+          DOCKER_BUILDKIT: 1
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          API_KEY: ${{ secrets.API_KEY }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN}}
+          CSRF_TRUSTED_ORIGINS: http://bot:8000,http://localhost
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          USE_WEBHOOK: ${{ secrets.USE_WEBHOOK }}
+          NGINX_CERT: ${{ secrets.NGINX_CERT }}
+          NGINX_KEY: ${{ secrets.NGINX_KEY }}
+        run: |
+          docker-compose -f docker-compose.yml build
+          docker-compose -f docker-compose.yml up -d
+
+      - name: Check containers status
+        run: |
+          docker-compose ps
+
+      - name: Stop and clean up
+        run: docker-compose -f docker-compose.yml down
