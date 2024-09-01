@@ -51,9 +51,11 @@ jobs:
           NGINX_KEY: ${{ secrets.NGINX_KEY }}
         run: |
           docker-compose -f docker-compose.yml build
-          echo 132
           docker-compose -f docker-compose.yml up -d
-          echo 133
+
+      - name: Check containers status
+        run: |
+          docker-compose ps
 
       - name: Stop and clean up
         run: docker-compose -f docker-compose.yml down
