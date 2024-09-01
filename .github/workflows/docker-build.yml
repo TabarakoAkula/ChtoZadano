@@ -11,13 +11,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    services:
+      docker:
+        image: docker
+        options: --privileged
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Install Docker Compose
         run: |
@@ -27,7 +27,7 @@ jobs:
       - name: Set up Docker cache
         uses: actions/cache@v3
         with:
-            path: /tmp/.buildx-cache
+            path: /tmp/.build-cache
             key: ${{ runner.os }}-docker-${{ github.sha }}
             restore-keys: |
               ${{ runner.os }}-docker-
@@ -61,7 +61,7 @@ jobs:
           docker-compose -f docker-compose.yml build --progress=plain --build-arg BUILDKIT_INLINE_CACHE=1
           
           docker-compose -f docker-compose.yml up -d
-
+          
           STATUS=$(docker-compose -f docker-compose.yml ps | grep 'Exit')
           if [ -n "$STATUS" ]; then
             echo "One or more containers exited with errors:"
