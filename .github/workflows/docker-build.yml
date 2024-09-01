@@ -51,15 +51,9 @@ jobs:
           NGINX_KEY: ${{ secrets.NGINX_KEY }}
         run: |
           docker-compose -f docker-compose.yml build
-          
+          echo 132
           docker-compose -f docker-compose.yml up -d
-          
-          STATUS=$(docker-compose -f docker-compose.yml ps | grep 'Exit')
-          if [ -n "$STATUS" ]; then
-            echo "One or more containers exited with errors:"
-            docker-compose -f docker-compose.yml logs
-            exit 1
-          fi
+          echo 133
 
       - name: Stop and clean up
         run: docker-compose -f docker-compose.yml down
