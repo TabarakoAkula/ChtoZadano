@@ -1,0 +1,63 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up Docker cache
+        uses: actions/cache@v3
+        with:
+            path: /tmp/.buildx-cache
+            key: ${{ runner.os }}-docker-${{ github.sha }}
+            restore-keys: |
+              ${{ runner.os }}-docker-
+
+      - name: Create SSL certificates
+        run: |
+          mkdir -p ./nginx/certs
+          
+          # Запись сертификатов из секретов в файлы
+          echo "${{ secrets.SSL_CERT }}" > ./nginx/certs/ssl.crt
+          echo "${{ secrets.SSL_KEY }}" > ./nginx/certs/ssl.key
+          
+          chmod 600 ./nginx/certs/ssl.key
+
+
+      - name: Build and run Docker Compose
+        env:
+          DOCKER_BUILDKIT: 1
+          ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
+          API_KEY: ${{ secrets.API_KEY }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN}}
+          CSRF_TRUSTED_ORIGINS: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          USE_WEBHOOK: ${{ secrets.USE_WEBHOOK }}
+        run: |
+          docker-compose -f docker-compose.yml build --progress=plain --build-arg BUILDKIT_INLINE_CACHE=1
+          
+          # Запускаем контейнеры
+          docker-compose -f docker-compose.yml up -d
+
+          STATUS=$(docker-compose -f docker-compose.yml ps | grep 'Exit')
+          if [ -n "$STATUS" ]; then
+            echo "One or more containers exited with errors:"
+            docker-compose -f docker-compose.yml logs
+            exit 1
+
+      - name: Stop and clean up
+        run: docker-compose -f docker-compose.yml down
