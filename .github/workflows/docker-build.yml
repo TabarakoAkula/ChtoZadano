@@ -43,7 +43,7 @@ jobs:
           chmod 600 ./nginx/certs/cert.pem
 
       - name: Reformat nginx.conf
-        run: sed -i 's/{ site_name }/localhost/g' nginx.conf
+        run: sed -i 's/{site_name}/localhost/g' nginx.conf
 
       - name: Build and run Docker Compose
         env:
