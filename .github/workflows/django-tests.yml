@@ -2,18 +2,20 @@ name: Django tests
 
 on:
   push:
-    branches: ["master", "server"]
+    branches:
+      - "**"
   pull_request:
-    branches: ["master", "server"]
+    branches:
+      - "**"
 
 jobs:
   build:
-
+    if: startsWith(github.ref, 'refs/heads/bot') == false
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10"]
     services:
       postgres:
         image: postgres

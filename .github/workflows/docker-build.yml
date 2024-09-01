@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker build
 
 on:
   push:
@@ -36,21 +36,27 @@ jobs:
         run: |
           mkdir -p ./nginx/certs
           
-          echo "${{ secrets.SSL_CERT }}" > ./nginx/certs/ssl.crt
-          echo "${{ secrets.SSL_KEY }}" > ./nginx/certs/ssl.key
+          echo "${{ secrets.SSL_CERT }}" > ./nginx/certs/cert.pem
+          echo "${{ secrets.SSL_KEY }}" > ./nginx/certs/key.pem
           
-          chmod 600 ./nginx/certs/ssl.key
+          chmod 600 ./nginx/certs/key.pem
+          chmod 600 ./nginx/certs/cert.pem
 
+      - name: Set up site_address
+        run: echo "SITE_ADDRESS=${{ secrets.SITE_ADDRESS }}" > .env
 
       - name: Build and run Docker Compose
         env:
           DOCKER_BUILDKIT: 1
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
           API_KEY: ${{ secrets.API_KEY }}
           BOT_TOKEN: ${{ secrets.BOT_TOKEN}}
-          CSRF_TRUSTED_ORIGINS: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
+          CSRF_TRUSTED_ORIGINS: http://bot:8000,http://localhost
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           USE_WEBHOOK: ${{ secrets.USE_WEBHOOK }}
+          NGINX_CERT: ${{ secrets.NGINX_CERT }}
+          NGINX_KEY: ${{ secrets.NGINX_KEY }}
         run: |
           docker-compose -f docker-compose.yml build --progress=plain --build-arg BUILDKIT_INLINE_CACHE=1
           
@@ -61,6 +67,7 @@ jobs:
             echo "One or more containers exited with errors:"
             docker-compose -f docker-compose.yml logs
             exit 1
+          fi
 
       - name: Stop and clean up
         run: docker-compose -f docker-compose.yml down
