@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://github.com/TabarakoAkula/ChtoZadano">
 <picture>
-    <img width="300px" height="300px" alt="AChtoZadano" src="./chtozadano/static_dev/img/favicon.ico">
+    <img alt="AChtoZadano" src="./chtozadano/static_dev/img/panel_logo.jpg">
 </picture>  
 </a>
 <h1 align="center">
