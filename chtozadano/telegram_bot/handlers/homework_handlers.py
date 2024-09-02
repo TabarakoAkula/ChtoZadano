@@ -65,15 +65,15 @@ async def add_homework_handler(
         await state.update_data(choose_subject="информация")
         if fast_add_bool:
             await state.set_state(AddHomeworkFast.add_data)
-            await call.message.answer(
+            await message.answer(
                 text="Отлично, теперь отправь домашку\n"
-                     "(Если необходимо добавить файлы - отправь сначала их)",
+                "(Если необходимо добавить файлы - отправь сначала их)",
             )
         else:
             await state.set_state(AddHomeworkSlow.add_descriptions_images)
-            await call.message.answer(
+            await message.answer(
                 text="Отлично, теперь отправь домашку\n(Ты можешь отправить"
-                     " изображения и описание, файлы можно будет отправить позже)",
+                " изображения и описание, файлы можно будет отправить позже)",
             )
         return
     await message.answer(
