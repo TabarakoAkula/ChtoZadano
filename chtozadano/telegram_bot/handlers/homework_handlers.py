@@ -43,6 +43,7 @@ async def add_homework_handler(
     message: Message,
     state: FSMContext,
     mailing: bool = False,
+    for_class: bool = True,
 ) -> None:
     fast_add_bool = await get_fast_add(message.chat.id)
     if fast_add_bool:
@@ -57,9 +58,24 @@ async def add_homework_handler(
         add=True,
     )
     text = "Выбери предмет, по которому хочешь добавить домашку"
-    if mailing:
+    if mailing and not for_class:
         keyboard = homework_add.get_mailings()
         text = "Выбери уровень рассылки"
+    elif mailing and for_class:
+        await state.update_data(choose_subject="информация")
+        if fast_add_bool:
+            await state.set_state(AddHomeworkFast.add_data)
+            await call.message.answer(
+                text="Отлично, теперь отправь домашку\n"
+                     "(Если необходимо добавить файлы - отправь сначала их)",
+            )
+        else:
+            await state.set_state(AddHomeworkSlow.add_descriptions_images)
+            await call.message.answer(
+                text="Отлично, теперь отправь домашку\n(Ты можешь отправить"
+                     " изображения и описание, файлы можно будет отправить позже)",
+            )
+        return
     await message.answer(
         text=text,
         reply_markup=keyboard,
@@ -71,27 +87,12 @@ async def add_class_info_handler(
     message: Message,
     state: FSMContext,
 ) -> None:
-    fast_add_bool = await get_fast_add(message.chat.id)
-
-    await state.update_data(choose_subject="информация")
-    await state.update_data(images=[])
-    await state.update_data(files=[])
-    await state.update_data(message_id=[])
-    await state.update_data(fast_add_bool=fast_add_bool)
-
-    if fast_add_bool:
-        await state.set_state(AddHomeworkFast.add_data)
-        await message.answer(
-            text="Отлично, теперь отправь информацию для своего класса\n"
-            "(Если необходимо добавить файлы - отправь сначала их)",
-        )
-    else:
-        await state.set_state(AddHomeworkSlow.add_descriptions_images)
-        await message.answer(
-            text="Отлично, теперь отправь информацию для своего класса\n"
-            "(Ты можешь отправить изображения и описание, "
-            "файлы можно будет отправить позже)",
-        )
+    await add_homework_handler(
+        message,
+        state,
+        mailing=True,
+        for_class=True,
+    )
 
 
 @rp_homework_router.callback_query(
@@ -513,7 +514,12 @@ async def add_mailing(
     state: FSMContext,
 ) -> None:
     if await check_for_admin(message.chat.id) == "superuser":
-        await add_homework_handler(message, state, mailing=True)
+        await add_homework_handler(
+            message,
+            state,
+            mailing=True,
+            for_class=False,
+        )
 
 
 @rp_homework_router.callback_query(F.data == "delete_mailing")
