@@ -352,8 +352,8 @@ async def publish_homework(data: dict, telegram_id: int) -> tuple[int, int]:
         pass
     mailing = False
     subject = data["choose_subject"]
-    if subject in [
-        "Информация",
+    if subject.lower() in [
+        "информация",
         "adminsinfo",
         "schoolinfo",
     ]:
