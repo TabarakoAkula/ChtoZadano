@@ -168,6 +168,13 @@ if API_TECHNICAL_WORKS:
 if SITE_TECHNICAL_WORKS:
     MIDDLEWARE.append("chtozadano.middleware.SiteTechnicalWorksMiddleware")
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379",
+    },
+}
+
 LANGUAGE_CODE = "ru-RU"
 
 TIME_ZONE = "Europe/Moscow"
