@@ -42,6 +42,7 @@ services:
       - "8000"
     depends_on:
       - db
+      - redis
     links:
       - db:db
     restart: always
@@ -66,8 +67,18 @@ services:
     build: cron/
     volumes:
       - ./cron:/cron
+    restart: always
     depends_on:
       - web
+    networks:
+      - django-network
+
+  redis:
+    image: redis:7.4.0-alpine
+    hostname: redis
+    restart: always
+    volumes:
+      - redis_data:/data
     networks:
       - django-network
 
