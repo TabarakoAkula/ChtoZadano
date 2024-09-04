@@ -2,6 +2,7 @@ import asyncio
 import json
 
 from django.contrib import messages
+from django.core.cache import cache
 from django.db.models import OuterRef, Q, Subquery
 from django.shortcuts import redirect, render, reverse
 from django.views import generic, View
@@ -29,28 +30,35 @@ class HomeworkPage(View):
         if checker[0] == "Error":
             return checker[1]
         grade, letter, group = checker[1]
-        latest_homework_ids = (
-            Homework.objects.filter(Q(group=0) | Q(group=group))
-            .filter(
-                grade=grade,
-                letter=letter,
-                subject=OuterRef("subject"),
-                created_at=Subquery(
-                    Homework.objects.filter(
-                        subject=OuterRef("subject"),
-                    )
-                    .values("created_at")
-                    .order_by("-created_at")[:1],
-                ),
+        data = cache.get(f"homework_page_data_{grade}_{letter}_{group}")
+        if not data:
+            latest_homework_ids = (
+                Homework.objects.filter(Q(group=0) | Q(group=group))
+                .filter(
+                    grade=grade,
+                    letter=letter,
+                    subject=OuterRef("subject"),
+                    created_at=Subquery(
+                        Homework.objects.filter(
+                            subject=OuterRef("subject"),
+                        )
+                        .values("created_at")
+                        .order_by("-created_at")[:1],
+                    ),
+                )
+                .values("id")
             )
-            .values("id")
-        )
-        data = (
-            Homework.objects.filter(id__in=latest_homework_ids)
-            .order_by("subject")
-            .prefetch_related("images", "files")
-            .defer("grade", "letter", "group")
-        )
+            data = (
+                Homework.objects.filter(id__in=latest_homework_ids)
+                .order_by("subject")
+                .prefetch_related("images", "files")
+                .defer("grade", "letter", "group")
+            )
+            cache.set(
+                f"homework_page_data_{grade}_{letter}_{group}",
+                data,
+                timeout=300,
+            )
         data_subjects = []
         for homework_obj in data:
             abbreviation = get_name_from_abbreviation(homework_obj.subject)
@@ -75,20 +83,31 @@ class HomeworkPage(View):
             done_list = [i.homework_todo.first().id for i in done_list]
         else:
             done_list = []
-
-        info_class = (
-            Homework.objects.filter(group=-1, grade=grade, letter=letter)
-            .prefetch_related("images", "files")
-            .order_by("-created_at")
-            .only()
-            .first()
+        info_class = cache.get(
+            f"homework_page_info_class_{grade}_{letter}_{group}",
         )
-        info_school = (
-            Homework.objects.filter(group=-3)
-            .prefetch_related("images", "files")
-            .order_by("-created_at")
-            .first()
-        )
+        if not info_class:
+            info_class = (
+                Homework.objects.filter(group=-1, grade=grade, letter=letter)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .only()
+                .first()
+            )
+            cache.set(
+                f"homework_page_info_class_{grade}_{letter}_{group}",
+                info_class,
+                timeout=300,
+            )
+        info_school = cache.get("homework_page_info_school")
+        if not info_school:
+            info_school = (
+                Homework.objects.filter(group=-3)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .first()
+            )
+            cache.set("homework_page_info_school", info_school, timeout=300)
         if info_school:
             info_school.author = "Администрация"
         if not request.user.is_staff:
@@ -132,7 +151,10 @@ class AllHomeworkPage(generic.ListView):
     def get_queryset(self):
         data = ()
         try:
-            if self.is_authenticated and self.is_staff:
+            data = cache.get(
+                f"all_homework_data_{self.grade}_{self.letter}_{self.group}",
+            )
+            if not data:
                 data = (
                     Homework.objects.filter(
                         grade=self.grade,
@@ -144,17 +166,11 @@ class AllHomeworkPage(generic.ListView):
                     .order_by("-created_at")
                     .all()
                 )
-            else:
-                data = (
-                    Homework.objects.filter(
-                        grade=self.grade,
-                        letter=self.letter,
-                    )
-                    .filter(Q(group=0) | Q(group=self.group))
-                    .only("subject", "author", "description", "created_at")
-                    .prefetch_related("images", "files")
-                    .order_by("group", "-subject", "-created_at")
-                    .all()
+                cache.set(
+                    f"all_homework_data_{self.grade}_"
+                    f"{self.letter}_{self.group}",
+                    data,
+                    timeout=300,
                 )
         except Homework.DoesNotExist:
             pass
@@ -174,40 +190,47 @@ class WeekdayHomeworkPage(View):
             messages.error(request, "Такого дня в неделе не существует")
             return redirect("homework:homework_page")
         grade, letter, group = checker[1]
-        latest_homework_ids = (
-            Homework.objects.filter(Q(group=0) | Q(group=group))
-            .filter(
-                grade=grade,
-                letter=letter,
-                subject=OuterRef("subject"),
-                created_at=Subquery(
-                    Homework.objects.filter(
-                        subject=OuterRef("subject"),
-                    )
-                    .values("created_at")
-                    .order_by("-created_at")[:1],
-                ),
+        data = cache.get(f"weekday_page_data_{grade}_{letter}_{group}")
+        if not data:
+            latest_homework_ids = (
+                Homework.objects.filter(Q(group=0) | Q(group=group))
+                .filter(
+                    grade=grade,
+                    letter=letter,
+                    subject=OuterRef("subject"),
+                    created_at=Subquery(
+                        Homework.objects.filter(
+                            subject=OuterRef("subject"),
+                        )
+                        .values("created_at")
+                        .order_by("-created_at")[:1],
+                    ),
+                )
+                .values("id")
             )
-            .values("id")
-        )
-        subjects = [
-            i.subject
-            for i in get_schedule_from_weekday(
-                grade,
-                letter,
-                group,
-                weekday + 1,
+            subjects = [
+                i.subject
+                for i in get_schedule_from_weekday(
+                    grade,
+                    letter,
+                    group,
+                    weekday + 1,
+                )
+            ]
+            data = (
+                Homework.objects.filter(
+                    id__in=latest_homework_ids,
+                    subject__in=subjects,
+                )
+                .order_by("subject")
+                .prefetch_related("images", "files")
+                .defer("grade", "letter", "group")
             )
-        ]
-        data = (
-            Homework.objects.filter(
-                id__in=latest_homework_ids,
-                subject__in=subjects,
+            cache.set(
+                f"weekday_page_data_{grade}_{letter}_{group}",
+                data,
+                timeout=300,
             )
-            .order_by("subject")
-            .prefetch_related("images", "files")
-            .defer("grade", "letter", "group")
-        )
         for homework in data:
             homework.subject = get_name_from_abbreviation(homework.subject)
         if request.user.is_authenticated:
@@ -218,20 +241,35 @@ class WeekdayHomeworkPage(View):
             done_list = [i.homework_todo.first().id for i in done_list]
         else:
             done_list = []
-
-        info_class = (
-            Homework.objects.filter(group=-1, grade=grade, letter=letter)
-            .prefetch_related("images", "files")
-            .order_by("-created_at")
-            .only()
-            .first()
+        info_class = cache.get(
+            f"homework_page_info_class_{grade}_{letter}_{group}",
         )
-        info_school = (
-            Homework.objects.filter(group=-3)
-            .prefetch_related("images", "files")
-            .order_by("-created_at")
-            .first()
-        )
+        if not info_class:
+            info_class = (
+                Homework.objects.filter(group=-1, grade=grade, letter=letter)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .only()
+                .first()
+            )
+            cache.set(
+                f"homework_page_info_class_{grade}_{letter}_{group}",
+                info_class,
+                timeout=300,
+            )
+        info_school = cache.get("homework_page_info_school")
+        if not info_school:
+            info_school = (
+                Homework.objects.filter(group=-3)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .first()
+            )
+            cache.set(
+                "homework_page_info_school",
+                info_school,
+                timeout=300,
+            )
         if info_school:
             info_school.author = "Администрация"
         if not request.user.is_staff:
@@ -933,13 +971,22 @@ class SchedulePage(generic.ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        schedule = (
-            Schedule.objects.filter(grade=self.grade, letter=self.letter)
-            .filter(Q(group=self.group) | Q(group=0))
-            .order_by("weekday", "lesson")
-            .only("lesson", "subject", "weekday")
-            .all()
+        schedule = cache.get(
+            f"schedule_{self.grade}_{self.letter}_{self.group}",
         )
+        if not schedule:
+            schedule = (
+                Schedule.objects.filter(grade=self.grade, letter=self.letter)
+                .filter(Q(group=self.group) | Q(group=0))
+                .order_by("weekday", "lesson")
+                .only("lesson", "subject", "weekday")
+                .all()
+            )
+            cache.set(
+                f"schedule_{self.grade}_{self.letter}_{self.group}",
+                schedule,
+                timeout=86400,
+            )
         for lesson in schedule:
             lesson.subject = get_name_from_abbreviation(lesson.subject)
         return schedule

@@ -168,12 +168,20 @@ if API_TECHNICAL_WORKS:
 if SITE_TECHNICAL_WORKS:
     MIDDLEWARE.append("chtozadano.middleware.SiteTechnicalWorksMiddleware")
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379",
-    },
-}
+if str(os.getenv("USE_REDIS", "True").lower()) == "true":
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://redis:6379",
+        },
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
+        },
+    }
 
 LANGUAGE_CODE = "ru-RU"
 
