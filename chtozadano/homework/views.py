@@ -65,7 +65,14 @@ class HomeworkPage(View):
             abbreviation = f"{abbreviation[0].upper()}{abbreviation[1:]}"
             homework_obj.subject = abbreviation
             data_subjects.append(abbreviation)
-        real_subjects = get_user_subjects(grade, letter, group)
+        real_subjects = cache.get(f"user_subjects_{grade}_{letter}_{group}")
+        if not real_subjects:
+            real_subjects = get_user_subjects(grade, letter, group)
+            cache.set(
+                f"user_subjects_{grade}_{letter}_{group}",
+                real_subjects,
+                timeout=86400,
+            )
         real_subjects = [f"{i[0].upper()}{i[1:]}" for i in real_subjects]
         if isinstance(real_subjects, dict):
             messages.error(
@@ -84,7 +91,7 @@ class HomeworkPage(View):
         else:
             done_list = []
         info_class = cache.get(
-            f"homework_page_info_class_{grade}_{letter}_{group}",
+            f"homework_page_info_class_{grade}_{letter}",
         )
         if not info_class:
             info_class = (
@@ -95,7 +102,7 @@ class HomeworkPage(View):
                 .first()
             )
             cache.set(
-                f"homework_page_info_class_{grade}_{letter}_{group}",
+                f"homework_page_info_class_{grade}_{letter}",
                 info_class,
                 timeout=600,
             )
@@ -113,12 +120,15 @@ class HomeworkPage(View):
         if not request.user.is_staff:
             info = [info_school, info_class]
         else:
-            info_admin = (
-                Homework.objects.filter(group=-2)
-                .prefetch_related("images", "files")
-                .order_by("-created_at")
-                .first()
-            )
+            info_admin = cache.get("homework_page_info_admin")
+            if not info_admin:
+                info_admin = (
+                    Homework.objects.filter(group=-2)
+                    .prefetch_related("images", "files")
+                    .order_by("-created_at")
+                    .first()
+                )
+                cache.set("homework_page_info_admin", info_school, timeout=600)
             info = [info_school, info_admin, info_class]
         dates = get_list_of_dates(grade)
         return render(
@@ -242,7 +252,7 @@ class WeekdayHomeworkPage(View):
         else:
             done_list = []
         info_class = cache.get(
-            f"homework_page_info_class_{grade}_{letter}_{group}",
+            f"homework_page_info_class_{grade}_{letter}",
         )
         if not info_class:
             info_class = (
@@ -253,7 +263,7 @@ class WeekdayHomeworkPage(View):
                 .first()
             )
             cache.set(
-                f"homework_page_info_class_{grade}_{letter}_{group}",
+                f"homework_page_info_class_{grade}_{letter}",
                 info_class,
                 timeout=600,
             )
@@ -275,12 +285,15 @@ class WeekdayHomeworkPage(View):
         if not request.user.is_staff:
             info = [info_school, info_class]
         else:
-            info_admin = (
-                Homework.objects.filter(group=-2)
-                .prefetch_related("images", "files")
-                .order_by("-created_at")
-                .first()
-            )
+            info_admin = cache.get("homework_page_info_admin")
+            if not info_admin:
+                info_admin = (
+                    Homework.objects.filter(group=-2)
+                    .prefetch_related("images", "files")
+                    .order_by("-created_at")
+                    .first()
+                )
+                cache.set("homework_page_info_admin", info_admin, timeout=600)
             info = [info_school, info_admin, info_class]
 
         week_list = get_list_of_dates(grade)
@@ -330,11 +343,18 @@ class ChooseGrLePage(View):
             "letter": letter,
             "group": group,
         }
-        user_subjects = get_user_subjects(
-            grade,
-            letter,
-            group,
-        )
+        user_subjects = cache.get(f"user_subjects_{grade}_{letter}_{group}")
+        if not user_subjects:
+            user_subjects = get_user_subjects(
+                grade,
+                letter,
+                group,
+            )
+            cache.set(
+                f"user_subjects_{grade}_{letter}_{group}",
+                user_subjects,
+                timeout=86400,
+            )
         if isinstance(user_subjects, dict):
             messages.error(
                 request,
@@ -364,7 +384,16 @@ class AddHomeworkPage(View):
         if request.user.is_staff or request.user.is_superuser:
             user = request.user.server_user
             grade, letter, group = user.grade, user.letter, user.group
-            response_list = get_user_subjects(grade, letter, group)
+            response_list = cache.get(
+                f"user_subjects_{grade}_{letter}_{group}",
+            )
+            if not response_list:
+                response_list = get_user_subjects(grade, letter, group)
+                cache.set(
+                    f"user_subjects_{grade}_{letter}_{group}",
+                    response_list,
+                    timeout=86400,
+                )
             if isinstance(response_list, dict):
                 messages.error(
                     request,
@@ -462,11 +491,21 @@ class EditHomework(View):
     def get(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
-            user_subjects = get_user_subjects(
+            grade, letter, group = (
                 request_user.grade,
                 request_user.letter,
                 request_user.group,
             )
+            user_subjects = cache.get(
+                f"user_subjects_{grade}_{letter}_{group}",
+            )
+            if not user_subjects:
+                user_subjects = get_user_subjects(grade, letter, group)
+                cache.set(
+                    f"user_subjects_{grade}_{letter}_{group}",
+                    user_subjects,
+                    timeout=86400,
+                )
             if isinstance(user_subjects, dict):
                 messages.error(
                     request,
