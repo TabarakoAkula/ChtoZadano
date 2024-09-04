@@ -1,8 +1,8 @@
 import asyncio
-import json
 import os
 
 import django.contrib.auth
+from django.core.cache import cache
 import django.db.utils
 from django.http import HttpResponse
 from rest_framework import response, viewsets
@@ -134,10 +134,14 @@ class GetQuotesAPI(APIView):
     def post(request):
         try:
             telegram_id = request.data["telegram_id"]
-            user_obj = User.objects.get(telegram_id=telegram_id)
+            show_quotes = cache.get(f"quotes_{telegram_id}")
+            if not show_quotes:
+                user_obj = User.objects.get(telegram_id=telegram_id)
+                show_quotes = user_obj.show_quotes
+                cache.set(f"quotes_{telegram_id}", show_quotes, timeout=86400)
         except (KeyError, User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        return response.Response({"quotes_status": user_obj.show_quotes})
+        return response.Response({"quotes_status": show_quotes})
 
 
 class ChangeQuotesAPI(APIView):
@@ -189,10 +193,14 @@ class GetChatModeAPI(APIView):
     def post(request):
         try:
             telegram_id = request.data["telegram_id"]
-            user_obj = User.objects.get(telegram_id=telegram_id)
+            chat_mode = cache.get(f"chat_mode_{telegram_id}")
+            if not chat_mode:
+                user_obj = User.objects.get(telegram_id=telegram_id)
+                chat_mode = user_obj.chat_mode
+                cache.set(f"chat_mode_{telegram_id}", chat_mode, timeout=86400)
         except (KeyError, User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        return response.Response({"chat_mode": user_obj.chat_mode})
+        return response.Response({"chat_mode": chat_mode})
 
 
 class ChangeChatModeAPI(APIView):
@@ -355,20 +363,21 @@ class IsUserAdminAPI(APIView):
     @staticmethod
     def post(request):
         try:
+            telegram_id = request.data["telegram_id"]
             user_obj = User.objects.filter(
-                telegram_id=request.data["telegram_id"],
+                telegram_id=telegram_id,
             ).first()
         except (KeyError, User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         if user_obj:
-            return response.Response(
-                json.dumps(
-                    {
-                        "is_admin": user_obj.user.is_staff,
-                        "is_superuser": user_obj.user.is_superuser,
-                    },
-                ),
-            )
+            data = cache.get(f"user_rights_{telegram_id}")
+            if not data:
+                data = {
+                    "is_admin": user_obj.user.is_staff,
+                    "is_superuser": user_obj.user.is_superuser,
+                }
+                cache.set(f"user_rights_{telegram_id}", data, timeout=86400)
+            return response.Response(data)
         return response.Response({"error": "User does not exist"}, status=400)
 
 
@@ -390,8 +399,12 @@ class GetFastAddAPI(APIView):
     @staticmethod
     def post(request):
         telegram_id = request.data["telegram_id"]
-        user_obj = User.objects.get(telegram_id=telegram_id)
-        return response.Response({"fast_hw": user_obj.fast_hw})
+        fast_hw = cache.get(f"fast_hw_{telegram_id}")
+        if not fast_hw:
+            user_obj = User.objects.get(telegram_id=telegram_id)
+            fast_hw = user_obj.fast_hw
+            cache.set(f"fast_hw_{telegram_id}", fast_hw, timeout=86400)
+        return response.Response({"fast_hw": fast_hw})
 
 
 class ChangeFastAddAPI(APIView):
