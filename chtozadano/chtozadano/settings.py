@@ -172,7 +172,7 @@ if str(os.getenv("USE_REDIS", "True").lower()) == "true":
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://redis:6379",
+            "LOCATION": "redis://redis:6379/0",
         },
     }
 else:

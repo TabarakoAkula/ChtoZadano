@@ -57,7 +57,7 @@ class HomeworkPage(View):
             cache.set(
                 f"homework_page_data_{grade}_{letter}_{group}",
                 data,
-                timeout=300,
+                timeout=600,
             )
         data_subjects = []
         for homework_obj in data:
@@ -97,7 +97,7 @@ class HomeworkPage(View):
             cache.set(
                 f"homework_page_info_class_{grade}_{letter}_{group}",
                 info_class,
-                timeout=300,
+                timeout=600,
             )
         info_school = cache.get("homework_page_info_school")
         if not info_school:
@@ -107,7 +107,7 @@ class HomeworkPage(View):
                 .order_by("-created_at")
                 .first()
             )
-            cache.set("homework_page_info_school", info_school, timeout=300)
+            cache.set("homework_page_info_school", info_school, timeout=600)
         if info_school:
             info_school.author = "Администрация"
         if not request.user.is_staff:
@@ -170,7 +170,7 @@ class AllHomeworkPage(generic.ListView):
                     f"all_homework_data_{self.grade}_"
                     f"{self.letter}_{self.group}",
                     data,
-                    timeout=300,
+                    timeout=600,
                 )
         except Homework.DoesNotExist:
             pass
@@ -229,7 +229,7 @@ class WeekdayHomeworkPage(View):
             cache.set(
                 f"weekday_page_data_{grade}_{letter}_{group}",
                 data,
-                timeout=300,
+                timeout=600,
             )
         for homework in data:
             homework.subject = get_name_from_abbreviation(homework.subject)
@@ -255,7 +255,7 @@ class WeekdayHomeworkPage(View):
             cache.set(
                 f"homework_page_info_class_{grade}_{letter}_{group}",
                 info_class,
-                timeout=300,
+                timeout=600,
             )
         info_school = cache.get("homework_page_info_school")
         if not info_school:
@@ -268,7 +268,7 @@ class WeekdayHomeworkPage(View):
             cache.set(
                 "homework_page_info_school",
                 info_school,
-                timeout=300,
+                timeout=600,
             )
         if info_school:
             info_school.author = "Администрация"
