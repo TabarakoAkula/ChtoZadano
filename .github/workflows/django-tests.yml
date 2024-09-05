@@ -46,6 +46,8 @@ jobs:
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
         CSRF_TRUSTED_ORIGINS: http://bot:8000
+        USE_REDIS: False
+
     - name: Django tests users
       run: |
         cd chtozadano
@@ -60,6 +62,8 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           TEST: True
           CSRF_TRUSTED_ORIGINS: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
+          USE_REDIS: False
+
     - name: Django tests homework
       run: |
         cd chtozadano
@@ -74,3 +78,4 @@ jobs:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
         TEST: True
         CSRF_TRUSTED_ORIGINS: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
+        USE_REDIS: False

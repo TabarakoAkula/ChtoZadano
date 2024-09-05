@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.core.cache import cache
 from django.core.files.storage import default_storage
 import django.db.models
 from django.db.models import Q
@@ -330,7 +331,7 @@ async def add_notification(
     await homework_notifier(users_ids, serialized_data)
 
 
-async def cron_notifier(text):
+async def cron_notifier(text: str) -> None:
     users_ids = await sync_to_async(list)(
         DjangoUser.objects.filter(is_superuser=True).values(
             "server_user__telegram_id",
@@ -344,3 +345,46 @@ async def cron_notifier(text):
     if os.getenv("TEST"):
         return
     await custom_notification(users_ids, text, False)
+
+
+def redis_delete_data(
+    homework_data: bool = True,
+    grade: int = 0,
+    letter: str = "",
+    group: int = 0,
+    schedule: bool = False,
+) -> None:
+    use_redis = False
+    redis_client = None
+    cache_backend = settings.CACHES["default"]["BACKEND"]
+    if cache_backend == "django_redis.cache.RedisCache":
+        use_redis = True
+        redis_client = cache.client.get_client()
+    cache_keys = []
+    specific_keys = []
+    if homework_data:
+        cache_keys += [
+            f"homework_page_data_{grade}_{letter}_{group}",
+            f"all_homework_data_{grade}_{letter}_{group}",
+        ]
+        specific_keys += [
+            f"weekday_page_data_{grade}_{letter}_{group}_*",
+            f"all_homework_date_{grade}_{letter}_{group}_*",
+        ]
+    if not homework_data and not schedule:
+        cache_keys += [
+            f"homework_page_info_class_{grade}_{letter}",
+            "homework_page_info_admin",
+            "homework_page_info_school",
+        ]
+    if not homework_data and schedule:
+        cache_keys += [
+            f"schedule_{grade}_{letter}_{group}",
+            f"tomorrow_schedule_{grade}_{letter}_{group}",
+        ]
+    if use_redis:
+        for key_pattern in specific_keys:
+            keys = redis_client.scan_iter(key_pattern)
+            cache_keys += keys
+    cache.delete_many(cache_keys)
+    return

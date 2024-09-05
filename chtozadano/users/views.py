@@ -6,6 +6,7 @@ from random import random
 from django.contrib import messages
 import django.contrib.auth
 from django.contrib.auth.base_user import check_password
+from django.core.cache import cache
 import django.db.utils
 from django.shortcuts import redirect, render
 from django.views import View
@@ -444,6 +445,7 @@ class BecomeAdminAccept(View):
             user_obj = User.objects.get(telegram_id=telegram_id).user
             user_obj.is_staff = True
             user_obj.save()
+            cache.delete(f"user_rights_{telegram_id}")
             messages.success(
                 request,
                 f"Пользователь {user_obj.first_name}"
