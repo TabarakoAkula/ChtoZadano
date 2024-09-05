@@ -1,6 +1,7 @@
 import asyncio
 from datetime import datetime, timedelta
 
+from django.core.cache import cache
 from django.db.models import OuterRef, Q, Subquery
 from rest_framework import response, viewsets
 from rest_framework.views import APIView
@@ -16,6 +17,7 @@ from homework.utils import (
     get_name_from_abbreviation,
     get_tomorrow_schedule,
     get_user_subjects,
+    redis_delete_data,
 )
 import users.models
 
@@ -30,28 +32,36 @@ class GetLastHomeworkAllSubjectsAPI(viewsets.ReadOnlyModelViewSet):
             )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        latest_homework_ids = (
-            Homework.objects.filter(Q(group=0) | Q(group=user.group))
-            .filter(
-                grade=user.grade,
-                letter=user.letter,
-                subject=OuterRef("subject"),
-                created_at=Subquery(
-                    Homework.objects.filter(
-                        subject=OuterRef("subject"),
-                    )
-                    .values("created_at")
-                    .order_by("-created_at")[:1],
-                ),
+        grade, letter, group = user.grade, user.letter, user.group
+        data = cache.get(f"homework_page_data_{grade}_{letter}_{group}")
+        if not data:
+            latest_homework_ids = (
+                Homework.objects.filter(Q(group=0) | Q(group=group))
+                .filter(
+                    grade=grade,
+                    letter=letter,
+                    subject=OuterRef("subject"),
+                    created_at=Subquery(
+                        Homework.objects.filter(
+                            subject=OuterRef("subject"),
+                        )
+                        .values("created_at")
+                        .order_by("-created_at")[:1],
+                    ),
+                )
+                .values("id")
             )
-            .values("id")
-        )
-        data = (
-            Homework.objects.filter(id__in=latest_homework_ids)
-            .order_by("subject")
-            .prefetch_related("images", "files")
-            .defer("grade", "letter", "group")
-        )
+            data = (
+                Homework.objects.filter(id__in=latest_homework_ids)
+                .order_by("subject")
+                .prefetch_related("images", "files")
+                .defer("grade", "letter", "group")
+            )
+            cache.set(
+                f"homework_page_data_{grade}_{letter}_{group}",
+                data,
+                timeout=600,
+            )
         for homework_obj in data:
             homework_obj.subject = get_name_from_abbreviation(
                 homework_obj.subject,
@@ -84,7 +94,14 @@ class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
                 ]:
                     subject += str(group)
                 subject = get_name_from_abbreviation(subject).lower()
-            user_subjects = get_user_subjects(grade, letter, group)
+            user_subjects = cache.get(f"user_subject_{grade}_{letter}_{group}")
+            if not user_subjects:
+                user_subjects = get_user_subjects(grade, letter, group)
+                cache.set(
+                    f"user_subject_{grade}_{letter}_{group}",
+                    user_subjects,
+                    timeout=86400,
+                )
             if subject not in user_subjects:
                 return response.Response(
                     {
@@ -93,16 +110,25 @@ class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
                     status=406,
                 )
             abr_subject = get_abbreviation_from_name(subject)
-            hw_object = (
-                Homework.objects.filter(
-                    grade=grade,
-                    letter=letter,
-                    subject=abr_subject,
-                )
-                .filter(Q(group=group) | Q(group=0))
-                .order_by("-created_at")
-                .first()
+            hw_object = cache.get(
+                f"get_one_subject_{grade}_{letter}_{group}_{abr_subject}",
             )
+            if not hw_object:
+                hw_object = (
+                    Homework.objects.filter(
+                        grade=grade,
+                        letter=letter,
+                        subject=abr_subject,
+                    )
+                    .filter(Q(group=group) | Q(group=0))
+                    .order_by("-created_at")
+                    .first()
+                )
+                cache.set(
+                    f"get_one_subject_{grade}_{letter}_{group}_{abr_subject}",
+                    hw_object,
+                    timeout=600,
+                )
         except Homework.DoesNotExist:
             return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
@@ -132,16 +158,27 @@ class GetAllHomeworkFromDateAPI(viewsets.ReadOnlyModelViewSet):
             year, month, day = list(map(int, date))
         except (KeyError, ValueError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        data = (
-            Homework.objects.filter(
-                created_at__date=datetime(year, month, day),
-                grade=user_obj.grade,
-                letter=user_obj.letter,
-            )
-            .filter(Q(group=user_obj.group) | Q(group=0))
-            .order_by("subject")
-            .prefetch_related("images", "files")
+        grade, letter, group = user_obj.grade, user_obj.letter, user_obj.group
+        data = cache.get(
+            f"all_homework_date_{grade}_{letter}_{group}_{year}_{month}_{day}",
         )
+        if not data:
+            data = (
+                Homework.objects.filter(
+                    created_at__date=datetime(year, month, day),
+                    grade=grade,
+                    letter=letter,
+                )
+                .filter(Q(group=group) | Q(group=0))
+                .order_by("subject")
+                .prefetch_related("images", "files")
+            )
+            cache.set(
+                f"all_homework_date_{grade}_{letter}_"
+                f"{group}_{year}_{month}_{day}",
+                data,
+                timeout=600,
+            )
         for homework_obj in data:
             homework_obj.subject = get_name_from_abbreviation(
                 homework_obj.subject,
@@ -192,26 +229,34 @@ class GetTomorrowHomeworkAPI(viewsets.ReadOnlyModelViewSet):
             )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        schedule = get_tomorrow_schedule(
-            user_obj.grade,
-            user_obj.letter,
-            user_obj.group,
-        )
+        grade, letter, group = user_obj.grade, user_obj.letter, user_obj.group
+        schedule = get_tomorrow_schedule(grade, letter, group)
         data = {}
         for lesson in schedule:
             try:
-                homework_obj = (
-                    Homework.objects.filter(
-                        Q(group=0) | Q(group=user_obj.group),
-                    )
-                    .filter(
-                        grade=user_obj.grade,
-                        letter=user_obj.letter,
-                        subject=lesson.subject,
-                    )
-                    .order_by("-created_at")
-                    .first()
+                homework_obj = cache.get(
+                    f"get_one_subject_{grade}_{letter}"
+                    f"_{group}_{lesson.subject}",
                 )
+                if not homework_obj:
+                    homework_obj = (
+                        Homework.objects.filter(
+                            Q(group=0) | Q(group=group),
+                        )
+                        .filter(
+                            grade=grade,
+                            letter=letter,
+                            subject=lesson.subject,
+                        )
+                        .order_by("-created_at")
+                        .first()
+                    )
+                    cache.set(
+                        f"get_one_subject_{grade}_{letter}"
+                        f"_{group}_{lesson.subject}",
+                        homework_obj,
+                        timeout=600,
+                    )
             except Homework.DoesNotExist:
                 data[lesson.lesson] = None
             else:
@@ -290,6 +335,7 @@ class AddHomeWorkAPI(APIView):
                 use_groups,
             ),
         )
+        redis_delete_data(True, grade, letter, group)
         return response.Response(
             {
                 "success": "Successful",
@@ -322,6 +368,7 @@ class EditHomeworkDescriptionAPI(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         homework_obj.description = new_description
         homework_obj.save()
+        redis_delete_data(True, grade, letter, group)
         return response.Response({"success": "Successful"})
 
 
@@ -356,6 +403,7 @@ class EditHomeworkImagesAPI(APIView):
                 telegram_file_id=tg_id,
             )
             homework_obj.images.add(image_object)
+        redis_delete_data(True, grade, letter, group)
         return response.Response({"success": "Successful"})
 
 
@@ -393,6 +441,7 @@ class EditHomeworkFilesAPI(APIView):
             file_object.file_name = file_name
             file_object.save()
             homework_obj.files.add(file_object)
+        redis_delete_data(True, grade, letter, group)
         return response.Response({"success": "Successful"})
 
 
@@ -419,6 +468,7 @@ class DeleteHomeworkAPI(APIView):
             return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
+        redis_delete_data(True, user_grade, user_letter, user_group)
         return response.Response({"success": "Successful"})
 
 
@@ -432,28 +482,54 @@ class GetMailingAPI(viewsets.ReadOnlyModelViewSet):
             )
             django_user = user_obj.user
             data = {}
-            info_obj_one = (
-                Homework.objects.filter(
-                    group=-1,
-                    grade=user_obj.grade,
-                    letter=user_obj.letter,
-                )
-                .order_by("-created_at")
-                .first()
+            grade, letter = user_obj.grade, user_obj.letter
+            info_obj_one = cache.get(
+                f"homework_page_info_class_{grade}_{letter}",
             )
-            info_obj_two = (
-                Homework.objects.filter(group=-3)
-                .order_by("-created_at")
-                .first()
-            )
-            data["class"] = self.get_serializer(info_obj_one).data
-            data["school"] = self.get_serializer(info_obj_two).data
-            if django_user.is_staff or django_user.is_superuser:
-                info_obj_three = (
-                    Homework.objects.filter(group=-2)
+            if not info_obj_one:
+                info_obj_one = (
+                    Homework.objects.filter(
+                        group=-1,
+                        grade=grade,
+                        letter=letter,
+                    )
+                    .prefetch_related("images", "files")
                     .order_by("-created_at")
                     .first()
                 )
+                cache.set(
+                    f"homework_page_info_class_{grade}_{letter}",
+                    info_obj_one,
+                    timeout=600,
+                )
+            info_obj_two = cache.get("homework_page_info_school")
+            if not info_obj_two:
+                info_obj_two = (
+                    Homework.objects.filter(group=-3)
+                    .prefetch_related("images", "files")
+                    .order_by("-created_at")
+                    .first()
+                )
+                cache.set(
+                    "homework_page_info_school",
+                    info_obj_two,
+                    timeout=600,
+                )
+            data["class"] = self.get_serializer(info_obj_one).data
+            data["school"] = self.get_serializer(info_obj_two).data
+            if django_user.is_staff or django_user.is_superuser:
+                info_obj_three = cache.get("homework_page_info_admin")
+                if not info_obj_three:
+                    info_obj_three = (
+                        Homework.objects.filter(group=-2)
+                        .order_by("-created_at")
+                        .first()
+                    )
+                    cache.set(
+                        "homework_page_info_admin",
+                        info_obj_three,
+                        timeout=600,
+                    )
                 data["admins"] = HomeworkSerializer(info_obj_three).data
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
@@ -513,6 +589,12 @@ class AddMailingAPI(APIView):
                         False,
                     ),
                 )
+                redis_delete_data(
+                    False,
+                    user_obj.grade,
+                    user_obj.letter,
+                    user_obj.group,
+                )
                 return response.Response(
                     {
                         "success": "Successful",
@@ -567,6 +649,12 @@ class AddMailingAPI(APIView):
                 False,
             ),
         )
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response(
             {
                 "success": "Successful",
@@ -607,6 +695,12 @@ class EditMailingAPI(APIView):
             files = [i.file.url for i in homework_obj.files.all()]
             serialized_data["images"] = images
             serialized_data["files"] = files
+            redis_delete_data(
+                False,
+                user_obj.grade,
+                user_obj.letter,
+                user_obj.group,
+            )
             return response.Response(serialized_data)
         return response.Response(
             {"error": "Does not exist | Not allowed"},
@@ -643,6 +737,12 @@ class EditMailingDescriptionAPI(APIView):
             return response.Response({"error": "Error"})
         homework_obj.description = new_description
         homework_obj.save()
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response({"success": "Successful"})
 
 
@@ -679,6 +779,12 @@ class EditMailingImagesAPI(APIView):
                 telegram_file_id=tg_id,
             )
             homework_obj.images.add(image_object)
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response({"success": "Successful"})
 
 
@@ -719,6 +825,12 @@ class EditMailingFilesAPI(APIView):
             file_object.file_name = file_name
             file_object.save()
             homework_obj.files.add(file_object)
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response({"success": "Successful"})
 
 
@@ -749,6 +861,12 @@ class DeleteMailingAPI(APIView):
             )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response({"success": "Successful"})
 
 
@@ -790,11 +908,20 @@ class GetTomorrowScheduleAPI(viewsets.ReadOnlyModelViewSet):
             user_obj = users.models.User.objects.get(
                 telegram_id=request.data["telegram_id"],
             )
-            schedule = get_tomorrow_schedule(
+            grade, letter, group = (
                 user_obj.grade,
                 user_obj.letter,
                 user_obj.group,
             )
+            schedule = cache.get(f"tomorrow_schedule_{grade}_{letter}_{group}")
+            if not schedule:
+                schedule = get_tomorrow_schedule(grade, letter, group)
+                timeout = 86400 - (datetime.now().timestamp() % 86400)
+                cache.set(
+                    f"tomorrow_schedule_{grade}_{letter}_{group}",
+                    schedule,
+                    timeout=int(timeout),
+                )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         for lesson in schedule:
@@ -830,6 +957,18 @@ class DeleteOldHomeworkAPI(APIView):
                 response_message,
             ),
         )
+        redis_delete_data(
+            True,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response(
             {
                 "success": "Successfully delete old HW and ToDo",
@@ -862,6 +1001,7 @@ class AddScheduleAPI(APIView):
             subject=get_abbreviation_from_name(subject),
             lesson=lesson,
         )
+        redis_delete_data(False, grade, letter, group, True)
         return response.Response({"success": "Successful"})
 
 
@@ -875,19 +1015,29 @@ class GetWeekScheduleAPI(viewsets.ReadOnlyModelViewSet):
             )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        latest_schedule_ids = (
-            Schedule.objects.filter(Q(group=0) | Q(group=user.group))
-            .filter(
-                grade=user.grade,
-                letter=user.letter,
-                weekday=OuterRef("weekday"),
+        grade, letter, group = user.grade, user.letter, user.group
+        data = cache.get(f"schedule_{grade}_{letter}_{group}")
+        if not data:
+            latest_schedule_ids = (
+                Schedule.objects.filter(Q(group=0) | Q(group=group))
+                .filter(
+                    grade=grade,
+                    letter=letter,
+                    weekday=OuterRef("weekday"),
+                )
+                .values("id")
             )
-            .values("id")
-        )
-        data = Schedule.objects.filter(id__in=latest_schedule_ids).order_by(
-            "weekday",
-            "lesson",
-        )
+            data = Schedule.objects.filter(
+                id__in=latest_schedule_ids,
+            ).order_by(
+                "weekday",
+                "lesson",
+            )
+            cache.set(
+                f"schedule_{grade}_{letter}_{group}",
+                data,
+                timeout=86400,
+            )
         for schedule_obj in data:
             schedule_obj.subject = get_name_from_abbreviation(
                 schedule_obj.subject,
@@ -904,7 +1054,15 @@ class GetUserSubjects(APIView):
             )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        user_subjects = get_user_subjects(user.grade, user.letter, user.group)
+        grade, letter, group = user.grade, user.letter, user.group
+        user_subjects = cache.get(f"user_subjects_{grade}_{letter}_{group}")
+        if not user_subjects:
+            user_subjects = get_user_subjects(grade, letter, group)
+            cache.set(
+                f"user_subjects_{grade}_{letter}_{group}",
+                user_subjects,
+                timeout=86400,
+            )
         return response.Response(user_subjects)
 
 
@@ -955,6 +1113,18 @@ class AddFileIdAPI(APIView):
             document_type,
             document_ids,
             user.grade,
+        )
+        redis_delete_data(
+            True,
+            user.grade,
+            user.letter,
+            user.group,
+        )
+        redis_delete_data(
+            False,
+            user.grade,
+            user.letter,
+            user.group,
         )
         return response.Response({"success": "Successful"})
 
