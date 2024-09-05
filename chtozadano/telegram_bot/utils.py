@@ -27,7 +27,7 @@ async def check_for_admin(telegram_id: int) -> str:
             "telegram_id": telegram_id,
         },
     )
-    response_data = json.loads(response.json())
+    response_data = response.json()
     admin = response_data["is_admin"]
     superuser = response_data["is_superuser"]
     if not admin and not superuser:
