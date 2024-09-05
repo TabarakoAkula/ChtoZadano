@@ -2,6 +2,7 @@ import asyncio
 import json
 
 from django.contrib import messages
+from django.core.cache import cache
 from django.db.models import OuterRef, Q, Subquery
 from django.shortcuts import redirect, render, reverse
 from django.views import generic, View
@@ -17,6 +18,7 @@ from homework.utils import (
     get_name_from_abbreviation,
     get_schedule_from_weekday,
     get_user_subjects,
+    redis_delete_data,
     save_files,
 )
 import users.models
@@ -29,35 +31,49 @@ class HomeworkPage(View):
         if checker[0] == "Error":
             return checker[1]
         grade, letter, group = checker[1]
-        latest_homework_ids = (
-            Homework.objects.filter(Q(group=0) | Q(group=group))
-            .filter(
-                grade=grade,
-                letter=letter,
-                subject=OuterRef("subject"),
-                created_at=Subquery(
-                    Homework.objects.filter(
-                        subject=OuterRef("subject"),
-                    )
-                    .values("created_at")
-                    .order_by("-created_at")[:1],
-                ),
+        data = cache.get(f"homework_page_data_{grade}_{letter}_{group}")
+        if not data:
+            latest_homework_ids = (
+                Homework.objects.filter(Q(group=0) | Q(group=group))
+                .filter(
+                    grade=grade,
+                    letter=letter,
+                    subject=OuterRef("subject"),
+                    created_at=Subquery(
+                        Homework.objects.filter(
+                            subject=OuterRef("subject"),
+                        )
+                        .values("created_at")
+                        .order_by("-created_at")[:1],
+                    ),
+                )
+                .values("id")
             )
-            .values("id")
-        )
-        data = (
-            Homework.objects.filter(id__in=latest_homework_ids)
-            .order_by("subject")
-            .prefetch_related("images", "files")
-            .defer("grade", "letter", "group")
-        )
+            data = (
+                Homework.objects.filter(id__in=latest_homework_ids)
+                .order_by("subject")
+                .prefetch_related("images", "files")
+                .defer("grade", "letter", "group")
+            )
+            cache.set(
+                f"homework_page_data_{grade}_{letter}_{group}",
+                data,
+                timeout=600,
+            )
         data_subjects = []
         for homework_obj in data:
             abbreviation = get_name_from_abbreviation(homework_obj.subject)
             abbreviation = f"{abbreviation[0].upper()}{abbreviation[1:]}"
             homework_obj.subject = abbreviation
             data_subjects.append(abbreviation)
-        real_subjects = get_user_subjects(grade, letter, group)
+        real_subjects = cache.get(f"user_subjects_{grade}_{letter}_{group}")
+        if not real_subjects:
+            real_subjects = get_user_subjects(grade, letter, group)
+            cache.set(
+                f"user_subjects_{grade}_{letter}_{group}",
+                real_subjects,
+                timeout=86400,
+            )
         real_subjects = [f"{i[0].upper()}{i[1:]}" for i in real_subjects]
         if isinstance(real_subjects, dict):
             messages.error(
@@ -75,31 +91,45 @@ class HomeworkPage(View):
             done_list = [i.homework_todo.first().id for i in done_list]
         else:
             done_list = []
-
-        info_class = (
-            Homework.objects.filter(group=-1, grade=grade, letter=letter)
-            .prefetch_related("images", "files")
-            .order_by("-created_at")
-            .only()
-            .first()
+        info_class = cache.get(
+            f"homework_page_info_class_{grade}_{letter}",
         )
-        info_school = (
-            Homework.objects.filter(group=-3)
-            .prefetch_related("images", "files")
-            .order_by("-created_at")
-            .first()
-        )
+        if not info_class:
+            info_class = (
+                Homework.objects.filter(group=-1, grade=grade, letter=letter)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .only()
+                .first()
+            )
+            cache.set(
+                f"homework_page_info_class_{grade}_{letter}",
+                info_class,
+                timeout=600,
+            )
+        info_school = cache.get("homework_page_info_school")
+        if not info_school:
+            info_school = (
+                Homework.objects.filter(group=-3)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .first()
+            )
+            cache.set("homework_page_info_school", info_school, timeout=600)
         if info_school:
             info_school.author = "Администрация"
         if not request.user.is_staff:
             info = [info_school, info_class]
         else:
-            info_admin = (
-                Homework.objects.filter(group=-2)
-                .prefetch_related("images", "files")
-                .order_by("-created_at")
-                .first()
-            )
+            info_admin = cache.get("homework_page_info_admin")
+            if not info_admin:
+                info_admin = (
+                    Homework.objects.filter(group=-2)
+                    .prefetch_related("images", "files")
+                    .order_by("-created_at")
+                    .first()
+                )
+                cache.set("homework_page_info_admin", info_school, timeout=600)
             info = [info_school, info_admin, info_class]
         dates = get_list_of_dates(grade)
         return render(
@@ -132,7 +162,10 @@ class AllHomeworkPage(generic.ListView):
     def get_queryset(self):
         data = ()
         try:
-            if self.is_authenticated and self.is_staff:
+            data = cache.get(
+                f"all_homework_data_{self.grade}_{self.letter}_{self.group}",
+            )
+            if not data:
                 data = (
                     Homework.objects.filter(
                         grade=self.grade,
@@ -144,17 +177,11 @@ class AllHomeworkPage(generic.ListView):
                     .order_by("-created_at")
                     .all()
                 )
-            else:
-                data = (
-                    Homework.objects.filter(
-                        grade=self.grade,
-                        letter=self.letter,
-                    )
-                    .filter(Q(group=0) | Q(group=self.group))
-                    .only("subject", "author", "description", "created_at")
-                    .prefetch_related("images", "files")
-                    .order_by("group", "-subject", "-created_at")
-                    .all()
+                cache.set(
+                    f"all_homework_data_{self.grade}_"
+                    f"{self.letter}_{self.group}",
+                    data,
+                    timeout=600,
                 )
         except Homework.DoesNotExist:
             pass
@@ -174,40 +201,49 @@ class WeekdayHomeworkPage(View):
             messages.error(request, "Такого дня в неделе не существует")
             return redirect("homework:homework_page")
         grade, letter, group = checker[1]
-        latest_homework_ids = (
-            Homework.objects.filter(Q(group=0) | Q(group=group))
-            .filter(
-                grade=grade,
-                letter=letter,
-                subject=OuterRef("subject"),
-                created_at=Subquery(
-                    Homework.objects.filter(
-                        subject=OuterRef("subject"),
-                    )
-                    .values("created_at")
-                    .order_by("-created_at")[:1],
-                ),
-            )
-            .values("id")
+        data = cache.get(
+            f"weekday_page_data_{grade}_{letter}_{group}_{weekday}",
         )
-        subjects = [
-            i.subject
-            for i in get_schedule_from_weekday(
-                grade,
-                letter,
-                group,
-                weekday + 1,
+        if not data:
+            latest_homework_ids = (
+                Homework.objects.filter(Q(group=0) | Q(group=group))
+                .filter(
+                    grade=grade,
+                    letter=letter,
+                    subject=OuterRef("subject"),
+                    created_at=Subquery(
+                        Homework.objects.filter(
+                            subject=OuterRef("subject"),
+                        )
+                        .values("created_at")
+                        .order_by("-created_at")[:1],
+                    ),
+                )
+                .values("id")
             )
-        ]
-        data = (
-            Homework.objects.filter(
-                id__in=latest_homework_ids,
-                subject__in=subjects,
+            subjects = [
+                i.subject
+                for i in get_schedule_from_weekday(
+                    grade,
+                    letter,
+                    group,
+                    weekday + 1,
+                )
+            ]
+            data = (
+                Homework.objects.filter(
+                    id__in=latest_homework_ids,
+                    subject__in=subjects,
+                )
+                .order_by("subject")
+                .prefetch_related("images", "files")
+                .defer("grade", "letter", "group")
             )
-            .order_by("subject")
-            .prefetch_related("images", "files")
-            .defer("grade", "letter", "group")
-        )
+            cache.set(
+                f"weekday_page_data_{grade}_{letter}_{group}_{weekday}",
+                data,
+                timeout=600,
+            )
         for homework in data:
             homework.subject = get_name_from_abbreviation(homework.subject)
         if request.user.is_authenticated:
@@ -218,31 +254,49 @@ class WeekdayHomeworkPage(View):
             done_list = [i.homework_todo.first().id for i in done_list]
         else:
             done_list = []
-
-        info_class = (
-            Homework.objects.filter(group=-1, grade=grade, letter=letter)
-            .prefetch_related("images", "files")
-            .order_by("-created_at")
-            .only()
-            .first()
+        info_class = cache.get(
+            f"homework_page_info_class_{grade}_{letter}",
         )
-        info_school = (
-            Homework.objects.filter(group=-3)
-            .prefetch_related("images", "files")
-            .order_by("-created_at")
-            .first()
-        )
+        if not info_class:
+            info_class = (
+                Homework.objects.filter(group=-1, grade=grade, letter=letter)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .only()
+                .first()
+            )
+            cache.set(
+                f"homework_page_info_class_{grade}_{letter}",
+                info_class,
+                timeout=600,
+            )
+        info_school = cache.get("homework_page_info_school")
+        if not info_school:
+            info_school = (
+                Homework.objects.filter(group=-3)
+                .prefetch_related("images", "files")
+                .order_by("-created_at")
+                .first()
+            )
+            cache.set(
+                "homework_page_info_school",
+                info_school,
+                timeout=600,
+            )
         if info_school:
             info_school.author = "Администрация"
         if not request.user.is_staff:
             info = [info_school, info_class]
         else:
-            info_admin = (
-                Homework.objects.filter(group=-2)
-                .prefetch_related("images", "files")
-                .order_by("-created_at")
-                .first()
-            )
+            info_admin = cache.get("homework_page_info_admin")
+            if not info_admin:
+                info_admin = (
+                    Homework.objects.filter(group=-2)
+                    .prefetch_related("images", "files")
+                    .order_by("-created_at")
+                    .first()
+                )
+                cache.set("homework_page_info_admin", info_admin, timeout=600)
             info = [info_school, info_admin, info_class]
 
         week_list = get_list_of_dates(grade)
@@ -292,11 +346,18 @@ class ChooseGrLePage(View):
             "letter": letter,
             "group": group,
         }
-        user_subjects = get_user_subjects(
-            grade,
-            letter,
-            group,
-        )
+        user_subjects = cache.get(f"user_subjects_{grade}_{letter}_{group}")
+        if not user_subjects:
+            user_subjects = get_user_subjects(
+                grade,
+                letter,
+                group,
+            )
+            cache.set(
+                f"user_subjects_{grade}_{letter}_{group}",
+                user_subjects,
+                timeout=86400,
+            )
         if isinstance(user_subjects, dict):
             messages.error(
                 request,
@@ -326,7 +387,16 @@ class AddHomeworkPage(View):
         if request.user.is_staff or request.user.is_superuser:
             user = request.user.server_user
             grade, letter, group = user.grade, user.letter, user.group
-            response_list = get_user_subjects(grade, letter, group)
+            response_list = cache.get(
+                f"user_subjects_{grade}_{letter}_{group}",
+            )
+            if not response_list:
+                response_list = get_user_subjects(grade, letter, group)
+                cache.set(
+                    f"user_subjects_{grade}_{letter}_{group}",
+                    response_list,
+                    timeout=86400,
+                )
             if isinstance(response_list, dict):
                 messages.error(
                     request,
@@ -384,10 +454,11 @@ class AddHomeworkPage(View):
             group = 0
         else:
             group = server_user.group
+        grade, letter = server_user.grade, server_user.letter
         homework_object = Homework.objects.create(
             description=description,
-            grade=server_user.grade,
-            letter=server_user.letter,
+            grade=grade,
+            letter=letter,
             subject=subject,
             group=group,
             author=f"{request.user.first_name} {request.user.last_name}",
@@ -416,6 +487,7 @@ class AddHomeworkPage(View):
                 use_groups,
             ),
         )
+        redis_delete_data(True, grade, letter, group)
         return redirect("homework:homework_page")
 
 
@@ -424,11 +496,21 @@ class EditHomework(View):
     def get(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
-            user_subjects = get_user_subjects(
+            grade, letter, group = (
                 request_user.grade,
                 request_user.letter,
                 request_user.group,
             )
+            user_subjects = cache.get(
+                f"user_subjects_{grade}_{letter}_{group}",
+            )
+            if not user_subjects:
+                user_subjects = get_user_subjects(grade, letter, group)
+                cache.set(
+                    f"user_subjects_{grade}_{letter}_{group}",
+                    user_subjects,
+                    timeout=86400,
+                )
             if isinstance(user_subjects, dict):
                 messages.error(
                     request,
@@ -473,10 +555,13 @@ class EditHomework(View):
             subject = request.POST["subject"]
             subject = get_abbreviation_from_name(subject)
             request_files_list = request.FILES.getlist("files")
+            server_user = request.user.server_user
+            grade, letter = server_user.grade, server_user.letter
+            group = server_user.group
             files_list_for_model = save_files(
                 request_files_list,
-                request.user.server_user.grade,
-                request.user.server_user.letter,
+                grade,
+                letter,
                 subject,
             )
             if files_list_for_model[0] == "Error":
@@ -486,12 +571,11 @@ class EditHomework(View):
                     homework_id=homework_id,
                 )
             files_list_for_model = files_list_for_model[1]
-            server_user = request.user.server_user
             try:
                 homework_object = Homework.objects.get(
                     id=homework_id,
-                    grade=server_user.grade,
-                    letter=server_user.letter,
+                    grade=grade,
+                    letter=letter,
                 )
             except Homework.DoesNotExist:
                 messages.error(request, "Такой записи не существует")
@@ -516,6 +600,7 @@ class EditHomework(View):
             homework_object.description = description
             homework_object.subject = subject
             homework_object.save()
+            redis_delete_data(True, grade, letter, group)
             messages.success(request, "Успешно обновлено")
             return redirect("homework:edit_homework", homework_id=homework_id)
         messages.error(
@@ -531,11 +616,13 @@ class EditHomeworkData(View):
     def get(request, homework_id, r_type, file_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
+            grade, letter = request_user.grade, request_user.letter
+            group = request_user.group
             try:
                 hw_object = Homework.objects.get(
                     id=homework_id,
-                    grade=request_user.grade,
-                    letter=request_user.letter,
+                    grade=grade,
+                    letter=letter,
                 )
             except Homework.DoesNotExist:
                 messages.error(request, "Такой записи не существует")
@@ -545,6 +632,7 @@ class EditHomeworkData(View):
             elif r_type == "file":
                 File.objects.get(id=file_id, homework=hw_object).delete()
             messages.success(request, "Успешно обновлено")
+            redis_delete_data(True, grade, letter, group)
             if hw_object.group in [-3, -2, -1]:
                 return redirect(
                     "homework:edit_mailing",
@@ -590,16 +678,19 @@ class DeleteHomework(View):
     def post(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
+            grade, letter = request_user.grade, request_user.letter
+            group = request_user.group
             try:
                 Homework.objects.get(
                     id=homework_id,
-                    grade=request_user.grade,
-                    letter=request_user.letter,
+                    grade=grade,
+                    letter=letter,
                 ).delete()
             except Homework.DoesNotExist:
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             messages.success(request, "Домашнее задание успешно удалено")
+            redis_delete_data(True, grade, letter, group)
         return redirect("homework:homework_page")
 
 
@@ -659,10 +750,12 @@ class AddMailingPage(View):
                 return redirect("homework:homework_page")
             group = -3
         request_files_list = request.FILES.getlist("files")
+        grade = request.user.server_user.grade
+        letter = request.user.server_user.letter
         files_list_for_model = save_files(
             request_files_list,
-            request.user.server_user.grade,
-            request.user.server_user.letter,
+            grade,
+            letter,
             "info",
         )
         if files_list_for_model[0] == "Error":
@@ -684,8 +777,8 @@ class AddMailingPage(View):
         else:
             homework_object = Homework.objects.create(
                 description=description,
-                grade=request.user.server_user.grade,
-                letter=request.user.server_user.letter,
+                grade=grade,
+                letter=letter,
                 subject="info",
                 group=group,
                 author=f"{request.user.first_name} {request.user.last_name}",
@@ -715,6 +808,7 @@ class AddMailingPage(View):
                 False,
             ),
         )
+        redis_delete_data(False, grade, letter, group)
         return redirect("homework:homework_page")
 
 
@@ -770,10 +864,12 @@ class EditMailingPage(View):
             else:
                 group = -3
             request_files_list = request.FILES.getlist("files")
+            grade = request.user.server_user.grade
+            letter = request.user.server_user.letter
             files_list_for_model = save_files(
                 request_files_list,
-                request.user.server_user.grade,
-                request.user.server_user.letter,
+                grade,
+                letter,
                 "info",
             )
             if files_list_for_model[0] == "Error":
@@ -810,6 +906,7 @@ class EditMailingPage(View):
             homework_object.group = group
             homework_object.save()
             messages.success(request, "Успешно обновлено")
+            redis_delete_data(False, grade, letter, group)
             return redirect("homework:edit_mailing", homework_id=homework_id)
         messages.error(
             request,
@@ -867,6 +964,12 @@ class DeleteMailing(View):
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             messages.success(request, "Рассылка успешно удалена")
+            redis_delete_data(
+                False,
+                request.user.server_user.grade,
+                request.user.server_user.letter,
+                request.user.server_user.group,
+            )
         elif request.user.is_staff:
             try:
                 Homework.objects.get(
@@ -877,6 +980,12 @@ class DeleteMailing(View):
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             messages.success(request, "Рассылка успешно удалена")
+            redis_delete_data(
+                False,
+                request.user.server_user.grade,
+                request.user.server_user.letter,
+                request.user.server_user.group,
+            )
         else:
             messages.error(
                 request,
@@ -933,13 +1042,22 @@ class SchedulePage(generic.ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        schedule = (
-            Schedule.objects.filter(grade=self.grade, letter=self.letter)
-            .filter(Q(group=self.group) | Q(group=0))
-            .order_by("weekday", "lesson")
-            .only("lesson", "subject", "weekday")
-            .all()
+        schedule = cache.get(
+            f"schedule_{self.grade}_{self.letter}_{self.group}",
         )
+        if not schedule:
+            schedule = (
+                Schedule.objects.filter(grade=self.grade, letter=self.letter)
+                .filter(Q(group=self.group) | Q(group=0))
+                .order_by("weekday", "lesson")
+                .only("lesson", "subject", "weekday")
+                .all()
+            )
+            cache.set(
+                f"schedule_{self.grade}_{self.letter}_{self.group}",
+                schedule,
+                timeout=86400,
+            )
         for lesson in schedule:
             lesson.subject = get_name_from_abbreviation(lesson.subject)
         return schedule
