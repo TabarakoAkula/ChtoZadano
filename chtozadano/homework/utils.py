@@ -10,7 +10,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.cache import cache
 from django.core.files.storage import default_storage
-from django.conf import settings
 import django.db.models
 from django.db.models import Q
 from django.http import request as type_request
@@ -357,7 +356,8 @@ def redis_delete_data(
 ) -> None:
     use_redis = False
     redis_client = None
-    if settings.CACHES["default"]["BACKEND"] == "django_redis.cache.RedisCache":
+    cache_backend = settings.CACHES["default"]["BACKEND"]
+    if cache_backend == "django_redis.cache.RedisCache":
         use_redis = True
         redis_client = cache.client.get_client()
     cache_keys = []
