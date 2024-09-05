@@ -18,6 +18,7 @@ from homework.utils import (
     get_name_from_abbreviation,
     get_schedule_from_weekday,
     get_user_subjects,
+    redis_delete_data,
     save_files,
 )
 import users.models
@@ -200,7 +201,9 @@ class WeekdayHomeworkPage(View):
             messages.error(request, "Такого дня в неделе не существует")
             return redirect("homework:homework_page")
         grade, letter, group = checker[1]
-        data = cache.get(f"weekday_page_data_{grade}_{letter}_{group}")
+        data = cache.get(
+            f"weekday_page_data_{grade}_{letter}_{group}_{weekday}",
+        )
         if not data:
             latest_homework_ids = (
                 Homework.objects.filter(Q(group=0) | Q(group=group))
@@ -237,7 +240,7 @@ class WeekdayHomeworkPage(View):
                 .defer("grade", "letter", "group")
             )
             cache.set(
-                f"weekday_page_data_{grade}_{letter}_{group}",
+                f"weekday_page_data_{grade}_{letter}_{group}_{weekday}",
                 data,
                 timeout=600,
             )
@@ -451,10 +454,11 @@ class AddHomeworkPage(View):
             group = 0
         else:
             group = server_user.group
+        grade, letter = server_user.grade, server_user.letter
         homework_object = Homework.objects.create(
             description=description,
-            grade=server_user.grade,
-            letter=server_user.letter,
+            grade=grade,
+            letter=letter,
             subject=subject,
             group=group,
             author=f"{request.user.first_name} {request.user.last_name}",
@@ -483,6 +487,7 @@ class AddHomeworkPage(View):
                 use_groups,
             ),
         )
+        redis_delete_data(True, grade, letter, group)
         return redirect("homework:homework_page")
 
 
@@ -550,10 +555,13 @@ class EditHomework(View):
             subject = request.POST["subject"]
             subject = get_abbreviation_from_name(subject)
             request_files_list = request.FILES.getlist("files")
+            server_user = request.user.server_user
+            grade, letter = server_user.grade, server_user.letter
+            group = server_user.group
             files_list_for_model = save_files(
                 request_files_list,
-                request.user.server_user.grade,
-                request.user.server_user.letter,
+                grade,
+                letter,
                 subject,
             )
             if files_list_for_model[0] == "Error":
@@ -563,12 +571,11 @@ class EditHomework(View):
                     homework_id=homework_id,
                 )
             files_list_for_model = files_list_for_model[1]
-            server_user = request.user.server_user
             try:
                 homework_object = Homework.objects.get(
                     id=homework_id,
-                    grade=server_user.grade,
-                    letter=server_user.letter,
+                    grade=grade,
+                    letter=letter,
                 )
             except Homework.DoesNotExist:
                 messages.error(request, "Такой записи не существует")
@@ -593,6 +600,7 @@ class EditHomework(View):
             homework_object.description = description
             homework_object.subject = subject
             homework_object.save()
+            redis_delete_data(True, grade, letter, group)
             messages.success(request, "Успешно обновлено")
             return redirect("homework:edit_homework", homework_id=homework_id)
         messages.error(
@@ -608,11 +616,13 @@ class EditHomeworkData(View):
     def get(request, homework_id, r_type, file_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
+            grade, letter = request_user.grade, request_user.letter
+            group = request_user.group
             try:
                 hw_object = Homework.objects.get(
                     id=homework_id,
-                    grade=request_user.grade,
-                    letter=request_user.letter,
+                    grade=grade,
+                    letter=letter,
                 )
             except Homework.DoesNotExist:
                 messages.error(request, "Такой записи не существует")
@@ -622,6 +632,7 @@ class EditHomeworkData(View):
             elif r_type == "file":
                 File.objects.get(id=file_id, homework=hw_object).delete()
             messages.success(request, "Успешно обновлено")
+            redis_delete_data(True, grade, letter, group)
             if hw_object.group in [-3, -2, -1]:
                 return redirect(
                     "homework:edit_mailing",
@@ -667,16 +678,19 @@ class DeleteHomework(View):
     def post(request, homework_id):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
+            grade, letter = request_user.grade, request_user.letter
+            group = request_user.group
             try:
                 Homework.objects.get(
                     id=homework_id,
-                    grade=request_user.grade,
-                    letter=request_user.letter,
+                    grade=grade,
+                    letter=letter,
                 ).delete()
             except Homework.DoesNotExist:
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             messages.success(request, "Домашнее задание успешно удалено")
+            redis_delete_data(True, grade, letter, group)
         return redirect("homework:homework_page")
 
 
@@ -736,10 +750,12 @@ class AddMailingPage(View):
                 return redirect("homework:homework_page")
             group = -3
         request_files_list = request.FILES.getlist("files")
+        grade = request.user.server_user.grade
+        letter = request.user.server_user.letter
         files_list_for_model = save_files(
             request_files_list,
-            request.user.server_user.grade,
-            request.user.server_user.letter,
+            grade,
+            letter,
             "info",
         )
         if files_list_for_model[0] == "Error":
@@ -761,8 +777,8 @@ class AddMailingPage(View):
         else:
             homework_object = Homework.objects.create(
                 description=description,
-                grade=request.user.server_user.grade,
-                letter=request.user.server_user.letter,
+                grade=grade,
+                letter=letter,
                 subject="info",
                 group=group,
                 author=f"{request.user.first_name} {request.user.last_name}",
@@ -792,6 +808,7 @@ class AddMailingPage(View):
                 False,
             ),
         )
+        redis_delete_data(False, grade, letter, group)
         return redirect("homework:homework_page")
 
 
@@ -847,10 +864,12 @@ class EditMailingPage(View):
             else:
                 group = -3
             request_files_list = request.FILES.getlist("files")
+            grade = request.user.server_user.grade
+            letter = request.user.server_user.letter
             files_list_for_model = save_files(
                 request_files_list,
-                request.user.server_user.grade,
-                request.user.server_user.letter,
+                grade,
+                letter,
                 "info",
             )
             if files_list_for_model[0] == "Error":
@@ -887,6 +906,7 @@ class EditMailingPage(View):
             homework_object.group = group
             homework_object.save()
             messages.success(request, "Успешно обновлено")
+            redis_delete_data(False, grade, letter, group)
             return redirect("homework:edit_mailing", homework_id=homework_id)
         messages.error(
             request,
@@ -944,6 +964,12 @@ class DeleteMailing(View):
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             messages.success(request, "Рассылка успешно удалена")
+            redis_delete_data(
+                False,
+                request.user.server_user.grade,
+                request.user.server_user.letter,
+                request.user.server_user.group,
+            )
         elif request.user.is_staff:
             try:
                 Homework.objects.get(
@@ -954,6 +980,12 @@ class DeleteMailing(View):
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             messages.success(request, "Рассылка успешно удалена")
+            redis_delete_data(
+                False,
+                request.user.server_user.grade,
+                request.user.server_user.letter,
+                request.user.server_user.group,
+            )
         else:
             messages.error(
                 request,

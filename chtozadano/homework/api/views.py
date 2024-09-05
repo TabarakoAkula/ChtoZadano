@@ -17,6 +17,7 @@ from homework.utils import (
     get_name_from_abbreviation,
     get_tomorrow_schedule,
     get_user_subjects,
+    redis_delete_data,
 )
 import users.models
 
@@ -334,6 +335,7 @@ class AddHomeWorkAPI(APIView):
                 use_groups,
             ),
         )
+        redis_delete_data(True, grade, letter, group)
         return response.Response(
             {
                 "success": "Successful",
@@ -366,6 +368,7 @@ class EditHomeworkDescriptionAPI(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         homework_obj.description = new_description
         homework_obj.save()
+        redis_delete_data(True, grade, letter, group)
         return response.Response({"success": "Successful"})
 
 
@@ -400,6 +403,7 @@ class EditHomeworkImagesAPI(APIView):
                 telegram_file_id=tg_id,
             )
             homework_obj.images.add(image_object)
+        redis_delete_data(True, grade, letter, group)
         return response.Response({"success": "Successful"})
 
 
@@ -437,6 +441,7 @@ class EditHomeworkFilesAPI(APIView):
             file_object.file_name = file_name
             file_object.save()
             homework_obj.files.add(file_object)
+        redis_delete_data(True, grade, letter, group)
         return response.Response({"success": "Successful"})
 
 
@@ -463,6 +468,7 @@ class DeleteHomeworkAPI(APIView):
             return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
+        redis_delete_data(True, user_grade, user_letter, user_group)
         return response.Response({"success": "Successful"})
 
 
@@ -583,6 +589,12 @@ class AddMailingAPI(APIView):
                         False,
                     ),
                 )
+                redis_delete_data(
+                    False,
+                    user_obj.grade,
+                    user_obj.letter,
+                    user_obj.group,
+                )
                 return response.Response(
                     {
                         "success": "Successful",
@@ -637,6 +649,12 @@ class AddMailingAPI(APIView):
                 False,
             ),
         )
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response(
             {
                 "success": "Successful",
@@ -677,6 +695,12 @@ class EditMailingAPI(APIView):
             files = [i.file.url for i in homework_obj.files.all()]
             serialized_data["images"] = images
             serialized_data["files"] = files
+            redis_delete_data(
+                False,
+                user_obj.grade,
+                user_obj.letter,
+                user_obj.group,
+            )
             return response.Response(serialized_data)
         return response.Response(
             {"error": "Does not exist | Not allowed"},
@@ -713,6 +737,12 @@ class EditMailingDescriptionAPI(APIView):
             return response.Response({"error": "Error"})
         homework_obj.description = new_description
         homework_obj.save()
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response({"success": "Successful"})
 
 
@@ -749,6 +779,12 @@ class EditMailingImagesAPI(APIView):
                 telegram_file_id=tg_id,
             )
             homework_obj.images.add(image_object)
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response({"success": "Successful"})
 
 
@@ -789,6 +825,12 @@ class EditMailingFilesAPI(APIView):
             file_object.file_name = file_name
             file_object.save()
             homework_obj.files.add(file_object)
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response({"success": "Successful"})
 
 
@@ -819,6 +861,12 @@ class DeleteMailingAPI(APIView):
             )
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response({"success": "Successful"})
 
 
@@ -909,6 +957,18 @@ class DeleteOldHomeworkAPI(APIView):
                 response_message,
             ),
         )
+        redis_delete_data(
+            True,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
+        redis_delete_data(
+            False,
+            user_obj.grade,
+            user_obj.letter,
+            user_obj.group,
+        )
         return response.Response(
             {
                 "success": "Successfully delete old HW and ToDo",
@@ -941,6 +1001,7 @@ class AddScheduleAPI(APIView):
             subject=get_abbreviation_from_name(subject),
             lesson=lesson,
         )
+        redis_delete_data(False, grade, letter, group, True)
         return response.Response({"success": "Successful"})
 
 
@@ -1052,6 +1113,18 @@ class AddFileIdAPI(APIView):
             document_type,
             document_ids,
             user.grade,
+        )
+        redis_delete_data(
+            True,
+            user.grade,
+            user.letter,
+            user.group,
+        )
+        redis_delete_data(
+            False,
+            user.grade,
+            user.letter,
+            user.group,
         )
         return response.Response({"success": "Successful"})
 
