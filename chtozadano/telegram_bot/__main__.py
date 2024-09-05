@@ -30,7 +30,20 @@ WEBHOOK_PATH = os.getenv("WEBHOOK_PATH")
 WEBHOOK_SECRET = os.getenv("SECRET_KEY")
 BASE_WEBHOOK_URL = os.getenv("DOMAIN_URL")
 
-dp = Dispatcher()
+USE_REDIS = os.getenv("USE_REDIS").lower() == "true"
+if USE_REDIS:
+    from aiogram.fsm.storage.redis import RedisStorage
+
+    storage = RedisStorage.from_url(
+        os.getenv("REDIS_BOT_URL", "redis://redis:6379/1"),
+    )
+else:
+    from aiogram.fsm.storage.memory import MemoryStorage
+
+    storage = MemoryStorage()
+
+dp = Dispatcher(storage=storage)
+
 dp.include_routers(
     help_handler.rp_help_router,
     register_handlers.rp_register_router,
