@@ -154,6 +154,7 @@ class ChangeQuotesAPI(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         user_obj.show_quotes = not user_obj.show_quotes
         user_obj.save()
+        cache.delete(f"quotes_{telegram_id}")
         return response.Response({"quotes_status": user_obj.show_quotes})
 
 
@@ -213,6 +214,7 @@ class ChangeChatModeAPI(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         user_obj.chat_mode = not user_obj.chat_mode
         user_obj.save()
+        cache.delete(f"chat_mode_{telegram_id}")
         return response.Response({"success": "Successful"})
 
 
@@ -297,6 +299,7 @@ class AcceptDeclineBecomeAdminAPI(APIView):
                     asyncio.run(
                         become_admin_decision_notify(candidate_id, True),
                     )
+                    cache.delete(f"user_rights_{candidate_id}")
                     return response.Response(
                         {"success": "Successful accepted"},
                     )
@@ -414,4 +417,5 @@ class ChangeFastAddAPI(APIView):
         user_obj = User.objects.get(telegram_id=telegram_id)
         user_obj.fast_hw = not user_obj.fast_hw
         user_obj.save()
+        cache.delete(f"fast_hw_{telegram_id}")
         return response.Response({"success": "Successful"})
