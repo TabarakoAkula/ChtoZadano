@@ -84,7 +84,7 @@ services:
   celery-worker:
     build: .
     command: bash -c "cd chtozadano &&
-                      celery -A celery_app.app worker --loglevel=info"
+                      celery worker -A chtozadano --loglevel=info"
     volumes:
       - .:/code
     depends_on:
