@@ -73,9 +73,14 @@ async def send_images(
         except aiogram.exceptions.TelegramBadRequest:
             continue
     response = await message.answer_media_group(photo_media_group.build())
-    for message in response:
-        all_images_id.add(message.photo[-1].file_id)
+    try:
+        for message in response:
+            all_images_id.add(message.photo[-1].file_id)
+    except AttributeError:
+        return
     images_without_id = all_images_id - images_with_id
+    if not images_without_id:
+        return
     await add_documents_file_id(
         telegram_id,
         homework_id,
@@ -107,8 +112,11 @@ async def send_files(
         except aiogram.exceptions.TelegramBadRequest:
             continue
     response = await message.answer_media_group(files_media_group.build())
-    for message in response:
-        all_files_id.add(message.document.file_id)
+    try:
+        for message in response:
+            all_files_id.add(message.document.file_id)
+    except AttributeError:
+        return
     files_without_id = all_files_id - files_with_id
     await add_documents_file_id(
         telegram_id,
@@ -351,8 +359,8 @@ async def publish_homework(data: dict, telegram_id: int) -> tuple[int, int]:
         pass
     mailing = False
     subject = data["choose_subject"]
-    if subject in [
-        "Информация",
+    if subject.lower() in [
+        "информация",
         "adminsinfo",
         "schoolinfo",
     ]:

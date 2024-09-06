@@ -9,9 +9,13 @@ services:
       - "${NGINX_CERT}:/etc/nginx/ssl/fullchain.pem"
       - "${NGINX_KEY}:/etc/nginx/ssl/privkey.pem"
     depends_on:
+      - db
+      - redis
+      - web
       - bot
     networks:
       - django-network
+    restart: unless-stopped
 
   db:
     image: postgres:16
@@ -20,7 +24,7 @@ services:
       POSTGRES_DB: ${POSTGRES_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    restart: always
+    restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -44,7 +48,7 @@ services:
       - redis
     links:
       - db:db
-    restart: always
+    restart: unless-stopped
     networks:
        - django-network
 
@@ -55,6 +59,8 @@ services:
     command: bash -c "cd chtozadano &&
                       python telegram_bot"
     depends_on:
+      - db
+      - redis
       - web
     restart: always
     expose:
@@ -66,16 +72,16 @@ services:
     build: cron/
     volumes:
       - ./cron:/cron
-    restart: always
+    restart: unless-stopped
     depends_on:
-      - web
+      - nginx
     networks:
       - django-network
 
   redis:
     image: redis:7.4.0-alpine
     hostname: redis
-    restart: always
+    restart: unless-stopped
     volumes:
       - redis_data:/data
     networks:
