@@ -33,7 +33,7 @@ services:
     command: bash -c "cd chtozadano &&
                       python manage.py migrate &&
                       python manage.py collectstatic --no-input &&
-                      gunicorn --config gunicorn_config.py chtozadano.wsgi:application"
+                      gunicorn --config gunicorn_config.py chtozadano.wsgi:application --preload"
     volumes:
       - .:/code
       - ./chtozadano/logs:/code/chtozadano/logs
@@ -83,8 +83,8 @@ services:
 
   celery-worker:
     build: .
-    entrypoint: celery
-    command: -A celery_app.app worker --loglevel=info
+    command: bash -c "cd chtozadano &&
+                      celery -A celery_app.app worker --loglevel=info"
     volumes:
       - .:/code
     depends_on:
