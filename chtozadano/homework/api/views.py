@@ -328,7 +328,7 @@ class AddHomeWorkAPI(APIView):
                     file_name=path.split("/")[-1],
                 ),
             )
-        add_notification.delay(
+        add_notification(
             hw_object,
             user_obj,
             use_groups,
@@ -580,7 +580,7 @@ class AddMailingAPI(APIView):
                 homework_obj.subject = "info"
                 homework_obj.save()
                 homework_id = homework_obj.id
-                add_notification.delay(
+                add_notification(
                     homework_obj,
                     user_obj,
                     False,
@@ -1107,7 +1107,7 @@ class AddFileIdAPI(APIView):
             document_type,
             document_ids,
             user.grade,
-        ).delay()
+        )
         redis_delete_data(
             True,
             user.grade,

@@ -17,9 +17,9 @@ from django.http import request as type_request
 from django.shortcuts import redirect
 import dotenv
 
-from homework.api.serializers import UserNotificationsSerializer
 import homework.models
 from homework.notifier import custom_notification, homework_notifier
+from users.api.serializers import UserNotificationsSerializer
 import users.models
 
 dotenv.load_dotenv()

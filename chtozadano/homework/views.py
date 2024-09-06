@@ -7,10 +7,7 @@ from django.db.models import OuterRef, Q, Subquery
 from django.shortcuts import redirect, render, reverse
 from django.views import generic, View
 
-from homework.api.serializers import (
-    HomeworkSerializer,
-    UserNotificationsSerializer,
-)
+from homework.api.serializers import HomeworkSerializer
 from homework.forms import ChooseGradLetForm
 from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
@@ -26,6 +23,7 @@ from homework.utils import (
     redis_delete_data,
     save_files,
 )
+from users.api.serializers import UserNotificationsSerializer
 import users.models
 
 
