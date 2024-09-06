@@ -1,18 +1,15 @@
 import json
 
-from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
 from django.db.models import OuterRef, Q, Subquery
 from django.shortcuts import redirect, render, reverse
 from django.views import generic, View
 
-from homework.api.serializers import HomeworkSerializer
 from homework.forms import ChooseGradLetForm
 from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
-    add_notification,
-    celery_add_notification,
+    add_notification_management,
     check_grade_letter,
     get_abbreviation_from_name,
     get_group_from_teacher,
@@ -23,7 +20,6 @@ from homework.utils import (
     redis_delete_data,
     save_files,
 )
-from users.api.serializers import UserNotificationsSerializer
 import users.models
 
 
@@ -487,17 +483,7 @@ class AddHomeworkPage(View):
             homework_object.subject,
         )
         user = request.user.server_user
-        if settings.USE_CELERY:
-            celery_add_notification.delay(
-                HomeworkSerializer(homework_object).data,
-                UserNotificationsSerializer(user).data,
-            )
-        else:
-            add_notification(
-                HomeworkSerializer(homework_object).data,
-                user,
-                use_groups,
-            )
+        add_notification_management(homework_object, user, use_groups)
         redis_delete_data(True, grade, letter, group)
         return redirect("homework:homework_page")
 
@@ -812,11 +798,11 @@ class AddMailingPage(View):
                 )
                 homework_object.files.add(file_object)
         messages.success(request, "Рассылка успешно добавлена")
-        add_notification.delay(
+        add_notification_management(
             homework_object,
             request.user.server_user,
             False,
-        ).delay()
+        )
         redis_delete_data(False, grade, letter, group)
         return redirect("homework:homework_page")
 

@@ -533,7 +533,7 @@ async def delete_mailing_handler(
     await command_menu_handler(call.message, False)
 
 
-@rp_homework_router.message()
+@rp_homework_router.message(F.content_type == ContentType.TEXT)
 async def enter_subject_handler(
     message: Message,
 ) -> None:

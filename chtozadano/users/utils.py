@@ -6,6 +6,7 @@ import random
 import string
 
 from asgiref.sync import sync_to_async
+from celery_app import app
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -53,6 +54,18 @@ def validate_password(password: str) -> tuple[bool, str]:
     return True, ""
 
 
+def new_become_admin_notify_management() -> None:
+    if settings.USE_CELERY:
+        celery_new_become_admin_notify.delay()
+    else:
+        new_become_admin_notify()
+
+
+@app.task()
+def celery_new_become_admin_notify() -> None:
+    return new_become_admin_notify()
+
+
 async def new_become_admin_notify() -> None:
     superusers = await sync_to_async(list)(
         DjangoUser.objects.filter(is_superuser=True).values(
@@ -73,6 +86,24 @@ async def new_become_admin_notify() -> None:
         number_of_requests=number_of_requests,
         users_ids=users_ids,
     )
+
+
+def become_admin_decision_notify_management(
+    new_admin_id: int,
+    accept: bool,
+) -> None:
+    if settings.USE_CELERY:
+        celery_become_admin_decision_notify.delay(new_admin_id, accept)
+    else:
+        become_admin_decision_notify(new_admin_id, accept)
+
+
+@app.task()
+def celery_become_admin_decision_notify(
+    new_admin_id: int,
+    accept: bool,
+) -> None:
+    return become_admin_decision_notify(new_admin_id, accept)
 
 
 async def become_admin_decision_notify(

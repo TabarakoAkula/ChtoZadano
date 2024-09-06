@@ -17,6 +17,7 @@ from django.http import request as type_request
 from django.shortcuts import redirect
 import dotenv
 
+from homework.api.serializers import HomeworkSerializer
 import homework.models
 from homework.notifier import custom_notification, homework_notifier
 from users.api.serializers import UserNotificationsSerializer
@@ -300,13 +301,32 @@ def add_documents_file_id(
     return
 
 
+def add_notification_management(
+    homework_data,
+    user_data,
+    use_groups_data: bool = False,
+) -> None:
+    if settings.USE_CELERY:
+        celery_add_notification.delay(
+            HomeworkSerializer(homework_data).data,
+            UserNotificationsSerializer(user_data).data,
+            use_groups_data,
+        )
+    else:
+        add_notification(
+            homework_data,
+            user_data,
+            use_groups_data,
+        )
+
+
 @app.task()
 def celery_add_notification(
     model_object,
     user,
     use_groups: bool = False,
 ) -> None:
-    return add_notification(model_object, user, use_groups)
+    return add_notification(model_object, user, use_groups, True)
 
 
 def add_notification(
@@ -345,6 +365,18 @@ def add_notification(
     if settings.TEST:
         return
     asyncio.run(homework_notifier(users_ids, model_object))
+
+
+def cron_notification_management(text):
+    if settings.USE_CELERY:
+        celery_cron_notification.delay(text)
+    else:
+        cron_notifier(text)
+
+
+@app.task()
+def celery_cron_notification(text):
+    return cron_notifier(text)
 
 
 async def cron_notifier(text: str) -> None:

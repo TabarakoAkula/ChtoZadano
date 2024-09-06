@@ -1,4 +1,3 @@
-import asyncio
 import os
 
 import django.contrib.auth
@@ -16,11 +15,11 @@ from users.api.serializers import (
 )
 from users.models import BecomeAdmin, SignIn, User
 from users.utils import (
-    become_admin_decision_notify,
+    become_admin_decision_notify_management,
     create_password,
     get_randomized_name,
     get_user_teachers,
-    new_become_admin_notify,
+    new_become_admin_notify_management,
 )
 
 
@@ -268,7 +267,7 @@ class BecomeAdminAPI(APIView):
                 group=user_obj.group,
                 telegram_id=telegram_id,
             )
-            asyncio.run(new_become_admin_notify())
+            new_become_admin_notify_management()
             return response.Response({"success": "Successful"})
         return response.Response({"error": "Wait pls"})
 
@@ -296,17 +295,16 @@ class AcceptDeclineBecomeAdminAPI(APIView):
                     candidat_user.is_staff = True
                     candidat_user.save()
                     BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
-                    asyncio.run(
-                        become_admin_decision_notify(candidate_id, True),
-                    )
+                    become_admin_decision_notify_management(candidate_id, True)
                     cache.delete(f"user_rights_{candidate_id}")
                     return response.Response(
                         {"success": "Successful accepted"},
                     )
                 if decision == "decline":
                     BecomeAdmin.objects.get(telegram_id=candidate_id).delete()
-                    asyncio.run(
-                        become_admin_decision_notify(candidate_id, False),
+                    become_admin_decision_notify_management(
+                        candidate_id,
+                        False,
                     )
                     return response.Response(
                         {"success": "Successful declined"},

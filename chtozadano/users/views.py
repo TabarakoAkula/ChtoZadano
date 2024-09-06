@@ -1,4 +1,3 @@
-import asyncio
 import datetime
 import os
 from random import random
@@ -20,10 +19,10 @@ from users.forms import (
 )
 from users.models import BecomeAdmin, SignIn, User
 from users.utils import (
-    become_admin_decision_notify,
+    become_admin_decision_notify_management,
     confirmation_code_expired,
     create_password,
-    new_become_admin_notify,
+    new_become_admin_notify_management,
     validate_password,
 )
 
@@ -419,7 +418,7 @@ class BecomeAdminPage(View):
             telegram_id=user_obj.telegram_id,
         )
         messages.success(request, "Заявка успешно отправлена")
-        asyncio.run(new_become_admin_notify())
+        new_become_admin_notify_management()
         return redirect("users:account_page")
 
 
@@ -451,7 +450,7 @@ class BecomeAdminAccept(View):
                 f"Пользователь {user_obj.first_name}"
                 f" {user_obj.last_name} назначен администратором",
             )
-            asyncio.run(become_admin_decision_notify(telegram_id, True))
+            become_admin_decision_notify_management(telegram_id, True)
             return redirect("users:show_become_admin")
         messages.error(request, "У вас недостаточно прав для этого действия")
         return redirect("users:account_page")
@@ -467,7 +466,7 @@ class BecomeAdminDecline(View):
                 f"Заявка пользователя {request.user.first_name}"
                 f" {request.user.last_name} отклонена",
             )
-            asyncio.run(become_admin_decision_notify(telegram_id, False))
+            become_admin_decision_notify_management(telegram_id, False)
             return redirect("users:show_become_admin")
         messages.error(request, "У вас недостаточно прав для этого действия")
         return redirect("users:account_page")

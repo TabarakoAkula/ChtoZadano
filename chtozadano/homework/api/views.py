@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime, timedelta
 
 from django.core.cache import cache
@@ -8,11 +7,11 @@ from rest_framework.views import APIView
 
 from homework.api.serializers import HomeworkSerializer, ScheduleSerializer
 from homework.models import File, Homework, Image, Schedule, Todo
+from homework.notifier import custom_notification_management
 from homework.utils import (
     add_documents_file_id,
-    add_notification,
-    cron_notifier,
-    custom_notification,
+    add_notification_management,
+    cron_notification_management,
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
@@ -328,11 +327,7 @@ class AddHomeWorkAPI(APIView):
                     file_name=path.split("/")[-1],
                 ),
             )
-        add_notification(
-            hw_object,
-            user_obj,
-            use_groups,
-        )
+        add_notification_management(hw_object, user_obj, use_groups)
         redis_delete_data(True, grade, letter, group)
         return response.Response(
             {
@@ -580,11 +575,7 @@ class AddMailingAPI(APIView):
                 homework_obj.subject = "info"
                 homework_obj.save()
                 homework_id = homework_obj.id
-                add_notification(
-                    homework_obj,
-                    user_obj,
-                    False,
-                )
+                add_notification_management(homework_obj, user_obj, False)
                 redis_delete_data(
                     False,
                     user_obj.grade,
@@ -638,11 +629,7 @@ class AddMailingAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         homework_id = homework_obj.id
-        add_notification.delay(
-            homework_obj,
-            user_obj,
-            False,
-        )
+        add_notification_management(homework_obj, user_obj, False)
         redis_delete_data(
             False,
             user_obj.grade,
@@ -946,11 +933,7 @@ class DeleteOldHomeworkAPI(APIView):
         )
         todo_objects.delete()
         hw_objects.delete()
-        asyncio.run(
-            cron_notifier(
-                response_message,
-            ),
-        )
+        cron_notification_management(response_message)
         redis_delete_data(
             True,
             user_obj.grade,
@@ -1141,12 +1124,10 @@ class CustomNotificationAPI(APIView):
             list,
         ):
             return response.Response({"error": "Bad request data"}, status=400)
-        asyncio.run(
-            custom_notification(
-                users_ids=users_id,
-                message_text=notification_message,
-                notification=True,
-            ),
+        custom_notification_management(
+            users_ids=users_id,
+            message_text=notification_message,
+            notification=True,
         )
         return response.Response(
             {
