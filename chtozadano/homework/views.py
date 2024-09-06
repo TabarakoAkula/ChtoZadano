@@ -480,13 +480,11 @@ class AddHomeworkPage(View):
                 )
                 homework_object.files.add(file_object)
         messages.success(request, "Домашнее задание успешно добавлено")
-        asyncio.run(
-            add_notification(
-                homework_object,
-                request.user.server_user,
-                use_groups,
-            ),
-        )
+        add_notification(
+            homework_object,
+            request.user.server_user,
+            use_groups,
+        ).delay()
         redis_delete_data(True, grade, letter, group)
         return redirect("homework:homework_page")
 
@@ -801,13 +799,11 @@ class AddMailingPage(View):
                 )
                 homework_object.files.add(file_object)
         messages.success(request, "Рассылка успешно добавлена")
-        asyncio.run(
-            add_notification(
-                homework_object,
-                request.user.server_user,
-                False,
-            ),
-        )
+        add_notification(
+            homework_object,
+            request.user.server_user,
+            False,
+        ).delay()
         redis_delete_data(False, grade, letter, group)
         return redirect("homework:homework_page")
 

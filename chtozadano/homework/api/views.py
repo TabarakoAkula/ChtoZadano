@@ -328,13 +328,11 @@ class AddHomeWorkAPI(APIView):
                     file_name=path.split("/")[-1],
                 ),
             )
-        asyncio.run(
-            add_notification(
-                hw_object,
-                user_obj,
-                use_groups,
-            ),
-        )
+        add_notification(
+            hw_object,
+            user_obj,
+            use_groups,
+        ).delay()
         redis_delete_data(True, grade, letter, group)
         return response.Response(
             {
@@ -582,13 +580,11 @@ class AddMailingAPI(APIView):
                 homework_obj.subject = "info"
                 homework_obj.save()
                 homework_id = homework_obj.id
-                asyncio.run(
-                    add_notification(
-                        homework_obj,
-                        user_obj,
-                        False,
-                    ),
-                )
+                add_notification(
+                    homework_obj,
+                    user_obj,
+                    False,
+                ).delay()
                 redis_delete_data(
                     False,
                     user_obj.grade,
@@ -642,13 +638,11 @@ class AddMailingAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         homework_id = homework_obj.id
-        asyncio.run(
-            add_notification(
-                homework_obj,
-                user_obj,
-                False,
-            ),
-        )
+        add_notification(
+            homework_obj,
+            user_obj,
+            False,
+        ).delay()
         redis_delete_data(
             False,
             user_obj.grade,
@@ -1113,7 +1107,7 @@ class AddFileIdAPI(APIView):
             document_type,
             document_ids,
             user.grade,
-        )
+        ).delay()
         redis_delete_data(
             True,
             user.grade,

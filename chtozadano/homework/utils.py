@@ -16,6 +16,7 @@ from django.http import request as type_request
 from django.shortcuts import redirect
 import dotenv
 
+from celery_app import app
 from homework.api.serializers import HomeworkSerializer
 import homework.models
 from homework.notifier import custom_notification, homework_notifier
@@ -274,6 +275,7 @@ def check_grade_letter(request: type_request) -> tuple[str, list]:
     return "Successful", [grade, letter, group]
 
 
+@app.task()
 def add_documents_file_id(
     homework_id: int,
     document_type: str,
@@ -299,6 +301,7 @@ def add_documents_file_id(
     return
 
 
+@app.task()
 async def add_notification(
     model_object,
     user,
