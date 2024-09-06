@@ -327,6 +327,7 @@ class AddHomeWorkAPI(APIView):
                     file_name=path.split("/")[-1],
                 ),
             )
+        hw_object.subject = get_name_from_abbreviation(hw_object.subject)
         add_notification_management(hw_object, user_obj, use_groups)
         redis_delete_data(True, grade, letter, group)
         return response.Response(
@@ -629,6 +630,7 @@ class AddMailingAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         homework_id = homework_obj.id
+        homework_obj.subject = get_name_from_abbreviation(homework_obj.subject)
         add_notification_management(homework_obj, user_obj, False)
         redis_delete_data(
             False,
