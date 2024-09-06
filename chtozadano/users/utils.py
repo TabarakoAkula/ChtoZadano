@@ -63,8 +63,8 @@ def new_become_admin_notify_management() -> None:
 
 
 @app.task()
-def celery_new_become_admin_notify() -> None:
-    return asyncio.run(new_become_admin_notify())
+async def celery_new_become_admin_notify() -> None:
+    await new_become_admin_notify()
 
 
 async def new_become_admin_notify() -> None:
@@ -100,11 +100,11 @@ def become_admin_decision_notify_management(
 
 
 @app.task()
-def celery_become_admin_decision_notify(
+async def celery_become_admin_decision_notify(
     new_admin_id: int,
     accept: bool,
 ) -> None:
-    return asyncio.run(become_admin_decision_notify(new_admin_id, accept))
+    await become_admin_decision_notify(new_admin_id, accept)
 
 
 async def become_admin_decision_notify(

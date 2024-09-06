@@ -251,17 +251,15 @@ def custom_notification_management(
 
 
 @app.task()
-def celery_custom_notification(
+async def celery_custom_notification(
     users_ids: list,
     message_text: str,
     notification: bool,
 ) -> None:
-    return asyncio.run(
-        custom_notification(
-            users_ids,
-            message_text,
-            notification,
-        ),
+    return custom_notification(
+        users_ids,
+        message_text,
+        notification,
     )
 
 
