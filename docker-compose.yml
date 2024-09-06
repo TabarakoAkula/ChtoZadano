@@ -37,11 +37,10 @@ services:
     command: bash -c "cd chtozadano &&
                       python manage.py migrate &&
                       python manage.py collectstatic --no-input &&
-                      gunicorn --config gunicorn_config.py chtozadano.wsgi:application"
+                      gunicorn --config gunicorn_config.py chtozadano.wsgi:application --preload"
     volumes:
       - .:/code
       - ./chtozadano/logs:/code/chtozadano/logs
-
     expose:
       - "8000"
     depends_on:
@@ -85,6 +84,17 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    networks:
+      - django-network
+
+  celery-worker:
+    build: .
+    command: bash -c "cd chtozadano &&
+                      celery -A celery_app worker --loglevel=info"
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
     networks:
       - django-network
 

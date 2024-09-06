@@ -181,7 +181,7 @@ if str(os.getenv("USE_REDIS", "True").lower()) == "true":
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://redis:6379/0",
+            "LOCATION": os.getenv("REDIS_SITE_URL", "redis://redis:6379/0"),
         },
     }
 else:
@@ -192,9 +192,13 @@ else:
         },
     }
 
+USE_CELERY = str(os.getenv("USE_CELERY", "True")).lower() == "true"
+
 LANGUAGE_CODE = "ru-RU"
 
 TIME_ZONE = "Europe/Moscow"
+
+TEST = str(os.getenv("TEST", "False")).lower() == "true"
 
 USE_I18N = True
 
