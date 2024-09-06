@@ -172,7 +172,7 @@ if str(os.getenv("USE_REDIS", "True").lower()) == "true":
     CACHES = {
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://redis:6379/0",
+            "LOCATION": os.getenv("REDIS_SITE_URL", "redis://redis:6379/0"),
         },
     }
 else:
@@ -182,6 +182,8 @@ else:
             "LOCATION": "unique-snowflake",
         },
     }
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/2")
 
 LANGUAGE_CODE = "ru-RU"
 

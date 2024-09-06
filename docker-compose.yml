@@ -37,7 +37,6 @@ services:
     volumes:
       - .:/code
       - ./chtozadano/logs:/code/chtozadano/logs
-
     expose:
       - "8000"
     depends_on:
@@ -79,6 +78,17 @@ services:
     restart: always
     volumes:
       - redis_data:/data
+    networks:
+      - django-network
+
+  celery-worker:
+    build: .
+    entrypoint: celery
+    command: -A celery_app.app worker --loglevel=info
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
     networks:
       - django-network
 
