@@ -183,8 +183,6 @@ else:
         },
     }
 
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/2")
-
 LANGUAGE_CODE = "ru-RU"
 
 TIME_ZONE = "Europe/Moscow"
