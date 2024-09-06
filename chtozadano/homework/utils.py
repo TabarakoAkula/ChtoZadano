@@ -1,9 +1,10 @@
+import asyncio
 import datetime
 import json
-import os
 import random
 
 from asgiref.sync import sync_to_async
+from celery_app import app
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -16,8 +17,7 @@ from django.http import request as type_request
 from django.shortcuts import redirect
 import dotenv
 
-from celery_app import app
-from homework.api.serializers import HomeworkSerializer
+from homework.api.serializers import UserNotificationsSerializer
 import homework.models
 from homework.notifier import custom_notification, homework_notifier
 import users.models
@@ -275,7 +275,6 @@ def check_grade_letter(request: type_request) -> tuple[str, list]:
     return "Successful", [grade, letter, group]
 
 
-@app.task()
 def add_documents_file_id(
     homework_id: int,
     document_type: str,
@@ -302,36 +301,50 @@ def add_documents_file_id(
 
 
 @app.task()
-async def add_notification(
+def celery_add_notification(
     model_object,
     user,
     use_groups: bool = False,
 ) -> None:
+    return add_notification(model_object, user, use_groups)
+
+
+def add_notification(
+    model_object,
+    user,
+    use_groups: bool = False,
+    use_celery: bool = False,
+) -> None:
+    if use_celery:
+        user_instance = users.models.User.objects.get(
+            telegram_id=user["telegram_id"],
+        )
+        serializer = UserNotificationsSerializer(
+            instance=user_instance,
+            data=user,
+        )
+        if serializer.is_valid():
+            user = serializer.save()
+        else:
+            return
     if use_groups:
-        users_ids = await sync_to_async(list)(
-            users.models.User.objects.filter(
-                grade=user.grade,
-                letter=user.letter,
-                group=user.group,
-                chat_mode=True,
-            ).values("telegram_id"),
-        )
+        users_ids = users.models.User.objects.filter(
+            grade=user.grade,
+            letter=user.letter,
+            group=user.group,
+            chat_mode=True,
+        ).values("telegram_id")
     else:
-        users_ids = await sync_to_async(list)(
-            users.models.User.objects.filter(
-                grade=user.grade,
-                letter=user.letter,
-                chat_mode=True,
-            ).values("telegram_id"),
-        )
-    model_object.subject = get_name_from_abbreviation(model_object.subject)
+        users_ids = users.models.User.objects.filter(
+            grade=user.grade,
+            letter=user.letter,
+            chat_mode=True,
+        ).values("telegram_id")
     users_ids = [i["telegram_id"] for i in users_ids]
-    serializer = HomeworkSerializer(model_object)
-    serialized_data = await sync_to_async(lambda: serializer.data)()
     users_ids = [i for i in users_ids if i]
-    if os.getenv("TEST"):
+    if settings.TEST:
         return
-    await homework_notifier(users_ids, serialized_data)
+    asyncio.run(homework_notifier(users_ids, model_object))
 
 
 async def cron_notifier(text: str) -> None:
@@ -345,7 +358,7 @@ async def cron_notifier(text: str) -> None:
         for i in users_ids
         if i["server_user__telegram_id"]
     ]
-    if os.getenv("TEST"):
+    if settings.TEST:
         return
     await custom_notification(users_ids, text, False)
 

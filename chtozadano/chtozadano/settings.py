@@ -183,9 +183,13 @@ else:
         },
     }
 
+USE_CELERY = str(os.getenv("USE_CELERY", "True")).lower() == "true"
+
 LANGUAGE_CODE = "ru-RU"
 
 TIME_ZONE = "Europe/Moscow"
+
+TEST = str(os.getenv("TEST", "False")).lower() == "true"
 
 USE_I18N = True
 
