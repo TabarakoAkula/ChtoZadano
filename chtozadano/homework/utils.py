@@ -313,10 +313,12 @@ def add_notification_management(
             use_groups_data,
         )
     else:
-        add_notification(
-            homework_data,
-            user_data,
-            use_groups_data,
+        asyncio.run(
+            add_notification(
+                homework_data,
+                user_data,
+                use_groups_data,
+            ),
         )
 
 
@@ -326,7 +328,7 @@ def celery_add_notification(
     user,
     use_groups: bool = False,
 ) -> None:
-    return add_notification(model_object, user, use_groups, True)
+    return asyncio.run(add_notification(model_object, user, use_groups, True))
 
 
 def add_notification(
@@ -371,12 +373,12 @@ def cron_notification_management(text):
     if settings.USE_CELERY:
         celery_cron_notification.delay(text)
     else:
-        cron_notifier(text)
+        asyncio.run(cron_notifier(text))
 
 
 @app.task()
 def celery_cron_notification(text):
-    return cron_notifier(text)
+    return asyncio.run(cron_notifier(text))
 
 
 async def cron_notifier(text: str) -> None:

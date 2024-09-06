@@ -1,3 +1,4 @@
+import asyncio
 import os
 import pathlib
 import urllib
@@ -240,7 +241,13 @@ def custom_notification_management(
     if settings.USE_CELERY:
         celery_custom_notification(users_ids, message_text, notification)
     else:
-        custom_notification(users_ids, message_text, notification)
+        asyncio.run(
+            custom_notification(
+                users_ids,
+                message_text,
+                notification,
+            ),
+        )
 
 
 @app.task()
@@ -249,7 +256,13 @@ def celery_custom_notification(
     message_text: str,
     notification: bool,
 ) -> None:
-    return custom_notification(users_ids, message_text, notification)
+    return asyncio.run(
+        custom_notification(
+            users_ids,
+            message_text,
+            notification,
+        ),
+    )
 
 
 async def custom_notification(

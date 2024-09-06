@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import hashlib
 import json
@@ -58,12 +59,12 @@ def new_become_admin_notify_management() -> None:
     if settings.USE_CELERY:
         celery_new_become_admin_notify.delay()
     else:
-        new_become_admin_notify()
+        asyncio.run(new_become_admin_notify())
 
 
 @app.task()
 def celery_new_become_admin_notify() -> None:
-    return new_become_admin_notify()
+    return asyncio.run(new_become_admin_notify())
 
 
 async def new_become_admin_notify() -> None:
@@ -95,7 +96,7 @@ def become_admin_decision_notify_management(
     if settings.USE_CELERY:
         celery_become_admin_decision_notify.delay(new_admin_id, accept)
     else:
-        become_admin_decision_notify(new_admin_id, accept)
+        asyncio.run(become_admin_decision_notify(new_admin_id, accept))
 
 
 @app.task()
@@ -103,7 +104,7 @@ def celery_become_admin_decision_notify(
     new_admin_id: int,
     accept: bool,
 ) -> None:
-    return become_admin_decision_notify(new_admin_id, accept)
+    return asyncio.run(become_admin_decision_notify(new_admin_id, accept))
 
 
 async def become_admin_decision_notify(
