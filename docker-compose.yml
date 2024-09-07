@@ -47,8 +47,11 @@ services:
     depends_on:
       - db
       - redis
+      - celery-beat
+      - celery-worker
     links:
       - db:db
+      - redis:redis
     networks:
        - django-network
 
@@ -60,8 +63,6 @@ services:
                       python telegram_bot"
     restart: unless-stopped
     depends_on:
-      - db
-      - redis
       - web
     expose:
       - "8000"
@@ -77,24 +78,26 @@ services:
     networks:
       - django-network
 
-  celery-beat:
-    build: .
-    command: bash -c "cd chtozadano &&
-                      celery -A celery_app beat --loglevel=info"
-    volumes:
-      - .:/code
-    restart: unless-stopped
-    depends_on:
-      - web
-    networks:
-      - django-network
-
   celery-worker:
     build: .
     command: bash -c "cd chtozadano &&
                       celery -A celery_app worker --loglevel=info"
     volumes:
       - .:/code
+      - redis_data:/data
+    depends_on:
+      - redis
+    networks:
+      - django-network
+
+  celery-beat:
+    build: .
+    command: bash -c "cd chtozadano &&
+                      celery -A celery_app beat --loglevel=info"
+    volumes:
+      - .:/code
+      - redis_data:/data
+    restart: unless-stopped
     depends_on:
       - redis
     networks:
