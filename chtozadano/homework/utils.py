@@ -313,7 +313,7 @@ def add_notification_management(
         )
     else:
         add_notification(
-            homework_data,
+            HomeworkSerializer(homework_data).data,
             user_data,
             use_groups_data,
         )

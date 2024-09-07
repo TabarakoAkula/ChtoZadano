@@ -149,7 +149,10 @@ async def send_images(
                 images_with_id.add(tg_id)
             else:
                 path = urllib.parse.unquote(image_path[1:])
-                abs_path = pathlib.Path.cwd() / "chtozadano" / path
+                if settings.USE_CELERY:
+                    abs_path = pathlib.Path.cwd() / path
+                else:
+                    abs_path = pathlib.Path.cwd() / "chtozadano" / path
                 photo_media_group.add_photo(FSInputFile(abs_path))
         except aiogram.exceptions.TelegramBadRequest:
             continue
@@ -188,7 +191,10 @@ async def send_files(
                 files_with_id.add(tg_id)
             else:
                 path = urllib.parse.unquote(file_path[1:])
-                abs_path = pathlib.Path.cwd() / "chtozadano" / path
+                if settings.USE_CELERY:
+                    abs_path = pathlib.Path.cwd() / path
+                else:
+                    abs_path = pathlib.Path.cwd() / "chtozadano" / path
                 files_media_group.add_document(FSInputFile(abs_path))
         except aiogram.exceptions.TelegramBadRequest:
             continue

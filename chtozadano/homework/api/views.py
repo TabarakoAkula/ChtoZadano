@@ -32,7 +32,7 @@ class GetLastHomeworkAllSubjectsAPI(viewsets.ReadOnlyModelViewSet):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         grade, letter, group = user.grade, user.letter, user.group
-        data = cache.get(f"homework_page_data_{grade}_{letter}_{group}")
+        data = cache.get(f"homework_page_data_{grade}_{letter}_0")
         if not data:
             latest_homework_ids = (
                 Homework.objects.filter(Q(group=0) | Q(group=group))
@@ -57,7 +57,7 @@ class GetLastHomeworkAllSubjectsAPI(viewsets.ReadOnlyModelViewSet):
                 .defer("grade", "letter", "group")
             )
             cache.set(
-                f"homework_page_data_{grade}_{letter}_{group}",
+                f"homework_page_data_{grade}_{letter}_0",
                 data,
                 timeout=600,
             )
@@ -329,7 +329,7 @@ class AddHomeWorkAPI(APIView):
             )
         hw_object.subject = get_name_from_abbreviation(hw_object.subject)
         add_notification_management(hw_object, user_obj, use_groups)
-        redis_delete_data(True, grade, letter, group)
+        redis_delete_data(True, grade, letter, 0)
         return response.Response(
             {
                 "success": "Successful",
@@ -362,7 +362,7 @@ class EditHomeworkDescriptionAPI(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         homework_obj.description = new_description
         homework_obj.save()
-        redis_delete_data(True, grade, letter, group)
+        redis_delete_data(True, grade, letter, 0)
         return response.Response({"success": "Successful"})
 
 
@@ -397,7 +397,7 @@ class EditHomeworkImagesAPI(APIView):
                 telegram_file_id=tg_id,
             )
             homework_obj.images.add(image_object)
-        redis_delete_data(True, grade, letter, group)
+        redis_delete_data(True, grade, letter, 0)
         return response.Response({"success": "Successful"})
 
 
@@ -435,7 +435,7 @@ class EditHomeworkFilesAPI(APIView):
             file_object.file_name = file_name
             file_object.save()
             homework_obj.files.add(file_object)
-        redis_delete_data(True, grade, letter, group)
+        redis_delete_data(True, grade, letter, 0)
         return response.Response({"success": "Successful"})
 
 
@@ -462,7 +462,7 @@ class DeleteHomeworkAPI(APIView):
             return response.Response({"error": "Does not exist"}, status=404)
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
-        redis_delete_data(True, user_grade, user_letter, user_group)
+        redis_delete_data(True, user_grade, user_letter, 0)
         return response.Response({"success": "Successful"})
 
 
@@ -928,7 +928,7 @@ class DeleteOldHomeworkAPI(APIView):
             True,
             user_obj.grade,
             user_obj.letter,
-            user_obj.group,
+            0,
         )
         redis_delete_data(
             False,
@@ -1085,7 +1085,7 @@ class AddFileIdAPI(APIView):
             True,
             user.grade,
             user.letter,
-            user.group,
+            0,
         )
         redis_delete_data(
             False,

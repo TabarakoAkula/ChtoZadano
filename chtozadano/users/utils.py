@@ -6,7 +6,6 @@ import os
 import random
 import string
 
-from asgiref.sync import sync_to_async
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -59,19 +58,19 @@ def new_become_admin_notify_management() -> None:
     if settings.USE_CELERY:
         celery_new_become_admin_notify.delay()
     else:
-        asyncio.run(new_become_admin_notify())
+        new_become_admin_notify()
 
 
 @shared_task()
-async def celery_new_become_admin_notify() -> None:
-    await new_become_admin_notify()
+def celery_new_become_admin_notify() -> None:
+    return new_become_admin_notify()
 
 
 async def new_become_admin_notify() -> None:
-    superusers = await sync_to_async(list)(
-        DjangoUser.objects.filter(is_superuser=True).values(
-            "server_user__telegram_id",
-        ),
+    superusers = DjangoUser.objects.filter(
+        is_superuser=True,
+    ).values(
+        "server_user__telegram_id",
     )
     if os.getenv("TEST"):
         return
@@ -80,12 +79,12 @@ async def new_become_admin_notify() -> None:
         for i in superusers
         if i["server_user__telegram_id"]
     ]
-    number_of_requests = await sync_to_async(
-        users.models.BecomeAdmin.objects.count,
-    )()
-    await become_admin_notify(
-        number_of_requests=number_of_requests,
-        users_ids=users_ids,
+    number_of_requests = users.models.BecomeAdmin.objects.count()
+    asyncio.run(
+        become_admin_notify(
+            number_of_requests=number_of_requests,
+            users_ids=users_ids,
+        ),
     )
 
 
@@ -96,18 +95,18 @@ def become_admin_decision_notify_management(
     if settings.USE_CELERY:
         celery_become_admin_decision_notify.delay(new_admin_id, accept)
     else:
-        asyncio.run(become_admin_decision_notify(new_admin_id, accept))
+        become_admin_decision_notify(new_admin_id, accept)
 
 
 @shared_task()
-async def celery_become_admin_decision_notify(
+def celery_become_admin_decision_notify(
     new_admin_id: int,
     accept: bool,
 ) -> None:
-    await become_admin_decision_notify(new_admin_id, accept)
+    return become_admin_decision_notify(new_admin_id, accept)
 
 
-async def become_admin_decision_notify(
+def become_admin_decision_notify(
     new_admin_id: int,
     accept: bool,
 ) -> None:
@@ -122,10 +121,12 @@ async def become_admin_decision_notify(
             "Уведомление:\n"
             "Твоя заявка на становление администратором была одобрена✅"
         )
-    await custom_notification(
-        [new_admin_id],
-        text,
-        True,
+    asyncio.run(
+        custom_notification(
+            [new_admin_id],
+            text,
+            True,
+        ),
     )
 
 
