@@ -10,10 +10,14 @@ services:
       - "${NGINX_KEY}:/etc/nginx/ssl/privkey.pem"
     restart: unless-stopped
     depends_on:
-      - db
-      - redis
-      - web
-      - bot
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+      bot:
+        condition: service_started
     networks:
       - django-network
 
@@ -25,6 +29,12 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -45,10 +55,17 @@ services:
       - "8000"
     restart: unless-stopped
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      celery-worker:
+        condition: service_started
+      celery-beat:
+        condition: service_started
     links:
       - db:db
+      - redis:redis
     networks:
        - django-network
 
@@ -60,9 +77,8 @@ services:
                       python telegram_bot"
     restart: unless-stopped
     depends_on:
-      - db
-      - redis
-      - web
+      web:
+        condition: service_started
     expose:
       - "8000"
     networks:
@@ -71,21 +87,15 @@ services:
   redis:
     image: redis:7.4.0-alpine
     hostname: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 3
+      start_period: 5s
+      timeout: 5s
     restart: unless-stopped
     volumes:
       - redis_data:/data
-    networks:
-      - django-network
-
-  celery-beat:
-    build: .
-    command: bash -c "cd chtozadano &&
-                      celery -A celery_app beat --loglevel=info"
-    volumes:
-      - .:/code
-    restart: unless-stopped
-    depends_on:
-      - web
     networks:
       - django-network
 
@@ -95,8 +105,25 @@ services:
                       celery -A celery_app worker --loglevel=info"
     volumes:
       - .:/code
+      - redis_data:/data
+    restart: unless-stopped
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+    networks:
+      - django-network
+
+  celery-beat:
+    build: .
+    command: bash -c "cd chtozadano &&
+                      celery -A celery_app beat --loglevel=info"
+    volumes:
+      - .:/code
+      - redis_data:/data
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - django-network
 
