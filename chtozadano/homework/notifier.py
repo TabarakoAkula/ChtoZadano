@@ -245,7 +245,7 @@ def custom_notification_management(
     notification: bool,
 ) -> None:
     if settings.USE_CELERY:
-        celery_custom_notification(users_ids, message_text, notification)
+        celery_custom_notification.delay(users_ids, message_text, notification)
     else:
         asyncio.run(
             custom_notification(
@@ -257,15 +257,17 @@ def custom_notification_management(
 
 
 @shared_task()
-async def celery_custom_notification(
+def celery_custom_notification(
     users_ids: list,
     message_text: str,
     notification: bool,
 ) -> None:
-    return custom_notification(
-        users_ids,
-        message_text,
-        notification,
+    asyncio.run(
+        custom_notification(
+            users_ids,
+            message_text,
+            notification,
+        ),
     )
 
 
@@ -285,4 +287,3 @@ async def custom_notification(
             disable_notification=not notification,
         )
     await bot_session.close()
-    return

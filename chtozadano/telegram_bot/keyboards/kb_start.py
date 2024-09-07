@@ -86,3 +86,25 @@ def open_site_in_kb(domain) -> InlineKeyboardMarkup:
         ],
     ]
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
+
+
+def start_become_admin_in_kb() -> InlineKeyboardMarkup:
+    inline_list = [
+        [
+            InlineKeyboardButton(
+                text="Да",
+                callback_data="start_become_admin_yes",
+            ),
+            InlineKeyboardButton(
+                text="Нет",
+                callback_data="start_become_admin_no",
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="Вернуться в начало",
+                callback_data="back_to_start",
+            ),
+        ],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=inline_list)
