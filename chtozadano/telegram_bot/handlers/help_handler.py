@@ -22,7 +22,8 @@ async def command_help_handler(message: Message) -> None:
         "/stop - прекратить добавление домашнего задания",
         "/reset - сменить класс",
     ]
-    if await check_for_admin(message.chat.id) == "admin":
+    is_admin = await check_for_admin(message.chat.id)
+    if is_admin == "admin":
         text.extend(
             [
                 "",
@@ -31,7 +32,7 @@ async def command_help_handler(message: Message) -> None:
                 "/info - опубликовать информацию для класса",
             ],
         )
-    elif await check_for_admin(message.chat.id) == "superuser":
+    elif is_admin == "superuser":
         text.extend(
             [
                 "",
@@ -44,7 +45,12 @@ async def command_help_handler(message: Message) -> None:
                 "/show_become_admin - просмотр заявок на администратора",
             ],
         )
+    elif not is_admin:
+        await message.answer(
+            "Для взаимодействия с ботом необходимо в нем зарегистрироваться."
+            " Введи команду /start",
+        )
     else:
         text.append("/become_admin - стать администратором")
-
-    await message.answer("\n".join(text))
+    if is_admin:
+        await message.answer("\n".join(text))

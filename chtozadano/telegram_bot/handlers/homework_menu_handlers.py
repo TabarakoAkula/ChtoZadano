@@ -103,7 +103,13 @@ async def get_subject_hw_handler(
 ) -> None:
     await state.set_state(Homework.subject)
     subjects = await get_user_subjects(message.chat.id)
-    subjects.append("информация")
+    try:
+        subjects.append("информация")
+    except AttributeError:
+        await message.answer(
+            "Для взаимодействия с ботом необходимо в нем зарегистрироваться."
+            " Введи команду /start",
+        )
     await message.answer(
         text="Выбери предмет, по которому хочешь увидеть последнюю домашку",
         reply_markup=homework_subject.homework_subject_in_kb(
