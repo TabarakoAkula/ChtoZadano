@@ -196,4 +196,8 @@ urlpatterns = [
         "add_notification/",
         homework.api.views.CustomNotificationAPI.as_view(),
     ),
+    path(
+        "clear_cache/",
+        homework.api.views.ClearCacheAPI.as_view(),
+    ),
 ]
