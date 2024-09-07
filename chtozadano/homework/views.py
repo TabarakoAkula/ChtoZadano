@@ -554,7 +554,6 @@ class EditHomework(View):
             request_files_list = request.FILES.getlist("files")
             server_user = request.user.server_user
             grade, letter = server_user.grade, server_user.letter
-            group = server_user.group
             files_list_for_model = save_files(
                 request_files_list,
                 grade,
@@ -614,7 +613,6 @@ class EditHomeworkData(View):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
             grade, letter = request_user.grade, request_user.letter
-            group = request_user.group
             try:
                 hw_object = Homework.objects.get(
                     id=homework_id,
@@ -676,7 +674,6 @@ class DeleteHomework(View):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
             grade, letter = request_user.grade, request_user.letter
-            group = request_user.group
             try:
                 Homework.objects.get(
                     id=homework_id,
