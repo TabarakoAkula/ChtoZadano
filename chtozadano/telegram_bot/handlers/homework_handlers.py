@@ -52,7 +52,14 @@ async def add_homework_handler(
         await state.set_state(AddHomeworkFast.choose_subject)
     await state.update_data(fast_add_bool=fast_add_bool)
     subjects = await get_user_subjects(message.chat.id)
-    subjects.append("информация")
+    try:
+        subjects.append("информация")
+    except AttributeError:
+        await message.answer(
+            "Для взаимодействия с ботом необходимо зарегистрироваться."
+            " Введи команду /start",
+        )
+        return
     keyboard = homework_subject.homework_subject_in_kb(
         subjects=subjects,
         add=True,

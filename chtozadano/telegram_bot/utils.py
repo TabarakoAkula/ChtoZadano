@@ -7,7 +7,7 @@ import urllib
 from aiogram import html
 import aiogram.exceptions
 from aiogram.fsm.context import FSMContext
-from aiogram.types import FSInputFile, Message
+from aiogram.types import CallbackQuery, FSInputFile, Message
 from aiogram.utils.media_group import MediaGroupBuilder
 import dotenv
 import requests
@@ -17,7 +17,7 @@ dotenv.load_dotenv()
 DOCKER_URL = os.getenv("DOCKER_URL")
 
 
-async def check_for_admin(telegram_id: int) -> str:
+async def check_for_admin(telegram_id: int) -> str | None:
     response = await asyncio.to_thread(
         requests.post,
         url=DOCKER_URL + "/api/v1/is_user_admin/",
@@ -27,8 +27,11 @@ async def check_for_admin(telegram_id: int) -> str:
         },
     )
     response_data = response.json()
-    admin = response_data["is_admin"]
-    superuser = response_data["is_superuser"]
+    try:
+        admin = response_data["is_admin"]
+        superuser = response_data["is_superuser"]
+    except KeyError:
+        return None
     if not admin and not superuser:
         return "user"
     if admin and not superuser:
@@ -36,6 +39,37 @@ async def check_for_admin(telegram_id: int) -> str:
     if superuser:
         return "superuser"
     return "Undefined"
+
+
+async def create_user(
+    call: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    data = await state.get_data()
+    await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/create_user/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+            "telegram_id": call.from_user.id,
+            "grade": data["grade"],
+            "letter": data["letter"],
+            "group": data["group"],
+            "name": call.from_user.first_name,
+        },
+    )
+    await state.clear()
+    await call.message.answer(
+        "На этом всё. Теперь я всегда готов ответить на"
+        " твои вопросы по домашнему заданию. Чтобы"
+        " узнать домашнее задание, отправь вопрос в"
+        " произвольной форме, обязательно упомянув"
+        " название предмета.\nА если вдруг у тебя не"
+        " будет возможности спросить меня, все домашние"
+        " задания доступны через сайт https://hw116.ru"
+        " И не забывай - описание всех доступных функций"
+        " всегда доступно через команду /help",
+    )
 
 
 async def delete_become_admin(telegram_id: int) -> None:
@@ -181,9 +215,16 @@ async def generate_homework(
     record: int,
     message: Message,
 ) -> None:
-    homework["subject"] = (
-        homework["subject"][0].upper() + homework["subject"][1:]
-    )
+    try:
+        homework["subject"] = (
+            homework["subject"][0].upper() + homework["subject"][1:]
+        )
+    except (KeyError, TypeError):
+        await message.answer(
+            "Для взаимодействия с ботом необходимо в нем зарегистрироваться."
+            " Введи команду /start",
+        )
+        return
     if homework["subject"] == "Информация":
         await generate_mailing(homework, message)
         return
@@ -496,5 +537,5 @@ async def get_fast_add(telegram_id: int) -> bool | str:
     )
     try:
         return response.json()["fast_hw"]
-    except KeyError:
+    except (KeyError, requests.exceptions.JSONDecodeError):
         return "Error"
