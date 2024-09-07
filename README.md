@@ -26,7 +26,6 @@
 + Python 3.10+
 + Docker && Docker-compose
 + PostgreSQL (rec: 16)
-+ Nginx (rec: 1.24.0)
 ### Clone repository with git
 ```bash
 git clone https://github.com/TabarakoAkula/ChtoZadano.git
@@ -128,6 +127,17 @@ To enter it, you need to:
 
 ## 📁Data customization
 If you want to upload another data about teachers/subjects/group - change data in this files:
+### .Py 
+#### ``chtozadano/chtozadano/settings.py``:
++ ``LANGUAGE_CODE``: ``str`` - Select language code for your site server (Internationalization is under development, see #119) 
++ ``TIME_ZONE``: ``str`` - Select in which timezone will be working server (``USE_TZ`` must be enabled)
++ ``USE_TZ``: ``bool`` - Use timezone time instead of server time (**BE CAREFUL** It can ruin adding rows to db)
++ ``DATA_UPLOAD_MAX_MEMORY_SIZE``: ``int`` - Choose maximum data size to upload to site per request (Change this value in ``nginx.conf`` too)
++ ``FILE_UPLOAD_MAX_MEMORY_SIZE``: ``int`` - Choose file data size to upload to site per request (Change this value in ``nginx.conf`` too)
+#### ``chtozadano/gunicorn_congig.py``:
++ ``workers``: ``int`` - set number of workers that will serve your site (formula: (2 * number_of_cors) + 1
++ ``loglevel``: ``str`` set loglevel for gunicorn (Saving in ``chtozadano/logs/gunicorn_access.log|gunicorn_errors.log)
+
 ### JSON
 + ``/chtozadano/static_dev/json/subjects.json``
 + ``/chtozadano/static_dev/json/grades_subjects.json``
@@ -149,6 +159,11 @@ If you want to upload another data about teachers/subjects/group - change data i
 
 ``/chtozadano/templates/users/sign_up.html``
 + ``line 16`` - href to bot
+
+### Nginx
+#### ``nginx.conf`` file:
++ ``{site_name}`` - IP address or domain name to be redirected (+ Redirecting from http to https)
++ ``client_max_body_size`` - Choose maximum data size to upload to server per request
 
 ## 📆Adding schedule
 You can fast upload your schedule using script in ``/chtozadano/scripts/add_schedule_script.py``
@@ -175,6 +190,18 @@ If you want you can change:
   ```bash
   python add_schedule_script.py
   ```
+
+## 🖨️Logging
+Project allows ability to log data into files and console.
+### Server
++ ``console`` logs
++ ``telegram bots`` - some functions (ex. ``DeleteOldHomework``) will notify superusers using messages from the bot
++ ``chtozadano/logs/django.log``
++ ``chtozadano/logs/gunicorn_access.log``
++ ``chtozadano/logs/gunicorn_errors.log``
+### Other services | containers:
++ ``console`` logs
+
 
 ## 🧾Make scripts:
 Some scripts which can make your experience easier  
@@ -204,15 +231,18 @@ If ``True`` - site will be available only for superusers. Other users will see `
 ### API_TECHNICAL_WOR
 If ``True`` - site API will be blocked -> bot will stop working & custom API requests will be unavailable
 
-## 🕛Cron
-In the project, there is an auto-deletion of old homework (for more than 2 weeks) using cron. 
-It will be automatically launched in the Docker container. To set up:
-+ Open /cron/delete)old_hw_script.sh
-+ Change ``{your_api_key}`` and ``{superuser_tg_id}`` to your values
-+ Restart docker container
-  ```bash
-  docker restart chtozadano-cron-1
-  ```
+## 📎Redis & Celery
+``AChtoZadano`` allows to use caching using Redis as well as scheduling tasks using Celery (Celery worker and Celery beat).
+The support is already initially enabled in docker containers, but if you want to configure it,
+you should change the following parameters:
+### In ``.env`` file:
++ ``USE_REDIS``: ``bool`` - Toggle using Redis 
++ ``REDIS_SITE_URL``: ``str`` - URL to Redis database for Site cache
++ ``REDIS_BOT_URL``: ``str`` - URL to Redis database for Bot cache
++ ``USE_CELERY``: ``bool`` - Toggle using Celery(``USE_REDIS`` must be ``True``)
++ ``CELERY_BROKER_URL``: ``str`` - URL to Redis database for Celery tasks
+### In ``chtozadano/celery_app`` file:
++ ``timezone``: str - select timezone where will work your Celery scheduler (ex. ``app.conf.timezone = "Europe/Moscow"``)
 
 ## API
 #### API documentation is in the file <a href="./API.md">API.md</a>

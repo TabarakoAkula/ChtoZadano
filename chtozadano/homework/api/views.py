@@ -1125,3 +1125,22 @@ class CustomNotificationAPI(APIView):
                 f" {len(users_id)} users",
             },
         )
+
+
+class ClearCacheAPI(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            user_obj = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+        except (KeyError, users.models.User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        if not user_obj.user.is_superuser:
+            return response.Response({"error": "Not allowed ^)"}, status=403)
+        cache.clear()
+        return response.Response(
+            {
+                "success": "Successfully clear site cache",
+            },
+        )
