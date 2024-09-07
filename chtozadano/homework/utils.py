@@ -395,6 +395,26 @@ async def cron_notifier(text: str) -> None:
     await custom_notification(users_ids, text, False)
 
 
+def delete_old_homework() -> None:
+    today = datetime.datetime.today().date()
+    two_weeks_ago = today - datetime.timedelta(days=14)
+    todo_objects = homework.models.Todo.objects.filter(
+        created_at__lt=two_weeks_ago,
+    )
+    hw_objects = homework.models.Homework.objects.filter(
+        created_at__lt=two_weeks_ago,
+    )
+    response_message = (
+        f"Cleaner🗑️: Успешно удалено:\n"
+        f"· {todo_objects.count()} Todo записей\n"
+        f"· {hw_objects.count()} Homework записей"
+    )
+    todo_objects.delete()
+    hw_objects.delete()
+    cron_notification_management(response_message)
+    return
+
+
 def redis_delete_data(
     homework_data: bool = True,
     grade: int = 0,

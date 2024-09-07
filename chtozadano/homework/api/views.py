@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.core.cache import cache
 from django.db.models import OuterRef, Q, Subquery
@@ -11,7 +11,7 @@ from homework.notifier import custom_notification_management
 from homework.utils import (
     add_documents_file_id,
     add_notification_management,
-    cron_notification_management,
+    delete_old_homework,
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
@@ -923,19 +923,7 @@ class DeleteOldHomeworkAPI(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         if not user_obj.user.is_superuser:
             return response.Response({"error": "Not allowed ^)"}, status=403)
-
-        today = datetime.today().date()
-        two_weeks_ago = today - timedelta(days=14)
-        todo_objects = Todo.objects.filter(created_at__lt=two_weeks_ago)
-        hw_objects = Homework.objects.filter(created_at__lt=two_weeks_ago)
-        response_message = (
-            f"Cron🗑️: Успешно удалено {todo_objects.count()}"
-            f" Todo и {hw_objects.count()}"
-            f" Homework записей"
-        )
-        todo_objects.delete()
-        hw_objects.delete()
-        cron_notification_management(response_message)
+        delete_old_homework()
         redis_delete_data(
             True,
             user_obj.grade,
