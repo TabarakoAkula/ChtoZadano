@@ -1,5 +1,4 @@
-import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from django.core.cache import cache
 from django.db.models import OuterRef, Q, Subquery
@@ -8,11 +7,11 @@ from rest_framework.views import APIView
 
 from homework.api.serializers import HomeworkSerializer, ScheduleSerializer
 from homework.models import File, Homework, Image, Schedule, Todo
+from homework.notifier import custom_notification_management
 from homework.utils import (
     add_documents_file_id,
-    add_notification,
-    cron_notifier,
-    custom_notification,
+    add_notification_management,
+    delete_old_homework_management,
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
@@ -328,13 +327,8 @@ class AddHomeWorkAPI(APIView):
                     file_name=path.split("/")[-1],
                 ),
             )
-        asyncio.run(
-            add_notification(
-                hw_object,
-                user_obj,
-                use_groups,
-            ),
-        )
+        hw_object.subject = get_name_from_abbreviation(hw_object.subject)
+        add_notification_management(hw_object, user_obj, use_groups)
         redis_delete_data(True, grade, letter, group)
         return response.Response(
             {
@@ -582,13 +576,7 @@ class AddMailingAPI(APIView):
                 homework_obj.subject = "info"
                 homework_obj.save()
                 homework_id = homework_obj.id
-                asyncio.run(
-                    add_notification(
-                        homework_obj,
-                        user_obj,
-                        False,
-                    ),
-                )
+                add_notification_management(homework_obj, user_obj, False)
                 redis_delete_data(
                     False,
                     user_obj.grade,
@@ -642,13 +630,8 @@ class AddMailingAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         homework_id = homework_obj.id
-        asyncio.run(
-            add_notification(
-                homework_obj,
-                user_obj,
-                False,
-            ),
-        )
+        homework_obj.subject = get_name_from_abbreviation(homework_obj.subject)
+        add_notification_management(homework_obj, user_obj, False)
         redis_delete_data(
             False,
             user_obj.grade,
@@ -940,23 +923,7 @@ class DeleteOldHomeworkAPI(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         if not user_obj.user.is_superuser:
             return response.Response({"error": "Not allowed ^)"}, status=403)
-
-        today = datetime.today().date()
-        two_weeks_ago = today - timedelta(days=14)
-        todo_objects = Todo.objects.filter(created_at__lt=two_weeks_ago)
-        hw_objects = Homework.objects.filter(created_at__lt=two_weeks_ago)
-        response_message = (
-            f"Cron🗑️: Успешно удалено {todo_objects.count()}"
-            f" Todo и {hw_objects.count()}"
-            f" Homework записей"
-        )
-        todo_objects.delete()
-        hw_objects.delete()
-        asyncio.run(
-            cron_notifier(
-                response_message,
-            ),
-        )
+        delete_old_homework_management()
         redis_delete_data(
             True,
             user_obj.grade,
@@ -1147,16 +1114,33 @@ class CustomNotificationAPI(APIView):
             list,
         ):
             return response.Response({"error": "Bad request data"}, status=400)
-        asyncio.run(
-            custom_notification(
-                users_ids=users_id,
-                message_text=notification_message,
-                notification=True,
-            ),
+        custom_notification_management(
+            users_ids=users_id,
+            message_text=notification_message,
+            notification=True,
         )
         return response.Response(
             {
                 "success": f"Successfully send messages to"
                 f" {len(users_id)} users",
+            },
+        )
+
+
+class ClearCacheAPI(APIView):
+    @staticmethod
+    def post(request):
+        try:
+            user_obj = users.models.User.objects.get(
+                telegram_id=request.data["telegram_id"],
+            )
+        except (KeyError, users.models.User.DoesNotExist):
+            return response.Response({"error": "Bad request data"}, status=400)
+        if not user_obj.user.is_superuser:
+            return response.Response({"error": "Not allowed ^)"}, status=403)
+        cache.clear()
+        return response.Response(
+            {
+                "success": "Successfully clear site cache",
             },
         )

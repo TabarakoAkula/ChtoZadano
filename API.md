@@ -642,4 +642,16 @@
   + Возвращает:  
       + ``JSON``  
         + ``success``: ``Successfully send messages to {number} users``    
++ ClearCacheAPI:
+  + Путь: ``api/v1/clear_cachr/``   
+  + Метод: ``POST``  
+  + Ограничение по доступности: ``superuser``    
+    + Суть: очистить кэш сайта    
+  + Действие: удаляет весь связанный с сайтом кэш      
+  + Параметры:   
+    + ``api_key`` - ``str`` апи ключ   
+    + ``telegram_id`` - ``int`` уникальный ``id`` пользователя-отправителя в телеграм
+  + Возвращает:  
+      + ``JSON``  
+        + ``success``: ``Successfully clear site cache``    
 </details>
