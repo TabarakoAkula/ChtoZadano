@@ -3,7 +3,7 @@ import datetime
 import json
 import random
 
-from celery_app import app
+from celery import shared_task
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -319,7 +319,7 @@ def add_notification_management(
         )
 
 
-@app.task()
+@shared_task()
 def celery_add_notification(
     model_object,
     user,
@@ -373,7 +373,7 @@ def cron_notification_management(text):
         asyncio.run(cron_notifier(text))
 
 
-@app.task()
+@shared_task()
 def celery_cron_notification(text):
     return cron_notifier(text)
 

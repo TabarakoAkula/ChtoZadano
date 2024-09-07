@@ -7,7 +7,7 @@ import random
 import string
 
 from asgiref.sync import sync_to_async
-from celery_app import app
+from celery import shared_task
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -62,7 +62,7 @@ def new_become_admin_notify_management() -> None:
         asyncio.run(new_become_admin_notify())
 
 
-@app.task()
+@shared_task()
 async def celery_new_become_admin_notify() -> None:
     await new_become_admin_notify()
 
@@ -99,7 +99,7 @@ def become_admin_decision_notify_management(
         asyncio.run(become_admin_decision_notify(new_admin_id, accept))
 
 
-@app.task()
+@shared_task()
 async def celery_become_admin_decision_notify(
     new_admin_id: int,
     accept: bool,
