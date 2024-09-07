@@ -370,7 +370,7 @@ def cron_notification_management(text):
     if settings.USE_CELERY:
         celery_cron_notification.delay(text)
     else:
-        asyncio.run(cron_notifier(text))
+        cron_notifier(text)
 
 
 @shared_task()
@@ -390,6 +390,18 @@ def cron_notifier(text: str) -> None:
     if settings.TEST:
         return
     asyncio.run(custom_notification(users_ids, text, False))
+
+
+def delete_old_homework_management():
+    if settings.USE_CELERY:
+        celery_delete_old_homework.delay()
+    else:
+        delete_old_homework()
+
+
+@shared_task()
+def celery_delete_old_homework():
+    return delete_old_homework()
 
 
 def delete_old_homework() -> None:

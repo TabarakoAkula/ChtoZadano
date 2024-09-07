@@ -19,7 +19,7 @@ app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
     "delete-old-homework": {
-        "task": "homework.utils.delete_old_homework",
+        "task": "homework.utils.celery_delete_old_homework",
         "schedule": crontab(hour=0, minute=0),
         "args": (),
     },

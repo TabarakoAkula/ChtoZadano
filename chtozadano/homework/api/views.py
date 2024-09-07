@@ -11,7 +11,7 @@ from homework.notifier import custom_notification_management
 from homework.utils import (
     add_documents_file_id,
     add_notification_management,
-    delete_old_homework,
+    delete_old_homework_management,
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
@@ -923,7 +923,7 @@ class DeleteOldHomeworkAPI(APIView):
             return response.Response({"error": "Bad request data"}, status=400)
         if not user_obj.user.is_superuser:
             return response.Response({"error": "Not allowed ^)"}, status=403)
-        delete_old_homework()
+        delete_old_homework_management()
         redis_delete_data(
             True,
             user_obj.grade,
