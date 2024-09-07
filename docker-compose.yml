@@ -10,10 +10,14 @@ services:
       - "${NGINX_KEY}:/etc/nginx/ssl/privkey.pem"
     restart: unless-stopped
     depends_on:
-      - db
-      - redis
-      - web
-      - bot
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+      bot:
+        condition: service_started
     networks:
       - django-network
 
@@ -25,6 +29,12 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -44,11 +54,21 @@ services:
     expose:
       - "8000"
     restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://web:8000/mainpage/" ]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
     depends_on:
-      - db
-      - redis
-      - celery-beat
-      - celery-worker
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      celery-worker:
+        condition: service_healthy
+      celery-beat:
+        condition: service_healthy
     links:
       - db:db
       - redis:redis
@@ -63,7 +83,8 @@ services:
                       python telegram_bot"
     restart: unless-stopped
     depends_on:
-      - web
+      web:
+        condition: service_healthy
     expose:
       - "8000"
     networks:
@@ -72,6 +93,12 @@ services:
   redis:
     image: redis:7.4.0-alpine
     hostname: redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 3
+      start_period: 5s
+      timeout: 5s
     restart: unless-stopped
     volumes:
       - redis_data:/data
@@ -85,8 +112,16 @@ services:
     volumes:
       - .:/code
       - redis_data:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "cd chtozadano && celery -A chtozadano worker --detach && echo 'Celery Beat is running'" ]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+    restart: unless-stopped
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     networks:
       - django-network
 
@@ -97,9 +132,16 @@ services:
     volumes:
       - .:/code
       - redis_data:/data
+    healthcheck:
+      test: [ "CMD-SHELL", "cd chtozadano && celery -A chtozadano beat --detach && echo 'Celery Beat is running'" ]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
     restart: unless-stopped
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     networks:
       - django-network
 
