@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://github.com/TabarakoAkula/ChtoZadano">
 <picture>
-    <img width="300px" height="300px" alt="AChtoZadano" src="./chtozadano/static_dev/img/favicon.ico">
+    <img alt="AChtoZadano" src="./chtozadano/static_dev/img/panel_logo.jpg">
 </picture>  
 </a>
 <h1 align="center">
@@ -12,9 +12,9 @@
 </p>
 <div align="center">  
   
-  [![master CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/master.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/master.yml)
-  [![server CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/server.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/server.yml)
-  [![bot CI](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/bot.yml/badge.svg)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/bot.yml)  
+  [![Django tests](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/django-tests.yml/badge.svg?branch=master)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/django-tests.yml)
+  [![Docker build](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/docker-build.yml/badge.svg?branch=master)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/docker-build.yml)
+  [![Linters](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/linters-check.yml/badge.svg?branch=master)](https://github.com/TabarakoAkula/ChtoZadano/actions/workflows/linters-check.yml)  
   [![python - 3.10 | 3.11 | 3.12](https://img.shields.io/badge/python-3.10_|_3.11_|_3.12-4b4de3)](https://)
   [![Django - 5.0.6](https://img.shields.io/badge/Django-5.0-4b4de3)](https://)  
   [![Issues](https://img.shields.io/github/license/mashape/apistatus.svg)](https://)
@@ -215,4 +215,4 @@ It will be automatically launched in the Docker container. To set up:
   ```
 
 ## API
-#### API documentation is in the file API.md
+#### API documentation is in the file <a href="./API.md">API.md</a>

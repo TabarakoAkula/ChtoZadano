@@ -1,9 +1,6 @@
 name: Django tests
 
 on:
-  push:
-    branches:
-      - "**"
   pull_request:
     branches:
       - "**"
@@ -51,6 +48,7 @@ jobs:
         CSRF_TRUSTED_ORIGINS: http://bot:8000
         USE_REDIS: False
         USE_CELERY: False
+
     - name: Django tests users
       run: |
         cd chtozadano
@@ -67,6 +65,7 @@ jobs:
           CSRF_TRUSTED_ORIGINS: ${{ secrets.CSRF_TRUSTED_ORIGINS }}
           USE_REDIS: False
           USE_CELERY: False
+
     - name: Django tests homework
       run: |
         cd chtozadano

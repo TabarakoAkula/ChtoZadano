@@ -10,9 +10,13 @@ services:
       - "${NGINX_KEY}:/etc/nginx/ssl/privkey.pem"
     restart: unless-stopped
     depends_on:
+      - db
+      - redis
+      - web
       - bot
     networks:
       - django-network
+    restart: unless-stopped
 
   db:
     image: postgres:16
@@ -57,6 +61,8 @@ services:
                       python telegram_bot"
     restart: unless-stopped
     depends_on:
+      - db
+      - redis
       - web
     expose:
       - "8000"
@@ -80,7 +86,7 @@ services:
       - .:/code
     restart: unless-stopped
     depends_on:
-      - web
+      - nginx
     networks:
       - django-network
 
@@ -93,6 +99,17 @@ services:
     restart: unless-stopped
     depends_on:
       - web
+    networks:
+      - django-network
+
+  celery-worker:
+    build: .
+    command: bash -c "cd chtozadano &&
+                      celery -A celery_app worker --loglevel=info"
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
     networks:
       - django-network
 

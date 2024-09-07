@@ -99,7 +99,16 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework.authentication.BasicAuthentication",
     ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+    ],
 }
+
+if DEBUG:
+    render_class_now = REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"]
+    render_class_now.append("rest_framework.renderers.BrowsableAPIRenderer")
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = render_class_now
+
 
 ROOT_URLCONF = "chtozadano.urls"
 
