@@ -3,7 +3,6 @@ import datetime
 import json
 import random
 
-from asgiref.sync import sync_to_async
 from celery_app import app
 from django.conf import settings
 from django.contrib import messages
@@ -375,15 +374,13 @@ def cron_notification_management(text):
 
 
 @app.task()
-async def celery_cron_notification(text):
-    await cron_notifier(text)
+def celery_cron_notification(text):
+    return cron_notifier(text)
 
 
-async def cron_notifier(text: str) -> None:
-    users_ids = await sync_to_async(list)(
-        DjangoUser.objects.filter(is_superuser=True).values(
-            "server_user__telegram_id",
-        ),
+def cron_notifier(text: str) -> None:
+    users_ids = DjangoUser.objects.filter(is_superuser=True).values(
+        "server_user__telegram_id",
     )
     users_ids = [
         int(i["server_user__telegram_id"])
@@ -392,7 +389,7 @@ async def cron_notifier(text: str) -> None:
     ]
     if settings.TEST:
         return
-    await custom_notification(users_ids, text, False)
+    asyncio.run(custom_notification(users_ids, text, False))
 
 
 def delete_old_homework() -> None:

@@ -193,7 +193,7 @@ TEST = str(os.getenv("TEST", "False")).lower() == "true"
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
