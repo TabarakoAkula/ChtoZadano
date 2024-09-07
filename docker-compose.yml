@@ -15,7 +15,7 @@ services:
       redis:
         condition: service_healthy
       web:
-        condition: service_healthy
+        condition: service_started
       bot:
         condition: service_started
     networks:
@@ -54,21 +54,15 @@ services:
     expose:
       - "8000"
     restart: unless-stopped
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://web:8000/mainpage/" ]
-      interval: 30s
-      retries: 3
-      start_period: 30s
-      timeout: 10s
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
       celery-worker:
-        condition: service_healthy
+        condition: service_started
       celery-beat:
-        condition: service_healthy
+        condition: service_started
     links:
       - db:db
       - redis:redis
@@ -84,7 +78,7 @@ services:
     restart: unless-stopped
     depends_on:
       web:
-        condition: service_healthy
+        condition: service_started
     expose:
       - "8000"
     networks:
@@ -112,12 +106,6 @@ services:
     volumes:
       - .:/code
       - redis_data:/data
-    healthcheck:
-      test: [ "CMD-SHELL", "cd chtozadano && celery -A chtozadano worker --detach && echo 'Celery Beat is running'" ]
-      interval: 30s
-      retries: 3
-      start_period: 30s
-      timeout: 10s
     restart: unless-stopped
     depends_on:
       redis:
@@ -132,12 +120,6 @@ services:
     volumes:
       - .:/code
       - redis_data:/data
-    healthcheck:
-      test: [ "CMD-SHELL", "cd chtozadano && celery -A chtozadano beat --detach && echo 'Celery Beat is running'" ]
-      interval: 30s
-      retries: 3
-      start_period: 30s
-      timeout: 10s
     restart: unless-stopped
     depends_on:
       redis:
