@@ -1,9 +1,9 @@
+import asyncio
 import datetime
 import json
-import os
 import random
 
-from asgiref.sync import sync_to_async
+from celery import shared_task
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -19,6 +19,7 @@ import dotenv
 from homework.api.serializers import HomeworkSerializer
 import homework.models
 from homework.notifier import custom_notification, homework_notifier
+from users.api.serializers import UserNotificationsSerializer
 import users.models
 
 dotenv.load_dotenv()
@@ -299,52 +300,128 @@ def add_documents_file_id(
     return
 
 
-async def add_notification(
+def add_notification_management(
+    homework_data,
+    user_data,
+    use_groups_data: bool = False,
+) -> None:
+    if settings.USE_CELERY:
+        celery_add_notification.delay(
+            HomeworkSerializer(homework_data).data,
+            UserNotificationsSerializer(user_data).data,
+            use_groups_data,
+        )
+    else:
+        add_notification(
+            HomeworkSerializer(homework_data).data,
+            user_data,
+            use_groups_data,
+        )
+
+
+@shared_task()
+def celery_add_notification(
     model_object,
     user,
     use_groups: bool = False,
 ) -> None:
+    return add_notification(model_object, user, use_groups, True)
+
+
+def add_notification(
+    model_object,
+    user,
+    use_groups: bool = False,
+    use_celery: bool = False,
+) -> None:
+    if use_celery:
+        user_instance = users.models.User.objects.get(
+            telegram_id=user["telegram_id"],
+        )
+        serializer = UserNotificationsSerializer(
+            instance=user_instance,
+            data=user,
+        )
+        if serializer.is_valid():
+            user = serializer.save()
+        else:
+            return
     if use_groups:
-        users_ids = await sync_to_async(list)(
-            users.models.User.objects.filter(
-                grade=user.grade,
-                letter=user.letter,
-                group=user.group,
-                chat_mode=True,
-            ).values("telegram_id"),
-        )
+        users_ids = users.models.User.objects.filter(
+            grade=user.grade,
+            letter=user.letter,
+            group=user.group,
+            chat_mode=True,
+        ).values("telegram_id")
     else:
-        users_ids = await sync_to_async(list)(
-            users.models.User.objects.filter(
-                grade=user.grade,
-                letter=user.letter,
-                chat_mode=True,
-            ).values("telegram_id"),
-        )
-    model_object.subject = get_name_from_abbreviation(model_object.subject)
+        users_ids = users.models.User.objects.filter(
+            grade=user.grade,
+            letter=user.letter,
+            chat_mode=True,
+        ).values("telegram_id")
     users_ids = [i["telegram_id"] for i in users_ids]
-    serializer = HomeworkSerializer(model_object)
-    serialized_data = await sync_to_async(lambda: serializer.data)()
     users_ids = [i for i in users_ids if i]
-    if os.getenv("TEST"):
+    if settings.TEST:
         return
-    await homework_notifier(users_ids, serialized_data)
+    asyncio.run(homework_notifier(users_ids, model_object))
 
 
-async def cron_notifier(text: str) -> None:
-    users_ids = await sync_to_async(list)(
-        DjangoUser.objects.filter(is_superuser=True).values(
-            "server_user__telegram_id",
-        ),
+def cron_notification_management(text):
+    if settings.USE_CELERY:
+        celery_cron_notification.delay(text)
+    else:
+        cron_notifier(text)
+
+
+@shared_task()
+def celery_cron_notification(text):
+    return cron_notifier(text)
+
+
+def cron_notifier(text: str) -> None:
+    users_ids = DjangoUser.objects.filter(is_superuser=True).values(
+        "server_user__telegram_id",
     )
     users_ids = [
         int(i["server_user__telegram_id"])
         for i in users_ids
         if i["server_user__telegram_id"]
     ]
-    if os.getenv("TEST"):
+    if settings.TEST:
         return
-    await custom_notification(users_ids, text, False)
+    asyncio.run(custom_notification(users_ids, text, False))
+
+
+def delete_old_homework_management():
+    if settings.USE_CELERY:
+        celery_delete_old_homework.delay()
+    else:
+        delete_old_homework()
+
+
+@shared_task()
+def celery_delete_old_homework():
+    return delete_old_homework()
+
+
+def delete_old_homework() -> None:
+    today = datetime.datetime.today().date()
+    two_weeks_ago = today - datetime.timedelta(days=14)
+    todo_objects = homework.models.Todo.objects.filter(
+        created_at__lt=two_weeks_ago,
+    )
+    hw_objects = homework.models.Homework.objects.filter(
+        created_at__lt=two_weeks_ago,
+    )
+    response_message = (
+        f"Cleaner🗑️: Успешно удалено:\n"
+        f"· {todo_objects.count()} Todo записей\n"
+        f"· {hw_objects.count()} Homework записей"
+    )
+    todo_objects.delete()
+    hw_objects.delete()
+    cron_notification_management(response_message)
+    return
 
 
 def redis_delete_data(

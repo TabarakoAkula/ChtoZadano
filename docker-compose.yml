@@ -8,8 +8,16 @@ services:
       - "./nginx.conf:/etc/nginx/nginx.conf"
       - "${NGINX_CERT}:/etc/nginx/ssl/fullchain.pem"
       - "${NGINX_KEY}:/etc/nginx/ssl/privkey.pem"
+    restart: unless-stopped
     depends_on:
-      - bot
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      web:
+        condition: service_started
+      bot:
+        condition: service_started
     networks:
       - django-network
 
@@ -20,7 +28,13 @@ services:
       POSTGRES_DB: ${POSTGRES_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    restart: always
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "${POSTGRES_USER}" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -33,19 +47,25 @@ services:
     command: bash -c "cd chtozadano &&
                       python manage.py migrate &&
                       python manage.py collectstatic --no-input &&
-                      gunicorn --config gunicorn_config.py chtozadano.wsgi:application"
+                      gunicorn --config gunicorn_config.py chtozadano.wsgi:application --preload"
     volumes:
       - .:/code
       - ./chtozadano/logs:/code/chtozadano/logs
-
     expose:
       - "8000"
+    restart: unless-stopped
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      celery-worker:
+        condition: service_started
+      celery-beat:
+        condition: service_started
     links:
       - db:db
-    restart: always
+      - redis:redis
     networks:
        - django-network
 
@@ -55,30 +75,55 @@ services:
       - .:/code
     command: bash -c "cd chtozadano &&
                       python telegram_bot"
+    restart: unless-stopped
     depends_on:
-      - web
-    restart: always
+      web:
+        condition: service_started
     expose:
       - "8000"
-    networks:
-      - django-network
-
-  cron:
-    build: cron/
-    volumes:
-      - ./cron:/cron
-    restart: always
-    depends_on:
-      - web
     networks:
       - django-network
 
   redis:
     image: redis:7.4.0-alpine
     hostname: redis
-    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 3
+      start_period: 5s
+      timeout: 5s
+    restart: unless-stopped
     volumes:
       - redis_data:/data
+    networks:
+      - django-network
+
+  celery-worker:
+    build: .
+    command: bash -c "cd chtozadano &&
+                      celery -A celery_app worker --loglevel=info"
+    volumes:
+      - .:/code
+      - redis_data:/data
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - django-network
+
+  celery-beat:
+    build: .
+    command: bash -c "cd chtozadano &&
+                      celery -A celery_app beat --loglevel=info"
+    volumes:
+      - .:/code
+      - redis_data:/data
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
     networks:
       - django-network
 

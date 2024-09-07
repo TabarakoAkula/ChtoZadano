@@ -1,4 +1,3 @@
-import asyncio
 import json
 
 from django.contrib import messages
@@ -10,7 +9,7 @@ from django.views import generic, View
 from homework.forms import ChooseGradLetForm
 from homework.models import File, Homework, Image, Schedule, Todo
 from homework.utils import (
-    add_notification,
+    add_notification_management,
     check_grade_letter,
     get_abbreviation_from_name,
     get_group_from_teacher,
@@ -31,7 +30,7 @@ class HomeworkPage(View):
         if checker[0] == "Error":
             return checker[1]
         grade, letter, group = checker[1]
-        data = cache.get(f"homework_page_data_{grade}_{letter}_{group}")
+        data = cache.get(f"homework_page_data_{grade}_{letter}_0")
         if not data:
             latest_homework_ids = (
                 Homework.objects.filter(Q(group=0) | Q(group=group))
@@ -56,7 +55,7 @@ class HomeworkPage(View):
                 .defer("grade", "letter", "group")
             )
             cache.set(
-                f"homework_page_data_{grade}_{letter}_{group}",
+                f"homework_page_data_{grade}_{letter}_0",
                 data,
                 timeout=600,
             )
@@ -480,14 +479,12 @@ class AddHomeworkPage(View):
                 )
                 homework_object.files.add(file_object)
         messages.success(request, "Домашнее задание успешно добавлено")
-        asyncio.run(
-            add_notification(
-                homework_object,
-                request.user.server_user,
-                use_groups,
-            ),
+        homework_object.subject = get_name_from_abbreviation(
+            homework_object.subject,
         )
-        redis_delete_data(True, grade, letter, group)
+        user = request.user.server_user
+        add_notification_management(homework_object, user, use_groups)
+        redis_delete_data(True, grade, letter, 0)
         return redirect("homework:homework_page")
 
 
@@ -557,7 +554,6 @@ class EditHomework(View):
             request_files_list = request.FILES.getlist("files")
             server_user = request.user.server_user
             grade, letter = server_user.grade, server_user.letter
-            group = server_user.group
             files_list_for_model = save_files(
                 request_files_list,
                 grade,
@@ -600,7 +596,7 @@ class EditHomework(View):
             homework_object.description = description
             homework_object.subject = subject
             homework_object.save()
-            redis_delete_data(True, grade, letter, group)
+            redis_delete_data(True, grade, letter, 0)
             messages.success(request, "Успешно обновлено")
             return redirect("homework:edit_homework", homework_id=homework_id)
         messages.error(
@@ -617,7 +613,6 @@ class EditHomeworkData(View):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
             grade, letter = request_user.grade, request_user.letter
-            group = request_user.group
             try:
                 hw_object = Homework.objects.get(
                     id=homework_id,
@@ -632,7 +627,7 @@ class EditHomeworkData(View):
             elif r_type == "file":
                 File.objects.get(id=file_id, homework=hw_object).delete()
             messages.success(request, "Успешно обновлено")
-            redis_delete_data(True, grade, letter, group)
+            redis_delete_data(True, grade, letter, 0)
             if hw_object.group in [-3, -2, -1]:
                 return redirect(
                     "homework:edit_mailing",
@@ -679,7 +674,6 @@ class DeleteHomework(View):
         if request.user.is_staff or request.user.is_superuser:
             request_user = request.user.server_user
             grade, letter = request_user.grade, request_user.letter
-            group = request_user.group
             try:
                 Homework.objects.get(
                     id=homework_id,
@@ -690,7 +684,7 @@ class DeleteHomework(View):
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             messages.success(request, "Домашнее задание успешно удалено")
-            redis_delete_data(True, grade, letter, group)
+            redis_delete_data(True, grade, letter, 0)
         return redirect("homework:homework_page")
 
 
@@ -801,12 +795,10 @@ class AddMailingPage(View):
                 )
                 homework_object.files.add(file_object)
         messages.success(request, "Рассылка успешно добавлена")
-        asyncio.run(
-            add_notification(
-                homework_object,
-                request.user.server_user,
-                False,
-            ),
+        add_notification_management(
+            homework_object,
+            request.user.server_user,
+            False,
         )
         redis_delete_data(False, grade, letter, group)
         return redirect("homework:homework_page")

@@ -1,3 +1,4 @@
+import asyncio
 import os
 import pathlib
 import urllib
@@ -8,6 +9,8 @@ import aiogram.exceptions
 from aiogram.types import FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
 from asgiref.sync import sync_to_async
+from celery import shared_task
+from django.conf import settings
 from dotenv import load_dotenv
 
 import homework.models
@@ -146,7 +149,10 @@ async def send_images(
                 images_with_id.add(tg_id)
             else:
                 path = urllib.parse.unquote(image_path[1:])
-                abs_path = pathlib.Path.cwd() / "chtozadano" / path
+                if settings.USE_CELERY:
+                    abs_path = pathlib.Path.cwd() / path
+                else:
+                    abs_path = pathlib.Path.cwd() / "chtozadano" / path
                 photo_media_group.add_photo(FSInputFile(abs_path))
         except aiogram.exceptions.TelegramBadRequest:
             continue
@@ -185,7 +191,10 @@ async def send_files(
                 files_with_id.add(tg_id)
             else:
                 path = urllib.parse.unquote(file_path[1:])
-                abs_path = pathlib.Path.cwd() / "chtozadano" / path
+                if settings.USE_CELERY:
+                    abs_path = pathlib.Path.cwd() / path
+                else:
+                    abs_path = pathlib.Path.cwd() / "chtozadano" / path
                 files_media_group.add_document(FSInputFile(abs_path))
         except aiogram.exceptions.TelegramBadRequest:
             continue
@@ -228,6 +237,36 @@ async def add_documents_file_id(
     except IndexError:
         pass
     return
+
+
+def custom_notification_management(
+    users_ids: list,
+    message_text: str,
+    notification: bool,
+) -> None:
+    if settings.USE_CELERY:
+        celery_custom_notification(users_ids, message_text, notification)
+    else:
+        asyncio.run(
+            custom_notification(
+                users_ids,
+                message_text,
+                notification,
+            ),
+        )
+
+
+@shared_task()
+async def celery_custom_notification(
+    users_ids: list,
+    message_text: str,
+    notification: bool,
+) -> None:
+    return custom_notification(
+        users_ids,
+        message_text,
+        notification,
+    )
 
 
 async def custom_notification(
