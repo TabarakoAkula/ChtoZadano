@@ -30,7 +30,7 @@ class HomeworkPage(View):
         if checker[0] == "Error":
             return checker[1]
         grade, letter, group = checker[1]
-        data = cache.get(f"homework_page_data_{grade}_{letter}_{group}")
+        data = cache.get(f"homework_page_data_{grade}_{letter}_0")
         if not data:
             latest_homework_ids = (
                 Homework.objects.filter(Q(group=0) | Q(group=group))
@@ -55,7 +55,7 @@ class HomeworkPage(View):
                 .defer("grade", "letter", "group")
             )
             cache.set(
-                f"homework_page_data_{grade}_{letter}_{group}",
+                f"homework_page_data_{grade}_{letter}_0",
                 data,
                 timeout=600,
             )

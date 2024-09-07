@@ -32,7 +32,7 @@ class GetLastHomeworkAllSubjectsAPI(viewsets.ReadOnlyModelViewSet):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         grade, letter, group = user.grade, user.letter, user.group
-        data = cache.get(f"homework_page_data_{grade}_{letter}_{group}")
+        data = cache.get(f"homework_page_data_{grade}_{letter}_0")
         if not data:
             latest_homework_ids = (
                 Homework.objects.filter(Q(group=0) | Q(group=group))
@@ -57,7 +57,7 @@ class GetLastHomeworkAllSubjectsAPI(viewsets.ReadOnlyModelViewSet):
                 .defer("grade", "letter", "group")
             )
             cache.set(
-                f"homework_page_data_{grade}_{letter}_{group}",
+                f"homework_page_data_{grade}_{letter}_0",
                 data,
                 timeout=600,
             )
