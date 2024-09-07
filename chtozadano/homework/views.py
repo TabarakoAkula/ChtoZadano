@@ -484,7 +484,7 @@ class AddHomeworkPage(View):
         )
         user = request.user.server_user
         add_notification_management(homework_object, user, use_groups)
-        redis_delete_data(True, grade, letter, group)
+        redis_delete_data(True, grade, letter, 0)
         return redirect("homework:homework_page")
 
 
@@ -597,7 +597,7 @@ class EditHomework(View):
             homework_object.description = description
             homework_object.subject = subject
             homework_object.save()
-            redis_delete_data(True, grade, letter, group)
+            redis_delete_data(True, grade, letter, 0)
             messages.success(request, "Успешно обновлено")
             return redirect("homework:edit_homework", homework_id=homework_id)
         messages.error(
@@ -629,7 +629,7 @@ class EditHomeworkData(View):
             elif r_type == "file":
                 File.objects.get(id=file_id, homework=hw_object).delete()
             messages.success(request, "Успешно обновлено")
-            redis_delete_data(True, grade, letter, group)
+            redis_delete_data(True, grade, letter, 0)
             if hw_object.group in [-3, -2, -1]:
                 return redirect(
                     "homework:edit_mailing",
@@ -687,7 +687,7 @@ class DeleteHomework(View):
                 messages.error(request, "Такой записи не существует")
                 return redirect("homework:homework_page")
             messages.success(request, "Домашнее задание успешно удалено")
-            redis_delete_data(True, grade, letter, group)
+            redis_delete_data(True, grade, letter, 0)
         return redirect("homework:homework_page")
 
 
