@@ -16,7 +16,6 @@ services:
       - bot
     networks:
       - django-network
-    restart: unless-stopped
 
   db:
     image: postgres:16
@@ -75,18 +74,6 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
-    networks:
-      - django-network
-
-  celery-worker:
-    build: .
-    command: bash -c "cd chtozadano &&
-                      celery -A celery_app worker --loglevel=info"
-    volumes:
-      - .:/code
-    restart: unless-stopped
-    depends_on:
-      - nginx
     networks:
       - django-network
 
