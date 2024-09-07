@@ -3,8 +3,7 @@ import datetime
 import json
 import random
 
-from asgiref.sync import sync_to_async
-from celery_app import app
+from celery import shared_task
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -320,7 +319,7 @@ def add_notification_management(
         )
 
 
-@app.task()
+@shared_task()
 def celery_add_notification(
     model_object,
     user,
@@ -371,19 +370,17 @@ def cron_notification_management(text):
     if settings.USE_CELERY:
         celery_cron_notification.delay(text)
     else:
-        asyncio.run(cron_notifier(text))
+        cron_notifier(text)
 
 
-@app.task()
-async def celery_cron_notification(text):
-    await cron_notifier(text)
+@shared_task()
+def celery_cron_notification(text):
+    return cron_notifier(text)
 
 
-async def cron_notifier(text: str) -> None:
-    users_ids = await sync_to_async(list)(
-        DjangoUser.objects.filter(is_superuser=True).values(
-            "server_user__telegram_id",
-        ),
+def cron_notifier(text: str) -> None:
+    users_ids = DjangoUser.objects.filter(is_superuser=True).values(
+        "server_user__telegram_id",
     )
     users_ids = [
         int(i["server_user__telegram_id"])
@@ -392,7 +389,39 @@ async def cron_notifier(text: str) -> None:
     ]
     if settings.TEST:
         return
-    await custom_notification(users_ids, text, False)
+    asyncio.run(custom_notification(users_ids, text, False))
+
+
+def delete_old_homework_management():
+    if settings.USE_CELERY:
+        celery_delete_old_homework.delay()
+    else:
+        delete_old_homework()
+
+
+@shared_task()
+def celery_delete_old_homework():
+    return delete_old_homework()
+
+
+def delete_old_homework() -> None:
+    today = datetime.datetime.today().date()
+    two_weeks_ago = today - datetime.timedelta(days=14)
+    todo_objects = homework.models.Todo.objects.filter(
+        created_at__lt=two_weeks_ago,
+    )
+    hw_objects = homework.models.Homework.objects.filter(
+        created_at__lt=two_weeks_ago,
+    )
+    response_message = (
+        f"Cleaner🗑️: Успешно удалено:\n"
+        f"· {todo_objects.count()} Todo записей\n"
+        f"· {hw_objects.count()} Homework записей"
+    )
+    todo_objects.delete()
+    hw_objects.delete()
+    cron_notification_management(response_message)
+    return
 
 
 def redis_delete_data(

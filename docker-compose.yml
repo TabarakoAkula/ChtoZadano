@@ -8,6 +8,7 @@ services:
       - "./nginx.conf:/etc/nginx/nginx.conf"
       - "${NGINX_CERT}:/etc/nginx/ssl/fullchain.pem"
       - "${NGINX_KEY}:/etc/nginx/ssl/privkey.pem"
+    restart: unless-stopped
     depends_on:
       - db
       - redis
@@ -43,12 +44,12 @@ services:
       - ./chtozadano/logs:/code/chtozadano/logs
     expose:
       - "8000"
+    restart: unless-stopped
     depends_on:
       - db
       - redis
     links:
       - db:db
-    restart: unless-stopped
     networks:
        - django-network
 
@@ -58,23 +59,13 @@ services:
       - .:/code
     command: bash -c "cd chtozadano &&
                       python telegram_bot"
+    restart: unless-stopped
     depends_on:
       - db
       - redis
       - web
-    restart: always
     expose:
       - "8000"
-    networks:
-      - django-network
-
-  cron:
-    build: cron/
-    volumes:
-      - ./cron:/cron
-    restart: unless-stopped
-    depends_on:
-      - nginx
     networks:
       - django-network
 
@@ -84,6 +75,30 @@ services:
     restart: unless-stopped
     volumes:
       - redis_data:/data
+    networks:
+      - django-network
+
+  celery-worker:
+    build: .
+    command: bash -c "cd chtozadano &&
+                      celery -A celery_app worker --loglevel=info"
+    volumes:
+      - .:/code
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    networks:
+      - django-network
+
+  celery-beat:
+    build: .
+    command: bash -c "cd chtozadano &&
+                      celery -A celery_app beat --loglevel=info"
+    volumes:
+      - .:/code
+    restart: unless-stopped
+    depends_on:
+      - web
     networks:
       - django-network
 

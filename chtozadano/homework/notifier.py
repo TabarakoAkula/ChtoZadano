@@ -9,7 +9,7 @@ import aiogram.exceptions
 from aiogram.types import FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
 from asgiref.sync import sync_to_async
-from celery_app import app
+from celery import shared_task
 from django.conf import settings
 from dotenv import load_dotenv
 
@@ -250,7 +250,7 @@ def custom_notification_management(
         )
 
 
-@app.task()
+@shared_task()
 async def celery_custom_notification(
     users_ids: list,
     message_text: str,
