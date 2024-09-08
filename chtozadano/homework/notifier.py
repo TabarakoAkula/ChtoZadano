@@ -4,7 +4,9 @@ import pathlib
 import urllib
 
 from aiogram import Bot
+from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
+from aiogram.enums import ParseMode
 import aiogram.exceptions
 from aiogram.types import FSInputFile
 from aiogram.utils.media_group import MediaGroupBuilder
@@ -279,7 +281,11 @@ async def custom_notification(
     if os.getenv("TEST"):
         return
     bot_session = AiohttpSession()
-    notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
+    notify_bot = Bot(
+        token=os.getenv("BOT_TOKEN"),
+        session=bot_session,
+        default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN_V2),
+    )
     for user_id in users_ids:
         await notify_bot.send_message(
             chat_id=user_id,
