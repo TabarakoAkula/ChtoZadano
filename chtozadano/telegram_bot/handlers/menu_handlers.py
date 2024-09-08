@@ -26,16 +26,23 @@ async def command_menu_handler(
             "telegram_id": message.chat.id,
         },
     )
-    if response.json()["quotes_status"] and show_quotes:
+    try:
+        if response.json()["quotes_status"] and show_quotes:
+            await message.answer(
+                text=random.choice(MENU_MESSAGES),
+                reply_markup=kb_menu.menu_rp_kb(),
+            )
+        elif show_quotes:
+            await message.answer(
+                text="Ты находишься в основном меню",
+                reply_markup=kb_menu.menu_rp_kb(),
+            )
+    except KeyError:
         await message.answer(
-            text=random.choice(MENU_MESSAGES),
-            reply_markup=kb_menu.menu_rp_kb(),
+            "Для взаимодействия с ботом необходимо в нем зарегистрироваться."
+            " Введи команду /start",
         )
-    elif show_quotes:
-        await message.answer(
-            text="Ты находишься в основном меню",
-            reply_markup=kb_menu.menu_rp_kb(),
-        )
+        return
 
 
 @rp_menu_router.message(F.text == "Вернуться")

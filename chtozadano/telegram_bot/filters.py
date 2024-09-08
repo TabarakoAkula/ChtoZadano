@@ -5,7 +5,13 @@ from states import (
     AddHomeworkSlow,
     EditHomework,
     Homework,
+    Register,
     Schedule,
+)
+
+ReturnToStartRegistrationStateFilter = StateFilter(
+    Register.choose_group,
+    Register.become_admin,
 )
 
 ScheduleStateFilter = StateFilter(

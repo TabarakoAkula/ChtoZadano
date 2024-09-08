@@ -18,7 +18,7 @@ from keyboards.account import (
 )
 import requests
 from states import Account, ChangeContacts
-from utils import check_for_admin, get_fast_add
+from utils import check_for_admin, create_user, get_fast_add
 
 rp_account_router = Router()
 
@@ -64,8 +64,15 @@ async def change_contacts_account_handler(
         },
     )
     response = response.json()
-    first_name = response["first_name"]
-    last_name = response["last_name"]
+    try:
+        first_name = response["first_name"]
+        last_name = response["last_name"]
+    except (KeyError, TypeError):
+        await message.answer(
+            "Для взаимодействия с ботом необходимо в нем зарегистрироваться."
+            " Введи команду /start",
+        )
+        return
     answer_message = (
         f"Сейчас твои данные выглядят так:\nИмя: {html.bold(first_name)}\n"
         f"Фамилия: {html.bold(last_name)}\n\nЭти данные будут отображаться"
@@ -175,7 +182,7 @@ async def become_admin_account_handler(
         url=DOCKER_URL + "/api/v1/get_contacts/",
         json={
             "api_key": os.getenv("API_KEY"),
-            "telegram_id": message.from_user.id,
+            "telegram_id": message.chat.id,
         },
     )
     if await check_for_admin(message.from_user.id) == "admin":
@@ -186,8 +193,16 @@ async def become_admin_account_handler(
         )
     else:
         response = response.json()
-        first_name = response["first_name"]
-        last_name = response["last_name"]
+        try:
+            first_name = response["first_name"]
+            last_name = response["last_name"]
+        except KeyError:
+            await message.answer(
+                "Для взаимодействия с ботом необходимо"
+                " в нем зарегистрироваться."
+                " Введи команду /start",
+            )
+            return
         await message.answer(
             text=f"Став администратором, у тебя появится возможность добавлять"
             f" и редактировать домашние задания.\n\nПеред отправкой заявки"
@@ -207,6 +222,16 @@ async def command_become_admin_account_handler(
     state: FSMContext,
 ) -> None:
     await become_admin_account_handler(message, state)
+
+
+@rp_account_router.callback_query(F.data == "start_become_admin_yes")
+async def registration_become_admin_account_handler(
+    call: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    await create_user(call, state)
+    await state.set_state(Account.become_admin)
+    await become_admin_account_handler(call.message, state)
 
 
 @rp_account_router.message(F.text == "Отправить заявку📁")
@@ -327,7 +352,14 @@ async def settings_handler(
             "telegram_id": message.chat.id,
         },
     )
-    chat_mode = chat_mode.json()["chat_mode"]
+    try:
+        chat_mode = chat_mode.json()["chat_mode"]
+    except (KeyError, TypeError):
+        await message.answer(
+            "Для взаимодействия с ботом необходимо в нем зарегистрироваться."
+            " Введи команду /start",
+        )
+        return
     if chat_mode:
         chat_mode = "Включен"
     else:

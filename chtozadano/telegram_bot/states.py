@@ -5,6 +5,7 @@ class Register(StatesGroup):
     start = State()
     choose_class = State()
     choose_group = State()
+    become_admin = State()
 
 
 class Schedule(StatesGroup):

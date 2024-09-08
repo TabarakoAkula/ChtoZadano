@@ -7,11 +7,12 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from constants import DOCKER_URL, DOMAIN_URL
+from filters import ReturnToStartRegistrationStateFilter
 from handlers.menu_handlers import command_menu_handler
 from keyboards import kb_menu, kb_start
 import requests
 from states import Register
-from utils import check_for_admin, delete_become_admin
+from utils import check_for_admin, create_user, delete_become_admin
 
 rp_register_router = Router()
 
@@ -103,41 +104,39 @@ async def start_redirect_to_menu_handler(
     group = str(
         call.data.split("_")[-2] + " " + call.data.split("_")[-1],
     ).replace(" ", "_")
-
+    await state.update_data(
+        {
+            "grade": grade,
+            "letter": letter,
+            "group": group,
+        },
+    )
+    await state.set_state(Register.become_admin)
     await call.message.answer(
         f"Ты в {html.italic(grade)}{html.italic(letter)}"
         f" классе, группа {html.italic(group.replace('_', ' '))}",
     )
-    await asyncio.to_thread(
-        requests.post,
-        url=DOCKER_URL + "/api/v1/create_user/",
-        json={
-            "api_key": os.getenv("API_KEY"),
-            "telegram_id": call.from_user.id,
-            "grade": grade,
-            "letter": letter,
-            "group": group,
-            "name": call.from_user.first_name,
-        },
-    )
-    await state.clear()
     await call.message.answer(
-        "На этом всё. Теперь я всегда готов ответить на"
-        " твои вопросы по домашнему заданию. Чтобы"
-        " узнать домашнее задание, отправь вопрос в"
-        " произвольной форме, обязательно упомянув"
-        " название предмета.\nА если вдруг у тебя не"
-        " будет возможности спросить меня, все домашние"
-        " задания доступны через сайт https://hw116.ru"
-        " И не забывай - описание всех доступных функций"
-        " всегда доступно через команду /help",
+        "И последний вопрос: ты хочешь стать администратором в своем классе?",
+        reply_markup=kb_start.start_become_admin_in_kb(),
     )
+
+
+@rp_register_router.callback_query(
+    Register.become_admin,
+    F.data == "start_become_admin_no",
+)
+async def registration_go_menu_handler(
+    call: CallbackQuery,
+    state: FSMContext,
+) -> None:
+    await create_user(call, state)
     await command_menu_handler(call.message)
 
 
 @rp_register_router.callback_query(
     F.data == "back_to_start",
-    Register.choose_group,
+    ReturnToStartRegistrationStateFilter,
 )
 async def redirect_to_start_handler(
     call: CallbackQuery,

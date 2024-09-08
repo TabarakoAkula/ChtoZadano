@@ -42,12 +42,20 @@ async def schedule_week_handler(message: Message, state: FSMContext) -> None:
     weekday_now = 0
     result_message = ""
     for i in schedule:
-        if i["weekday"] == weekday_now:
-            result_message += f"{i['lesson']}. {i['subject']}\n"
-        else:
-            result_message += f"\n{WEEK_DAYS[i['weekday']]}:\n"
-            result_message += f"{i['lesson']}. {i['subject']}\n"
-            weekday_now = i["weekday"]
+        try:
+            if i["weekday"] == weekday_now:
+                result_message += f"{i['lesson']}. {i['subject']}\n"
+            else:
+                result_message += f"\n{WEEK_DAYS[i['weekday']]}:\n"
+                result_message += f"{i['lesson']}. {i['subject']}\n"
+                weekday_now = i["weekday"]
+        except (KeyError, TypeError):
+            await message.answer(
+                "Для взаимодействия с ботом необходимо"
+                " в нем зарегистрироваться."
+                " Введи команду /start",
+            )
+            return
     await message.answer(
         result_message,
         reply_markup=kb_schedule.schedule_rp_kb(),
@@ -73,7 +81,14 @@ async def schedule_tomorrow_handler(
         reply_markup=kb_schedule.schedule_rp_kb(),
     )
     schedule = response.json()
-    result_message = WEEK_DAYS[schedule[0]["weekday"]] + ":"
+    try:
+        result_message = WEEK_DAYS[schedule[0]["weekday"]] + ":"
+    except (KeyError, TypeError):
+        await message.answer(
+            "Для взаимодействия с ботом необходимо в нем зарегистрироваться."
+            " Введи команду /start",
+        )
+        return
     for i in schedule:
         result_message += f"\n{i['lesson']}. {i['subject']}"
     await message.answer(
