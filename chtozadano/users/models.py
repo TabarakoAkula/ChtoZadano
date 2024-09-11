@@ -29,6 +29,25 @@ class DateTimeWithoutTZField(django.db.models.DateTimeField):
         return "timestamp"
 
 
+class UsersManager(django.db.models.Manager):
+    def mode_toggle_data(self):
+        return self.aggregate(
+            total_users=django.db.models.Count("pk"),
+            chat_mode_enable=django.db.models.Count(
+                "pk",
+                filter=django.db.models.Q(chat_mode=True),
+            ),
+            hast_hw_enable=django.db.models.Count(
+                "pk",
+                filter=django.db.models.Q(fast_hw=True),
+            ),
+            show_quotes_enable=django.db.models.Count(
+                "pk",
+                filter=django.db.models.Q(show_quotes=True),
+            ),
+        )
+
+
 class User(django.db.models.Model):
     user = django.db.models.OneToOneField(
         DjangoUser,
@@ -72,6 +91,7 @@ class User(django.db.models.Model):
         blank=True,
         related_name="user_todo",
     )
+    analytics = UsersManager()
 
     def __str__(self):
         return self.user.username
