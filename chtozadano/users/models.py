@@ -91,6 +91,7 @@ class User(django.db.models.Model):
         blank=True,
         related_name="user_todo",
     )
+    objects = django.db.models.Manager()
     analytics = UsersManager()
 
     def __str__(self):
