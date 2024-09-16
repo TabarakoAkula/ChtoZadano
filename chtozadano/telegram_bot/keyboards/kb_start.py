@@ -4,50 +4,20 @@ from aiogram.types import (
 )
 
 
-def choose_gr_let_in_kb() -> InlineKeyboardMarkup:
-    inline_list = [
-        [
-            InlineKeyboardButton(text="4А", callback_data="ch_gr_let_4А"),
-            InlineKeyboardButton(text="4Б", callback_data="ch_gr_let_4Б"),
-            InlineKeyboardButton(text="4В", callback_data="ch_gr_let_4В"),
-        ],
-        [
-            InlineKeyboardButton(text="5А", callback_data="ch_gr_let_5А"),
-            InlineKeyboardButton(text="5Б", callback_data="ch_gr_let_5Б"),
-            InlineKeyboardButton(text="5В", callback_data="ch_gr_let_5В"),
-            InlineKeyboardButton(text="5Г", callback_data="ch_gr_let_5Г"),
-        ],
-        [
-            InlineKeyboardButton(text="6А", callback_data="ch_gr_let_6А"),
-            InlineKeyboardButton(text="6Б", callback_data="ch_gr_let_6Б"),
-            InlineKeyboardButton(text="6В", callback_data="ch_gr_let_6В"),
-            InlineKeyboardButton(text="6Г", callback_data="ch_gr_let_6Г"),
-        ],
-        [
-            InlineKeyboardButton(text="7А", callback_data="ch_gr_let_7А"),
-            InlineKeyboardButton(text="7Б", callback_data="ch_gr_let_7Б"),
-            InlineKeyboardButton(text="7В", callback_data="ch_gr_let_7В"),
-        ],
-        [
-            InlineKeyboardButton(text="8А", callback_data="ch_gr_let_8А"),
-            InlineKeyboardButton(text="8Б", callback_data="ch_gr_let_8Б"),
-            InlineKeyboardButton(text="8В", callback_data="ch_gr_let_8В"),
-        ],
-        [
-            InlineKeyboardButton(text="9А", callback_data="ch_gr_let_9А"),
-            InlineKeyboardButton(text="9Б", callback_data="ch_gr_let_9Б"),
-            InlineKeyboardButton(text="9В", callback_data="ch_gr_let_9В"),
-        ],
-        [
-            InlineKeyboardButton(text="10А", callback_data="ch_gr_let_10А"),
-            InlineKeyboardButton(text="10Б", callback_data="ch_gr_let_10Б"),
-            InlineKeyboardButton(text="10В", callback_data="ch_gr_let_10В"),
-        ],
-        [
-            InlineKeyboardButton(text="11А", callback_data="ch_gr_let_11А"),
-            InlineKeyboardButton(text="11Б", callback_data="ch_gr_let_11Б"),
-        ],
-    ]
+def choose_gr_let_in_kb(classes: dict) -> InlineKeyboardMarkup:
+    inline_list = []
+    for grade in classes:
+        letters = classes[grade]
+        buttons_list = []
+        for letter_button in letters:
+            grade_name = grade + letter_button
+            buttons_list.append(
+                InlineKeyboardButton(
+                    text=grade_name,
+                    callback_data="ch_gr_let_" + grade_name,
+                ),
+            )
+        inline_list.append(buttons_list)
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
 
 

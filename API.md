@@ -228,6 +228,16 @@
   + Возвращает:  
       + ``JSON``:   
       ``teachers``: list[str]  
++ GetAllClassesAPI:
+  + Путь: ``api/v1/get_all_classes/`` 
+  + Метод: ``POST``
+  + Ограничение по доступности: ``нет``
+  + Суть: выдать боту какие классы предлагать для выбора
+  + Действие: получает из ``json/grades_subjects.json`` все классы
+  + Параметры: 
+    + ``api_key`` - ``str`` апи ключ
+  + Возвращает:  
+      + ``JSON``: ``dict[list]``  
 </details>
 <details><summary><h2>Homework:</h2></summary>
 
