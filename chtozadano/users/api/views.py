@@ -17,6 +17,7 @@ from users.models import BecomeAdmin, SignIn, User
 from users.utils import (
     become_admin_decision_notify_management,
     create_password,
+    get_all_classes,
     get_randomized_name,
     get_user_teachers,
     new_become_admin_notify_management,
@@ -417,3 +418,9 @@ class ChangeFastAddAPI(APIView):
         user_obj.save()
         cache.delete(f"fast_hw_{telegram_id}")
         return response.Response({"success": "Successful"})
+
+
+class GetAllClassesAPI(APIView):
+    @staticmethod
+    def post(request):
+        return response.Response(get_all_classes())

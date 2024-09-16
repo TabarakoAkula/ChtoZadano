@@ -442,11 +442,11 @@ def redis_delete_data(
     if homework_data:
         cache_keys += [
             f"homework_page_data_{grade}_{letter}_{group}",
-            f"all_homework_data_{grade}_{letter}_{group}",
         ]
         specific_keys += [
             f"weekday_page_data_{grade}_{letter}_{group}_*",
             f"all_homework_date_{grade}_{letter}_{group}_*",
+            f"all_homework_data_{grade}_{letter}_*",
         ]
     if not homework_data and not schedule:
         cache_keys += [

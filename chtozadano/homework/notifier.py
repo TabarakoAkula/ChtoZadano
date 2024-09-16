@@ -24,69 +24,69 @@ async def homework_notifier(
     users_ids: list[int],
     homework_data: dict,
 ) -> None:
-    bot_session = AiohttpSession()
-    notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
-    homework_data["subject"] = (
-        homework_data["subject"][0].upper() + homework_data["subject"][1:]
-    )
-    if homework_data["subject"] == "Информация":
-        await mailing_generator(
-            homework_data,
-            notify_bot,
-            users_ids,
+    async with AiohttpSession() as bot_session:
+        notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
+        homework_data["subject"] = (
+            homework_data["subject"][0].upper() + homework_data["subject"][1:]
         )
-        await bot_session.close()
-        return
-    try:
-        group = homework_data["group"]
-    except KeyError:
-        text = f"{homework_data['subject']}:\nНичего не задано"
-        for user_id in users_ids:
-            await notify_bot.send_message(text=text, chat_id=user_id)
-        return
-    if group != 0:
-        text = (
-            f"{homework_data['subject']},"
-            f" {homework_data['group']} группа, {homework_data['author']}:\n"
-            f"{homework_data['description']}"
-        )
-    else:
-        text = (
-            f"{homework_data['subject']},"
-            f" {homework_data['author']}:\n"
-            f"{homework_data['description']}"
-        )
-    images = homework_data["images"]
-    files = homework_data["files"]
-    if images or files:
-        if images:
-            await send_images(
-                images,
-                text,
+        if homework_data["subject"] == "Информация":
+            await mailing_generator(
+                homework_data,
                 notify_bot,
                 users_ids,
-                homework_data["id"],
             )
-        if files:
-            if not images:
-                caption = text
-            else:
-                caption = f"{homework_data['subject']}, добавленные файлы"
-            await send_files(
-                files,
-                caption,
-                notify_bot,
-                users_ids,
-                homework_data["id"],
+            await bot_session.close()
+            return
+        try:
+            group = homework_data["group"]
+        except KeyError:
+            text = f"{homework_data['subject']}:\nНичего не задано"
+            for user_id in users_ids:
+                await notify_bot.send_message(text=text, chat_id=user_id)
+            return
+        if group != 0:
+            text = (
+                f"{homework_data['subject']},"
+                f" {homework_data['group']} группа,"
+                f" {homework_data['author']}:\n"
+                f"{homework_data['description']}"
             )
-    else:
-        for user in users_ids:
-            await notify_bot.send_message(
-                text=text,
-                chat_id=user,
+        else:
+            text = (
+                f"{homework_data['subject']},"
+                f" {homework_data['author']}:\n"
+                f"{homework_data['description']}"
             )
-    await bot_session.close()
-    return
+        images = homework_data["images"]
+        files = homework_data["files"]
+        if images or files:
+            if images:
+                await send_images(
+                    images,
+                    text,
+                    notify_bot,
+                    users_ids,
+                    homework_data["id"],
+                )
+            if files:
+                if not images:
+                    caption = text
+                else:
+                    caption = f"{homework_data['subject']}, добавленные файлы"
+                await send_files(
+                    files,
+                    caption,
+                    notify_bot,
+                    users_ids,
+                    homework_data["id"],
+                )
+        else:
+            for user in users_ids:
+                await notify_bot.send_message(
+                    text=text,
+                    chat_id=user,
+                )
+        return
 
 
 async def mailing_generator(
@@ -280,16 +280,15 @@ async def custom_notification(
 ) -> None:
     if os.getenv("TEST"):
         return
-    bot_session = AiohttpSession()
-    notify_bot = Bot(
-        token=os.getenv("BOT_TOKEN"),
-        session=bot_session,
-        default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN_V2),
-    )
-    for user_id in users_ids:
-        await notify_bot.send_message(
-            chat_id=user_id,
-            text=message_text,
-            disable_notification=not notification,
+    async with AiohttpSession() as bot_session:
+        notify_bot = Bot(
+            token=os.getenv("BOT_TOKEN"),
+            session=bot_session,
+            default=DefaultBotProperties(parse_mode=ParseMode.MARKDOWN_V2),
         )
-    await bot_session.close()
+        for user_id in users_ids:
+            await notify_bot.send_message(
+                chat_id=user_id,
+                text=message_text,
+                disable_notification=not notification,
+            )

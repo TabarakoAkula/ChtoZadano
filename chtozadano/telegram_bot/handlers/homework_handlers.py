@@ -7,6 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ContentType, Message
 from bot_instance import bot
 from constants import DOCKER_URL, SUBJECTS
+import dotenv
 from filters import (
     AddHomeworkFastDescriptionStateFilter,
     AddHomeworkSlowStateFilter,
@@ -21,6 +22,7 @@ from keyboards.homework import (
     homework_edit,
     homework_subject,
 )
+import redis
 import requests
 from states import AddHomeworkFast, AddHomeworkSlow, EditHomework
 from utils import (
@@ -34,6 +36,14 @@ from utils import (
     get_user_subjects,
     publish_homework,
 )
+
+dotenv.load_dotenv()
+
+USE_REDIS = os.getenv("USE_REDIS")
+
+if USE_REDIS:
+    REDIS_BOT_URL = os.getenv("REDIS_BOT_URL")
+    redis_client = redis.from_url(REDIS_BOT_URL)
 
 rp_homework_router = Router()
 
@@ -157,6 +167,18 @@ async def send_message_after_delay(
         await command_publish_hw_handler(message, state)
 
 
+def set_timer(user_id: int):
+    redis_client.setex(f"timer_{user_id}", 3, "active")
+
+
+def cancel_timer(user_id: int):
+    redis_client.delete(f"timer_{user_id}")
+
+
+def check_timer(user_id: int):
+    return redis_client.get(f"timer_{user_id}")
+
+
 @rp_homework_router.message(
     F.content_type.in_([ContentType.DOCUMENT, ContentType.AUDIO]),
     AddHomeworkFast.add_data,
@@ -165,17 +187,6 @@ async def fast_add_homework_data_handler(
     message: Message,
     state: FSMContext,
 ) -> None:
-    dp = await state.get_data()
-    try:
-        dp["delay_task"].cancel()
-    except KeyError:
-        pass
-    await state.update_data(
-        delay_task=asyncio.create_task(
-            send_message_after_delay(message.chat.id, state),
-        ),
-    )
-
     state_data = await state.get_data()
     subject = state_data["choose_subject"]
     if message.document:
@@ -206,6 +217,27 @@ async def fast_add_homework_data_handler(
                     message.audio.file_name,
                     show_message=False,
                 )
+    if not USE_REDIS:
+        dp = await state.get_data()
+        try:
+            dp["delay_task"].cancel()
+        except KeyError:
+            pass
+        await state.update_data(
+            delay_task=asyncio.create_task(
+                send_message_after_delay(message.chat.id, state),
+            ),
+        )
+    else:
+        user_id = message.from_user.id
+        if check_timer(user_id):
+            cancel_timer(user_id)
+        set_timer(user_id)
+        await asyncio.sleep(3)
+        if not check_timer(user_id):
+            await message.answer(
+                text="Теперь отправь описание и изображения, если нужно",
+            )
 
 
 @rp_homework_router.message(
@@ -216,21 +248,6 @@ async def fast_add_homework_description_images_handler(
     message: Message,
     state: FSMContext,
 ) -> None:
-    dp = await state.get_data()
-    try:
-        dp["delay_task"].cancel()
-    except KeyError:
-        pass
-    await state.update_data(
-        delay_task=asyncio.create_task(
-            send_message_after_delay(
-                message.chat.id,
-                state,
-                message,
-                publish=True,
-            ),
-        ),
-    )
     text = message.caption or message.text
     if text:
         await state.update_data(text=text)
@@ -248,6 +265,30 @@ async def fast_add_homework_description_images_handler(
                     subject,
                     state,
                 )
+    if not USE_REDIS:
+        dp = await state.get_data()
+        try:
+            dp["delay_task"].cancel()
+        except KeyError:
+            pass
+        await state.update_data(
+            delay_task=asyncio.create_task(
+                send_message_after_delay(
+                    message.chat.id,
+                    state,
+                    message,
+                    publish=True,
+                ),
+            ),
+        )
+    else:
+        user_id = message.from_user.id
+        if check_timer(user_id):
+            cancel_timer(user_id)
+        set_timer(user_id)
+        await asyncio.sleep(3)
+        if not check_timer(user_id):
+            await command_publish_hw_handler(message, state)
 
 
 @rp_homework_router.callback_query(
