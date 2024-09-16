@@ -91,6 +91,14 @@ class User(django.db.models.Model):
         blank=True,
         related_name="user_todo",
     )
+    send_cleaner = django.db.models.BooleanField(
+        default=False,
+        verbose_name="Отправка очистки",
+    )
+    send_analytics = django.db.models.BooleanField(
+        default=False,
+        verbose_name="Отправка аналитики",
+    )
     objects = django.db.models.Manager()
     analytics = UsersManager()
 
