@@ -93,6 +93,10 @@ cd chtozadano
 python manage.py makemigrations
 python manage.py migrate
 ```
+### Collect static files
+```bash
+python manage.py collectstatic
+```
 ### Launch server and bot
 ```bash
 python manage.py runserver
@@ -123,7 +127,7 @@ To enter it, you need to:
 + Create superuser
 + Go to the address ``/admin/`` and enter superuser data
 #### OR
-+ Go to ``/user/account/`` and press ``Админ панель``
++ Go to ``/user/account/``, press ``Админ панель`` and enter superuser data  
 
 ## 📁Data customization
 If you want to upload another data about teachers/subjects/group - change data in this files:
