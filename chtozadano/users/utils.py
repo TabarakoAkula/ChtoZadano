@@ -145,3 +145,13 @@ def get_user_teachers(grade: int, letter: str) -> list | None:
             return json_data[str(grade)][letter]["teachers"]
         except KeyError:
             return None
+
+
+def get_all_classes() -> dict:
+    file_link = staticfiles_storage.url("json/grades_subjects.json")
+    response_dict = {}
+    with open(str(BASE_DIR) + file_link, encoding="utf-8") as data:
+        json_data = json.loads(data.read())
+        for grade in json_data:
+            response_dict[grade] = json_data[grade].keys()
+        return response_dict
