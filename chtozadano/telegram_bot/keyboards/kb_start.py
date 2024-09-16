@@ -14,7 +14,8 @@ def choose_gr_let_in_kb(classes: dict) -> InlineKeyboardMarkup:
             buttons_list.append(
                 InlineKeyboardButton(
                     text=grade_name,
-                    callback_data="ch_gr_let_" + grade_name),
+                    callback_data="ch_gr_let_" + grade_name,
+                ),
             )
         inline_list.append(buttons_list)
     return InlineKeyboardMarkup(inline_keyboard=inline_list)
