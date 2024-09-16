@@ -15,28 +15,27 @@ async def become_admin_notify(
     number_of_requests: int,
     users_ids: list[int],
 ) -> None:
-    bot_session = AiohttpSession()
-    notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
-    for user_id in users_ids:
-        await notify_bot.send_message(
-            chat_id=user_id,
-            text=(
-                f"👮Новая заявка на становление администратором"
-                f"\nВсего заявок: {number_of_requests}"
-            ),
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text="Посмотреть заявки",
-                            callback_data="become_admin_requests",
-                        ),
+    async with AiohttpSession() as bot_session:
+        notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
+        for user_id in users_ids:
+            await notify_bot.send_message(
+                chat_id=user_id,
+                text=(
+                    f"👮Новая заявка на становление администратором"
+                    f"\nВсего заявок: {number_of_requests}"
+                ),
+                reply_markup=InlineKeyboardMarkup(
+                    inline_keyboard=[
+                        [
+                            InlineKeyboardButton(
+                                text="Посмотреть заявки",
+                                callback_data="become_admin_requests",
+                            ),
+                        ],
                     ],
-                ],
-            ),
-        )
-    await bot_session.close()
-    return
+                ),
+            )
+        return
 
 
 async def custom_notification(
@@ -44,13 +43,12 @@ async def custom_notification(
     message_text: str,
     notification: bool,
 ) -> None:
-    bot_session = AiohttpSession()
-    notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
-    for user_id in users_ids:
-        await notify_bot.send_message(
-            chat_id=user_id,
-            text=message_text,
-            disable_notification=not notification,
-        )
-    await bot_session.close()
-    return
+    async with AiohttpSession() as bot_session:
+        notify_bot = Bot(token=os.getenv("BOT_TOKEN"), session=bot_session)
+        for user_id in users_ids:
+            await notify_bot.send_message(
+                chat_id=user_id,
+                text=message_text,
+                disable_notification=not notification,
+            )
+        return
