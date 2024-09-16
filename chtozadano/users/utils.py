@@ -66,7 +66,7 @@ def celery_new_become_admin_notify() -> None:
     return new_become_admin_notify()
 
 
-async def new_become_admin_notify() -> None:
+def new_become_admin_notify() -> None:
     superusers = DjangoUser.objects.filter(
         is_superuser=True,
     ).values(
