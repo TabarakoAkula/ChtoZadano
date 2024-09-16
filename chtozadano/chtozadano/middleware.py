@@ -34,7 +34,7 @@ class SiteTechnicalWorksMiddleware:
 
     def __call__(self, request):
         path = request.path.split("/")[1]
-        if path != "api" and not request.user.is_superuser:
+        if path not in ["api", "admin"] and not request.user.is_superuser:
             return render(
                 request,
                 "technical_works.html",
