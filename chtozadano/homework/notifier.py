@@ -86,7 +86,6 @@ async def homework_notifier(
                     text=text,
                     chat_id=user,
                 )
-        await bot_session.close()
         return
 
 
