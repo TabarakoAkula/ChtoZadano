@@ -539,3 +539,17 @@ async def get_fast_add(telegram_id: int) -> bool | str:
         return response.json()["fast_hw"]
     except (KeyError, requests.exceptions.JSONDecodeError):
         return "Error"
+
+
+async def get_all_classes() -> dict:
+    response = await asyncio.to_thread(
+        requests.post,
+        url=DOCKER_URL + "/api/v1/get_all_classes/",
+        json={
+            "api_key": os.getenv("API_KEY"),
+        },
+    )
+    try:
+        return response.json()
+    except (KeyError, requests.exceptions.JSONDecodeError):
+        return "Error"

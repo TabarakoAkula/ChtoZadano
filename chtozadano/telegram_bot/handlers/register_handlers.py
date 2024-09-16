@@ -12,7 +12,12 @@ from handlers.menu_handlers import command_menu_handler
 from keyboards import kb_menu, kb_start
 import requests
 from states import Register
-from utils import check_for_admin, create_user, delete_become_admin
+from utils import (
+    check_for_admin,
+    create_user,
+    delete_become_admin,
+    get_all_classes,
+)
 
 rp_register_router = Router()
 
@@ -37,7 +42,7 @@ async def command_start_handler(message: Message, state: FSMContext) -> None:
         await message.answer(
             "Привет!\nЧтобы начать работу, выбери класс,"
             " в котором ты учишься в этом году",
-            reply_markup=kb_start.choose_gr_let_in_kb(),
+            reply_markup=kb_start.choose_gr_let_in_kb(await get_all_classes()),
         )
 
 
@@ -59,7 +64,7 @@ async def command_reset_handler(message: Message, state: FSMContext) -> None:
         await state.set_state(Register.choose_class)
         await message.answer(
             "Выбери класс, в котором ты учишься в этом году",
-            reply_markup=kb_start.choose_gr_let_in_kb(),
+            reply_markup=kb_start.choose_gr_let_in_kb(await get_all_classes()),
         )
 
 
