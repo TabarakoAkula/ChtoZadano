@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Length
 
 
 GRADE_CHOICES = (
@@ -43,6 +44,57 @@ class Todo(models.Model):
         verbose_name_plural = "Списки ToDo"
 
 
+class HomeworkManager(models.Manager):
+    def get_average_text_length(self):
+        return self.aggregate(
+            average_text_lengt=models.Avg(Length("description")),
+        )
+
+    def get_average_media_number(self):
+        attachments_account = self.annotate(
+            attachment_count=models.Count("images"),
+        )
+        return {
+            "total_media": attachments_account.count(),
+            "without_media": attachments_account.filter(
+                attachment_count__lte=0,
+            ).count(),
+            "few_media": attachments_account.filter(
+                attachment_count__gte=1,
+                attachment_count__lte=3,
+            ).count(),
+            "enougth_media": attachments_account.filter(
+                attachment_count__gte=4,
+            ).count(),
+        }
+
+    def get_average_time_add(self):
+        return self.aggregate(
+            total_homeworks=models.Count("pk"),
+            morning=models.Count(
+                "pk",
+                filter=(
+                    models.Q(created_at__hour__gte=8)
+                    & models.Q(created_at__hour__lte=16)
+                ),
+            ),
+            evening=models.Count(
+                "pk",
+                filter=(
+                    models.Q(created_at__hour__gte=16)
+                    & models.Q(created_at__hour__lte=24)
+                ),
+            ),
+            night=models.Count(
+                "pk",
+                filter=(
+                    models.Q(created_at__hour__gte=0)
+                    & models.Q(created_at__hour__lte=8)
+                ),
+            ),
+        )
+
+
 class Homework(models.Model):
     grade = models.IntegerField(
         choices=GRADE_CHOICES,
@@ -76,6 +128,8 @@ class Homework(models.Model):
         blank=True,
     )
     author = models.CharField(default="Anonym", verbose_name="Автор")
+    objects = models.Manager()
+    analytics = HomeworkManager()
 
     def __str__(self):
         return f"{self.grade}{self.letter} - {self.subject}"

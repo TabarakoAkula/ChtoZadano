@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "colorfield",
     "homework.apps.HomeworkConfig",
     "users.apps.UsersConfig",
+    "analytics.apps.AnalyticsConfig",
 ]
 
 MIDDLEWARE = [
