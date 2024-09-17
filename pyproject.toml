@@ -4,7 +4,7 @@ inline-quotes = '"'
 docstring-quotes = '"'
 exclude = ".git,__pycache__,docs/source/conf.py,old,build,dist,migrations"
 import-order-style = "google"
-application-import-names = ["users", "homework"]
+application-import-names = ["users", "homework", "analytics"]
 max-line-length = 79
 per-file-ignores = [
     "chtozadano/scripts/add_schedule_script.py: T201"
