@@ -94,7 +94,7 @@ async def redirect_to_account_handler(
     if await check_for_admin(message.from_user.id) == "admin":
         await message.answer(
             "Ты находишься в меню аккаунта",
-            reply_markup=kb_menu.account_admin_page_rp_kb(),
+            reply_markup=account_menu.account_admin_page_rp_kb(),
         )
     else:
         await message.answer(
@@ -381,7 +381,7 @@ async def settings_handler(
             "· Режим цитат - если включено, то при открытии меню (/menu)"
             " ты увидишь случайную цитату\n· Режим быстрого добавления домашки"
             " - если включено, то не нужно будет"
-            "подтверждать отправку домашки",
+            " подтверждать отправку домашки",
         )
         await message.answer(
             text=f"Текущие настройки:\n"
