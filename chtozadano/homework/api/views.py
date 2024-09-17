@@ -576,6 +576,9 @@ class AddMailingAPI(APIView):
                 homework_obj.subject = "info"
                 homework_obj.save()
                 homework_id = homework_obj.id
+                homework_obj.subject = get_name_from_abbreviation(
+                    homework_obj.subject,
+                )
                 add_notification_management(homework_obj, user_obj, False)
                 redis_delete_data(
                     False,

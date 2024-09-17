@@ -795,6 +795,9 @@ class AddMailingPage(View):
                 )
                 homework_object.files.add(file_object)
         messages.success(request, "Рассылка успешно добавлена")
+        homework_object.subject = get_name_from_abbreviation(
+            homework_object.subject,
+        )
         add_notification_management(
             homework_object,
             request.user.server_user,
