@@ -39,7 +39,7 @@ from utils import (
 
 dotenv.load_dotenv()
 
-USE_REDIS = os.getenv("USE_REDIS")
+USE_REDIS = os.getenv("USE_REDIS").lower() == "true"
 
 if USE_REDIS:
     REDIS_BOT_URL = os.getenv("REDIS_BOT_URL")
