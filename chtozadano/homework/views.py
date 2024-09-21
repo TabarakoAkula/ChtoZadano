@@ -16,6 +16,7 @@ from homework.utils import (
     get_list_of_dates,
     get_name_from_abbreviation,
     get_schedule_from_weekday,
+    get_user_group_subjects,
     get_user_subjects,
     redis_delete_data,
     save_files,
@@ -441,19 +442,12 @@ class AddHomeworkPage(View):
         files_list_for_model = files_list_for_model[1]
         server_user = request.user.server_user
         use_groups = False
-        if subject not in [
-            "eng1",
-            "eng2",
-            "ger1",
-            "ger2",
-            "ikt1",
-            "ikt2",
-        ]:
-            use_groups = True
-            group = 0
-        else:
-            group = server_user.group
         grade, letter = server_user.grade, server_user.letter
+        if subject in get_user_group_subjects(grade, letter):
+            use_groups = True
+            group = server_user.group
+        else:
+            group = 0
         homework_object = Homework.objects.create(
             description=description,
             grade=grade,

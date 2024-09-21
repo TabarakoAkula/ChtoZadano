@@ -15,6 +15,7 @@ from homework.utils import (
     get_abbreviation_from_name,
     get_name_from_abbreviation,
     get_tomorrow_schedule,
+    get_user_group_subjects,
     get_user_subjects,
     redis_delete_data,
 )
@@ -86,12 +87,6 @@ class GetOneSubjectAPI(viewsets.ReadOnlyModelViewSet):
             group = user.group
             subject = request.data["subject"]
             if use_abbreviation:
-                if subject in [
-                    "ikt",
-                    "eng",
-                    "ger",
-                ]:
-                    subject += str(group)
                 subject = get_name_from_abbreviation(subject).lower()
             user_subjects = cache.get(f"user_subject_{grade}_{letter}_{group}")
             if not user_subjects:
@@ -294,17 +289,18 @@ class AddHomeWorkAPI(APIView):
         except (KeyError, users.models.User.DoesNotExist):
             return response.Response({"error": "Bad request data"}, status=400)
         use_groups = False
-        if subject not in ["eng1", "eng2", "ger1", "ger2", "ikt1", "ikt2"]:
+        subject = get_abbreviation_from_name(subject.lower())
+        if subject not in get_user_group_subjects(grade, letter):
             group = 0
-            use_groups = True
         else:
+            use_groups = True
             group = user_obj.group
         hw_object = Homework.objects.create(
             grade=grade,
             letter=letter,
             description=description,
             group=group,
-            subject=get_abbreviation_from_name(subject),
+            subject=subject,
             author=f"{django_user.first_name} {django_user.last_name}",
         )
         for image in images:
@@ -319,7 +315,6 @@ class AddHomeWorkAPI(APIView):
         for file in files:
             path = file["path"]
             tg_id = file["telegram_file_id"]
-
             hw_object.files.add(
                 File.objects.create(
                     file=path,
