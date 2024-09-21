@@ -34,7 +34,7 @@ def get_csv_data(
                     weekday, lesson = list(map(int, row_header.split("_")))
                     if last_weekday != weekday:
                         last_weekday = weekday
-                        if last_weekday:
+                        if last_weekday or last_weekday == 0:
                             schedule[last_grade][last_weekday] = day_schedule
                         day_schedule = {}
 
@@ -59,6 +59,8 @@ def get_csv_data(
                                 day_schedule[
                                     schedule_len + 1
                                 ] = row_data.strip()
+
+            schedule[last_grade][last_weekday + 1] = day_schedule
     return schedule
 
 
@@ -151,7 +153,7 @@ if __name__ == "__main__":
     except aiohttp.client.ClientConnectorError:
         print("\nERROR: Can not connect to server :\\")
     else:
-        text = f"Complete: {complete_tasks}/{complete_tasks}"
+        text = f"Complete: {complete_tasks}/{tasks_number}"
         progress_bar = complete_tasks // 10 * "█"
         print("\r" + text, "[" + progress_bar + "]  ")
         print("SUCCESS: Successfully add schedule")
