@@ -14,9 +14,11 @@
         "tech",
         "ork",
         "mus",
-        "eng1",
-        "eng2"
-      ]
+        "eng",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": ["eng"]
     },
     "Б": {
       "teachers": [
@@ -32,9 +34,11 @@
         "tech",
         "ork",
         "mus",
-        "eng1",
-        "eng2"
-      ]
+        "eng",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": ["eng"]
     },
     "В": {
       "teachers": [
@@ -50,9 +54,11 @@
         "tech",
         "ork",
         "mus",
-        "eng1",
-        "eng2"
-      ]
+        "eng",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": ["eng"]
     }
   },
   "5": {
@@ -66,16 +72,20 @@
         "lit",
         "math",
         "izo",
+        "ger",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
-        "odn"
+        "odn",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ger"
       ]
     },
     "Б": {
@@ -90,14 +100,18 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
-        "odn"
+        "ger",
+        "odn",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ger"
       ]
     },
     "В": {
@@ -112,14 +126,18 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
-        "odn"
+        "ger",
+        "odn",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ger"
       ]
     },
     "Г": {
@@ -134,14 +152,18 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
-        "odn"
+        "ger",
+        "odn",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ger"
       ]
     }
   },
@@ -158,14 +180,18 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
-        "soc"
+        "ger",
+        "soc",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ger"
       ]
     },
     "Б": {
@@ -180,14 +206,18 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
-        "soc"
+        "ger",
+        "soc",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ger"
       ]
     },
     "В": {
@@ -202,14 +232,18 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
-        "soc"
+        "ger",
+        "soc",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ger"
       ]
     },
     "Г": {
@@ -224,14 +258,18 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
-        "soc"
+        "ger",
+        "soc",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ger"
       ]
     }
   },
@@ -249,17 +287,21 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
+        "ger",
         "soc",
         "phys",
-        "ikt1",
-        "ikt2"
+        "ikt",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt",
+        "ger"
       ]
     },
     "Б": {
@@ -275,17 +317,21 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
+        "ger",
         "soc",
         "phys",
-        "ikt1",
-        "ikt2"
+        "ikt",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt",
+        "ger"
       ]
     },
     "В": {
@@ -301,17 +347,21 @@
         "izo",
         "tech",
         "mus",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
+        "ger",
         "soc",
         "phys",
-        "ikt1",
-        "ikt2"
+        "ikt",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt",
+        "ger"
       ]
     }
   },
@@ -326,18 +376,22 @@
         "lit",
         "alg",
         "geom",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
+        "ger",
         "soc",
         "phys",
-        "ikt1",
-        "ikt2",
-        "obg"
+        "ikt",
+        "obg",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt",
+        "ger"
       ]
     },
     "Б": {
@@ -350,16 +404,20 @@
         "lit",
         "alg",
         "geom",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
         "soc",
         "phys",
-        "ikt1",
-        "ikt2",
-        "obg"
+        "ikt",
+        "obg",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt"
       ]
     },
     "В": {
@@ -372,18 +430,22 @@
         "lit",
         "alg",
         "geom",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
+        "ger",
         "soc",
         "phys",
-        "ikt1",
-        "ikt2",
-        "obg"
+        "ikt",
+        "obg",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt",
+        "ger"
       ]
     }
   },
@@ -398,18 +460,22 @@
         "lit",
         "alg",
         "geom",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
-        "ger1",
-        "ger2",
+        "ger",
         "soc",
         "phys",
-        "ikt1",
-        "ikt2",
-        "obg"
+        "ikt",
+        "obg",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt",
+        "ger"
       ]
     },
     "Б": {
@@ -422,16 +488,20 @@
         "lit",
         "alg",
         "geom",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
         "soc",
         "phys",
-        "ikt1",
-        "ikt2",
-        "obg"
+        "ikt",
+        "obg",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt"
       ]
     },
     "В": {
@@ -444,16 +514,20 @@
         "lit",
         "alg",
         "geom",
-        "eng1",
-        "eng2",
+        "eng",
         "bio",
         "geog",
         "hist",
         "soc",
         "phys",
-        "ikt1",
-        "ikt2",
-        "obg"
+        "ikt",
+        "obg",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt"
       ]
     }
   },
@@ -466,22 +540,26 @@
       "subject_codes": [
         "rus",
         "lit",
-        "eng1",
-        "eng2",
+        "eng",
         "geog",
         "hist",
         "soc",
         "bio",
-        "ger1",
-        "ger2",
+        "ger",
         "alg",
         "geom",
         "phys",
         "chem",
-        "ikt1",
-        "ikt2",
+        "ikt",
         "law",
-        "obg"
+        "obg",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt",
+        "ger"
       ]
     },
     "Б": {
@@ -492,8 +570,7 @@
       "subject_codes": [
         "rus",
         "lit",
-        "eng1",
-        "eng2",
+        "eng",
         "geog",
         "hist",
         "soc",
@@ -502,9 +579,14 @@
         "geom",
         "phys",
         "chem",
-        "ikt1",
-        "ikt2",
-        "stat"
+        "ikt",
+        "stat",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt"
       ]
     },
     "В": {
@@ -515,8 +597,7 @@
       "subject_codes": [
         "rus",
         "lit",
-        "eng1",
-        "eng2",
+        "eng",
         "geog",
         "hist",
         "soc",
@@ -525,10 +606,15 @@
         "geom",
         "phys",
         "chem",
-        "ikt1",
-        "ikt2",
+        "ikt",
         "stat",
-        "eco"
+        "eco",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt"
       ]
     }
   },
@@ -541,22 +627,26 @@
       "subject_codes": [
         "rus",
         "lit",
-        "eng1",
-        "eng2",
+        "eng",
         "geog",
         "hist",
         "soc",
         "bio",
-        "ger1",
-        "ger2",
+        "ger",
         "alg",
         "geom",
         "phys",
         "chem",
-        "ikt1",
-        "ikt2",
+        "ikt",
         "law",
-        "obg"
+        "obg",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt",
+        "ger"
       ]
     },
     "Б": {
@@ -567,9 +657,9 @@
       "subject_codes": [
         "rus",
         "lit",
-        "eng1",
-        "eng2",
         "geog",
+        "eng",
+        "ikt",
         "hist",
         "soc",
         "bio",
@@ -577,9 +667,13 @@
         "geom",
         "phys",
         "chem",
-        "ikt1",
-        "ikt2",
-        "stat"
+        "stat",
+        "class",
+        "phys-c"
+      ],
+      "group_subject_codes": [
+        "eng",
+        "ikt"
       ]
     }
   }

@@ -51,23 +51,19 @@ def get_user_subjects(grade: int, letter: str, group: int) -> list:
         ) as subjects_data:
             json_subject_data = json.loads(subjects_data.read())
             response = []
-            user_subjects.append("class")
-            user_subjects.append("phys-c")
-            for i in user_subjects:
-                if i in ["eng1", "eng2", "ger1", "ger2", "ikt1", "ikt2"]:
-                    i_group = int(i[-1:])
-                    if i_group != group:
-                        continue
-                    if isinstance(json_subject_data[i], list):
-                        response.append(json_subject_data[i][0].lower())
-                    else:
-                        response.append(json_subject_data[i].lower())
+            for subject in user_subjects:
+                if isinstance(json_subject_data[subject], list):
+                    response.append(json_subject_data[subject][0].lower())
                 else:
-                    if isinstance(json_subject_data[i], list):
-                        response.append(json_subject_data[i][0].lower())
-                    else:
-                        response.append(json_subject_data[i].lower())
+                    response.append(json_subject_data[subject].lower())
     return response
+
+
+def get_user_group_subjects(grade: int, letter: str) -> list:
+    grades_subjects_url = staticfiles_storage.url("json/grades_subjects.json")
+    with open(str(BASE_DIR) + grades_subjects_url, encoding="utf-8") as data:
+        json_data = json.loads(data.read())
+        return json_data[str(grade)][letter]["group_subject_codes"]
 
 
 def get_user_subjects_abbreviation(grade: int, letter: str) -> list:
