@@ -51,7 +51,7 @@ async def create_user(
         url=DOCKER_URL + "/api/v1/create_user/",
         json={
             "api_key": os.getenv("API_KEY"),
-            "telegram_id": call.from_user.id,
+            "telegram_id": call.message.chat.id,
             "grade": data["grade"],
             "letter": data["letter"],
             "group": data["group"],
