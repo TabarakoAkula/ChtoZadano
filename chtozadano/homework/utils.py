@@ -421,7 +421,8 @@ def delete_old_homework() -> None:
     for grade_letter in get_all_grades():
         latest_homework = (
             homework.models.Homework.objects.filter(
-                grade=grade_letter[0], letter=grade_letter[1],
+                grade=grade_letter[0],
+                letter=grade_letter[1],
             )
             .values("subject")
             .annotate(latest_created_at=Max("created_at"))
