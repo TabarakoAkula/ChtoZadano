@@ -11,7 +11,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 import django.db.models
-from django.db.models import Q
+from django.db.models import Max, Q, Subquery
 from django.http import request as type_request
 from django.shortcuts import redirect
 import dotenv
@@ -400,15 +400,48 @@ def celery_delete_old_homework():
     return delete_old_homework()
 
 
+def get_all_grades() -> list[tuple[int, str]]:
+    grades_subjects_url = staticfiles_storage.url("json/grades_subjects.json")
+    grades_list = []
+    with open(
+        str(BASE_DIR) + grades_subjects_url,
+        encoding="utf-8",
+    ) as data:
+        json_data = json.loads(data.read())
+        for grade in json_data:
+            for letter in json_data[grade].keys():
+                grades_list.append((int(grade), letter))
+        return grades_list
+
+
 def delete_old_homework() -> None:
     today = datetime.datetime.today().date()
     two_weeks_ago = today - datetime.timedelta(days=14)
+    all_ids_for_exclude = []
+    for grade_letter in get_all_grades():
+        latest_homework = (
+            homework.models.Homework.objects.filter(
+                grade=grade_letter[0], letter=grade_letter[1],
+            )
+            .values("subject")
+            .annotate(latest_created_at=Max("created_at"))
+        )
+        latest_homework_ids = homework.models.Homework.objects.filter(
+            grade=grade_letter[0],
+            letter=grade_letter[1],
+            created_at__in=Subquery(
+                latest_homework.values("latest_created_at"),
+            ),
+            subject__in=latest_homework.values("subject"),
+        ).values("id")
+        for one_id in latest_homework_ids:
+            all_ids_for_exclude.append(one_id["id"])
     todo_objects = homework.models.Todo.objects.filter(
         created_at__lt=two_weeks_ago,
-    )
+    ).exclude(homework_todo__id__in=all_ids_for_exclude)
     hw_objects = homework.models.Homework.objects.filter(
         created_at__lt=two_weeks_ago,
-    )
+    ).exclude(id__in=all_ids_for_exclude)
     response_message = (
         f"Cleaner🗑️: Успешно удалено:\n"
         f"· {todo_objects.count()} Todo записей\n"
