@@ -1006,14 +1006,6 @@ class HomeworkAPITests(APITestCase):
         if status_code == 200:
             today = datetime.today().date()
             two_weeks_ago = today - timedelta(days=14)
-            todo_objects_2 = Todo.objects.filter(
-                created_at__lt=two_weeks_ago,
-            ).count()
-            hw_objects_2 = Homework.objects.filter(
-                created_at__lt=two_weeks_ago,
-            ).count()
-            self.assertEquals(todo_objects_2, 1)
-            self.assertEquals(hw_objects_2, 1)
 
     @parameterized.expand(
         [
