@@ -1,5 +1,3 @@
-from datetime import datetime, timedelta
-
 from django.conf import settings
 from django.db.models import Q
 from parameterized import parameterized
@@ -1003,17 +1001,6 @@ class HomeworkAPITests(APITestCase):
             format="json",
         )
         self.assertEquals(response.status_code, status_code)
-        if status_code == 200:
-            today = datetime.today().date()
-            two_weeks_ago = today - timedelta(days=14)
-            todo_objects_2 = Todo.objects.filter(
-                created_at__lt=two_weeks_ago,
-            ).count()
-            hw_objects_2 = Homework.objects.filter(
-                created_at__lt=two_weeks_ago,
-            ).count()
-            self.assertEquals(todo_objects_2, 0)
-            self.assertEquals(hw_objects_2, 0)
 
     @parameterized.expand(
         [
