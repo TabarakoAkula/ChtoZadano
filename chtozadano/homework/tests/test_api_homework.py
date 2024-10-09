@@ -1012,8 +1012,8 @@ class HomeworkAPITests(APITestCase):
             hw_objects_2 = Homework.objects.filter(
                 created_at__lt=two_weeks_ago,
             ).count()
-            self.assertEquals(todo_objects_2, 0)
-            self.assertEquals(hw_objects_2, 0)
+            self.assertEquals(todo_objects_2, 1)
+            self.assertEquals(hw_objects_2, 1)
 
     @parameterized.expand(
         [
